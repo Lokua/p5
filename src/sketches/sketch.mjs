@@ -1,7 +1,6 @@
-import { p5Utils, mapTimes } from './util.mjs'
+import { mapTimes, randomBool } from './util.mjs'
 
 export default function (p) {
-  const { randomBool } = p5Utils(p)
   const canvasSize = 500
 
   function setup() {
@@ -18,7 +17,7 @@ export default function (p) {
     p.ellipseMode(p.CENTER)
     p.noStroke()
 
-    mapTimes(canvasSize, (i) => {
+    mapTimes(canvasSize * 2, (i) => {
       const rColor = () => p.random(128, 200)
 
       p.fill(
@@ -29,7 +28,7 @@ export default function (p) {
 
       const x = p.random(canvasSize)
       const y = p.random(canvasSize)
-      const size = p.random(2, i % 40)
+      const size = p.random(2, i % (canvasSize / 12))
       p.ellipse(x, y, size, size)
       p.ellipse(y, x, size / 2, size / 2)
     })
@@ -38,5 +37,8 @@ export default function (p) {
   return {
     setup,
     draw,
+    metadata: {
+      name: 'sketch2',
+    },
   }
 }
