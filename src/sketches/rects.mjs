@@ -1,10 +1,8 @@
 import { cross, mapTimes } from '../util.mjs'
 
 export default function (p) {
-  const [w, h] = [500, 500]
-
   function setup() {
-    const canvas = p.createCanvas(w, h)
+    const canvas = p.createCanvas(500, 500)
     p.noLoop()
 
     return {
@@ -13,6 +11,9 @@ export default function (p) {
   }
 
   function draw() {
+    const w = p.width
+    const h = p.height
+
     p.background(p.getItem('bg'))
     p.strokeWeight(2)
     p.rectMode(p.CENTER)

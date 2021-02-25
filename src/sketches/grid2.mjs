@@ -5,7 +5,6 @@ export default function (p) {
 
   function setup() {
     const canvas = p.createCanvas(w, h)
-    // p.noLoop()
     p.frameRate(8)
 
     return {

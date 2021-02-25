@@ -1,5 +1,5 @@
 import { uuid } from './util.mjs'
-import sketch from './sketches/grid2.mjs'
+import sketch from './sketches/grid4.mjs'
 
 new p5(main)
 
@@ -20,24 +20,30 @@ function setupPage(p, metadata) {
   const BLACK = 'rgb(0, 0, 0)'
   const WHITE = 'rgb(255, 255, 255)'
 
-  const save = () => p.saveCanvas(`${metadata.name}-${uuid()}`, 'png')
-
   document.body.style.backgroundColor = localStorage.getItem('bg') || BLACK
 
-  document.getElementById('redraw-button').addEventListener('click', p.draw)
-  document.getElementById('save-button').addEventListener('click', save)
+  const save = () => {
+    const id = uuid()
+    p.saveCanvas(`${metadata.name}-${id}`, 'png')
+  }
 
-  document.getElementById('bg-button').addEventListener('click', () => {
+  const toggleBg = () => {
     document.body.style.backgroundColor =
       document.body.style.backgroundColor === BLACK ? WHITE : BLACK
     localStorage.setItem('bg', document.body.style.backgroundColor)
-  })
+  }
+
+  document.getElementById('redraw-button').addEventListener('click', p.draw)
+  document.getElementById('save-button').addEventListener('click', save)
+  document.getElementById('bg-button').addEventListener('click', toggleBg)
 
   document.body.addEventListener('keyup', (e) => {
-    if (e.key === 'r') {
+    if (e.key === 'd') {
       p.draw()
     } else if (e.key === 's') {
       save()
+    } else if (e.key === 'b') {
+      toggleBg()
     }
   })
 }
