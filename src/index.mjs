@@ -1,5 +1,5 @@
 import { $, uuid } from './util.mjs'
-import sketch from './sketches/sin.mjs'
+import sketch from './sketches/sin4.mjs'
 
 new p5(main)
 
@@ -20,24 +20,31 @@ function setupPage(p, metadata) {
   const body = document.body
   const BLACK = 'rgb(0, 0, 0)'
   const WHITE = 'rgb(255, 255, 255)'
-
-  setBg(localStorage.getItem('bg') || BLACK)
+  const GRAY = 'rgb(127, 127, 127)'
+  const backgroundColors = [BLACK, GRAY, WHITE]
+  let backgroundColorIndex = initBg()
 
   $('#redraw-button').addEventListener('click', p.draw)
   $('#save-button').addEventListener('click', save)
-  $('#bg-button').addEventListener('click', toggleBg)
+  $('#bg-button').addEventListener('click', changeBg)
   $('#loop-button').addEventListener('click', toggleLoop)
   body.addEventListener('keyup', onKeyUp)
 
   const eventMap = {
     d: p.draw,
     s: save,
-    b: toggleBg,
+    b: changeBg,
     l: toggleLoop,
   }
 
   function onKeyUp(e) {
-    eventMap[e] && eventMap[e]()
+    eventMap[e.key] && eventMap[e.key]()
+  }
+
+  function initBg() {
+    const storedBg = localStorage.getItem('backgroundColor') || BLACK
+    setBg(storedBg)
+    return backgroundColors.indexOf(storedBg)
   }
 
   function save() {
@@ -49,17 +56,14 @@ function setupPage(p, metadata) {
     p.isLooping() ? p.noLoop() : p.loop()
   }
 
-  function toggleBg() {
-    const bg = getBg()
-    setBg(bg === BLACK ? WHITE : BLACK)
-    localStorage.setItem('bg', bg)
+  function changeBg() {
+    backgroundColorIndex = (backgroundColorIndex + 1) % backgroundColors.length
+    const backgroundColor = backgroundColors[backgroundColorIndex]
+    setBg(backgroundColor)
+    localStorage.setItem('backgroundColor', backgroundColor)
   }
 
   function setBg(color) {
     body.style.backgroundColor = color
-  }
-
-  function getBg() {
-    return body.style.backgroundColor
   }
 }

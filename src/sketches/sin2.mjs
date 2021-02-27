@@ -1,7 +1,5 @@
 import { $, cross } from '../util.mjs'
 
-/* @see https://processing.org/examples/sinewave.html */
-
 export default function (p) {
   const [w, h] = [500, 500]
   let xx = 0
@@ -9,14 +7,16 @@ export default function (p) {
   // dynamic controls
   let period = 496
   let amplitude = 100
-  let size = 100
+  let size = 30
 
   function setup() {
     addControls()
     const canvas = p.createCanvas(w, h)
 
     p.ellipseMode(p.CENTER)
-    p.noStroke()
+    p.noLoop()
+    p.background(0)
+    p.frameRate(10)
 
     return {
       canvas,
@@ -26,15 +26,27 @@ export default function (p) {
   function draw() {
     p.clear()
     p.background(0)
-
     const n = Math.floor(w / size)
     const dx = ((Math.PI * 2) / period) * n
 
-    for (let x = n; x < w; x += n) {
+    for (let x = n; x < w - n; x += n) {
       const yCenter = h / 2
       const yOffset = p.sin(xx) * amplitude
-      p.fill(200, 0, Math.abs(yOffset) + 100)
-      p.ellipse(x, yCenter + yOffset, n, n)
+      p.fill(127, p.map(x, 0, w, 0, 255), Math.abs(yOffset) + 100, 127)
+      p.stroke(255, 127)
+      p.quad(
+        x,
+        yCenter + yOffset,
+        // 2
+        x + n,
+        p.map(yCenter + yOffset + 300, 0, yCenter + yOffset + 300, 0, h / 2),
+        // 3
+        x + n,
+        yCenter - yOffset * 2,
+        // 4
+        x + n * 1.5,
+        yCenter + yOffset + 3,
+      )
       xx += dx
     }
   }
@@ -107,7 +119,7 @@ export default function (p) {
     setup,
     draw,
     metadata: {
-      name: 'sin',
+      name: 'sin2',
     },
   }
 }

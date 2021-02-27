@@ -1,4 +1,4 @@
-import { $, cross } from '../util.mjs'
+import { $, cross, isEven } from '../util.mjs'
 
 /* @see https://processing.org/examples/sinewave.html */
 
@@ -16,7 +16,7 @@ export default function (p) {
     const canvas = p.createCanvas(w, h)
 
     p.ellipseMode(p.CENTER)
-    p.noStroke()
+    p.noLoop()
 
     return {
       canvas,
@@ -30,11 +30,17 @@ export default function (p) {
     const n = Math.floor(w / size)
     const dx = ((Math.PI * 2) / period) * n
 
-    for (let x = n; x < w; x += n) {
+    for (let x = -n; x < w - n; x += n) {
       const yCenter = h / 2
       const yOffset = p.sin(xx) * amplitude
-      p.fill(200, 0, Math.abs(yOffset) + 100)
-      p.ellipse(x, yCenter + yOffset, n, n)
+      const vc = p.map(x, 0, w, 0, 127)
+      p.fill(Math.abs(yOffset) + 10, vc, 100, 230)
+      p.stroke(Math.abs(yOffset), vc, 50)
+      if (isEven(x)) {
+        p.ellipse(w - x, h - yCenter + yOffset, x / 4, x / 4)
+      } else {
+        p.ellipse(x, yCenter + yOffset, x / 4, x / 4)
+      }
       xx += dx
     }
   }
@@ -107,7 +113,7 @@ export default function (p) {
     setup,
     draw,
     metadata: {
-      name: 'sin',
+      name: 'sin3',
     },
   }
 }

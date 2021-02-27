@@ -16,7 +16,7 @@ export default function (p) {
     const canvas = p.createCanvas(w, h)
 
     p.ellipseMode(p.CENTER)
-    p.noStroke()
+    p.noLoop()
 
     return {
       canvas,
@@ -29,12 +29,25 @@ export default function (p) {
 
     const n = Math.floor(w / size)
     const dx = ((Math.PI * 2) / period) * n
+    let k = 4
 
-    for (let x = n; x < w; x += n) {
+    for (let x = -n; x < w - n; x += n) {
       const yCenter = h / 2
       const yOffset = p.sin(xx) * amplitude
-      p.fill(200, 0, Math.abs(yOffset) + 100)
-      p.ellipse(x, yCenter + yOffset, n, n)
+      const vc = p.map(x, 0, w, 0, 127)
+      p.fill(Math.abs(yOffset) + 10, vc, 100, 240)
+      p.stroke(Math.abs(yOffset), vc, 50)
+
+      if (x % k === 0) {
+        p.ellipse(w - x, h - yCenter + yOffset, x / 4, x / 4)
+      } else if (x % k === 1) {
+        p.ellipse(x, yCenter + yOffset, x / 4, x / 4)
+      } else if (x % k === 3) {
+        p.ellipse(h - yCenter, w - x + yOffset, x / 4, x / 4)
+      } else {
+        p.ellipse(yCenter + yOffset, x, x / 4, x / 4)
+      }
+
       xx += dx
     }
   }
@@ -107,7 +120,7 @@ export default function (p) {
     setup,
     draw,
     metadata: {
-      name: 'sin',
+      name: 'sin4',
     },
   }
 }

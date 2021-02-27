@@ -1,6 +1,16 @@
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
 body {
   background-color: #222;
   font-family: 'Fira Code', monospace;
+}
+
+button:not(:last-child) {
+  margin-right: 2px;
 }
 
 #root {
@@ -14,6 +24,9 @@ body {
 #controls {
   display: flex;
   flex-direction: column;
+  min-height: 500px;
+  padding: 1rem;
+  background-color: #444;
 }
 
 #controls > header {
@@ -27,5 +40,4 @@ body {
 .control {
   display: flex;
   flex-direction: column;
-  color: #999;
 }
