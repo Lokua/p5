@@ -1,4 +1,4 @@
-import { cross, isEven, randomBool, times } from '../util.mjs'
+import { cross } from '../util.mjs'
 
 export default function grid4(p) {
   const [w, h] = [500, 500]
@@ -17,7 +17,6 @@ export default function grid4(p) {
     p.noiseSeed(p.random(100))
 
     const n = Math.floor(w / 38)
-    const rc = () => p.random(3, 5)
 
     for (let x = 0; x < w; x += n) {
       for (let y = 0; y < h; y += n) {

@@ -1,4 +1,4 @@
-import { cross, isEven, randomBool, times } from '../util.mjs'
+import { cross, isEven, times } from '../util.mjs'
 
 export default function (p) {
   const [w, h] = [500, 500]
@@ -42,7 +42,6 @@ export default function (p) {
           p.fill(...rgb, fillAlpha)
           p.stroke(...rgb, alphaToss())
           p.strokeWeight(4)
-          const zz = z * 6
           const zSize = p.noise(x * y * z) * minSize
           shape(x * d, y * d, zSize, zSize)
         })

@@ -25,17 +25,19 @@ function setupPage(p, metadata) {
 
   $('#redraw-button').addEventListener('click', p.draw)
   $('#save-button').addEventListener('click', save)
-  $('#bg-button').addEventListener('click', onToggleBg)
+  $('#bg-button').addEventListener('click', toggleBg)
+  $('#loop-button').addEventListener('click', toggleLoop)
   body.addEventListener('keyup', onKeyUp)
 
+  const eventMap = {
+    d: p.draw,
+    s: save,
+    b: toggleBg,
+    l: toggleLoop,
+  }
+
   function onKeyUp(e) {
-    if (e.key === 'd') {
-      p.draw()
-    } else if (e.key === 's') {
-      save()
-    } else if (e.key === 'b') {
-      onToggleBg()
-    }
+    eventMap[e] && eventMap[e]()
   }
 
   function save() {
@@ -43,7 +45,11 @@ function setupPage(p, metadata) {
     p.saveCanvas(`${metadata.name}-${id}`, 'png')
   }
 
-  function onToggleBg() {
+  function toggleLoop() {
+    p.isLooping() ? p.noLoop() : p.loop()
+  }
+
+  function toggleBg() {
     const bg = getBg()
     setBg(bg === BLACK ? WHITE : BLACK)
     localStorage.setItem('bg', bg)

@@ -9,3 +9,5 @@ npm start
 ```
 
 Then navigate to http://localhost:3000 in browser
+
+To change the sketch adjust line 2 in src/index.mjs
