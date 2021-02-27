@@ -44,3 +44,5 @@ export function cross(p, w, h = w, color = [0, 0, 0]) {
 
 export const isEven = (x) => x % 2 === 0
 export const isOdd = (x) => !isEven(x)
+
+export const $ = document.querySelector.bind(document)

@@ -5,29 +5,20 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lokua P5</title>
-    <style>
-      body {
-        background-color: #222;
-      }
-
-      #root {
-        display: flex;
-      }
-
-      #root > section:first-child {
-        margin-right: 2rem;
-      }
-    </style>
+    <link href="index.css" rel="stylesheet" />
   </head>
   <body>
     <main id="root">
-      <section>
+      <section id="sketch-container">
         <div id="sketch"></div>
       </section>
-      <section>
-        <button id="redraw-button">draw [r]</button>
-        <button id="bg-button">toggle bg [b]</button>
-        <button id="save-button">save [s]</button>
+      <section id="controls">
+        <header>
+          <button id="redraw-button">draw [r]</button>
+          <button id="bg-button">toggle bg [b]</button>
+          <button id="save-button">save [s]</button>
+        </header>
+        <main id="dynamic-controls"></main>
       </section>
     </main>
     <script src="p5/lib/p5.js"></script>

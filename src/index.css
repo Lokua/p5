@@ -1,0 +1,30 @@
+body {
+  background-color: #222;
+  font-family: 'Fira Code', monospace;
+}
+
+#root {
+  display: flex;
+}
+
+#sketch-container {
+  margin-right: 2rem;
+}
+
+#controls {
+  display: flex;
+  flex-direction: column;
+}
+
+#controls > header {
+  display: flex;
+}
+
+#dynamic-controls {
+  padding-top: 4rem;
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+}

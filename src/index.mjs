@@ -1,5 +1,5 @@
-import { uuid } from './util.mjs'
-import sketch from './sketches/grid4.mjs'
+import { $, uuid } from './util.mjs'
+import sketch from './sketches/sin.mjs'
 
 new p5(main)
 
@@ -17,33 +17,43 @@ function main(p) {
 }
 
 function setupPage(p, metadata) {
+  const body = document.body
   const BLACK = 'rgb(0, 0, 0)'
   const WHITE = 'rgb(255, 255, 255)'
 
-  document.body.style.backgroundColor = localStorage.getItem('bg') || BLACK
+  setBg(localStorage.getItem('bg') || BLACK)
 
-  const save = () => {
-    const id = uuid()
-    p.saveCanvas(`${metadata.name}-${id}`, 'png')
-  }
+  $('#redraw-button').addEventListener('click', p.draw)
+  $('#save-button').addEventListener('click', save)
+  $('#bg-button').addEventListener('click', onToggleBg)
+  body.addEventListener('keyup', onKeyUp)
 
-  const toggleBg = () => {
-    document.body.style.backgroundColor =
-      document.body.style.backgroundColor === BLACK ? WHITE : BLACK
-    localStorage.setItem('bg', document.body.style.backgroundColor)
-  }
-
-  document.getElementById('redraw-button').addEventListener('click', p.draw)
-  document.getElementById('save-button').addEventListener('click', save)
-  document.getElementById('bg-button').addEventListener('click', toggleBg)
-
-  document.body.addEventListener('keyup', (e) => {
+  function onKeyUp(e) {
     if (e.key === 'd') {
       p.draw()
     } else if (e.key === 's') {
       save()
     } else if (e.key === 'b') {
-      toggleBg()
+      onToggleBg()
     }
-  })
+  }
+
+  function save() {
+    const id = uuid()
+    p.saveCanvas(`${metadata.name}-${id}`, 'png')
+  }
+
+  function onToggleBg() {
+    const bg = getBg()
+    setBg(bg === BLACK ? WHITE : BLACK)
+    localStorage.setItem('bg', bg)
+  }
+
+  function setBg(color) {
+    body.style.backgroundColor = color
+  }
+
+  function getBg() {
+    return body.style.backgroundColor
+  }
 }
