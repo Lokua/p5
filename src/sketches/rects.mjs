@@ -1,4 +1,4 @@
-import { cross, mapTimes } from '../util.mjs'
+import { mapTimes } from '../util.mjs'
 
 export default function (p) {
   function setup() {

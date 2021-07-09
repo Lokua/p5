@@ -1,4 +1,4 @@
-import { $, cross } from '../util.mjs'
+import { $ } from '../util.mjs'
 
 /* @see https://processing.org/examples/sinewave.html */
 
@@ -9,7 +9,8 @@ export default function (p) {
   // dynamic controls
   let period = 496
   let amplitude = 100
-  let size = 100
+  let size = 41
+  let frameRate = 30
 
   function setup() {
     addControls()
@@ -26,6 +27,7 @@ export default function (p) {
   function draw() {
     p.clear()
     p.background(0)
+    p.frameRate(frameRate)
 
     const n = Math.floor(w / size)
     const dx = ((Math.PI * 2) / period) * n
@@ -39,11 +41,21 @@ export default function (p) {
       p.stroke(Math.abs(yOffset), vc, 50)
 
       if (x % k === 0) {
-        p.ellipse(w - x, h - yCenter + yOffset, x / 4, x / 4)
+        p.ellipse(
+          w - x,
+          h - yCenter + yOffset,
+          x / 4,
+          x / 4,
+        )
       } else if (x % k === 1) {
         p.ellipse(x, yCenter + yOffset, x / 4, x / 4)
       } else if (x % k === 3) {
-        p.ellipse(h - yCenter, w - x + yOffset, x / 4, x / 4)
+        p.ellipse(
+          h - yCenter,
+          w - x + yOffset,
+          x / 4,
+          x / 4,
+        )
       } else {
         p.ellipse(yCenter + yOffset, x, x / 4, x / 4)
       }
@@ -88,6 +100,16 @@ export default function (p) {
           value="${amplitude}"
         >
       </div>
+      <div class="control frameRate-control">
+        <label>frameRate (<span>${frameRate}</span>)</label>
+        <input 
+          id="sin-frameRate" 
+          type="range" 
+          min="1" 
+          max="30" 
+          value="${frameRate}"
+        >
+      </div>
     `
 
     const sizeValue = $('.size-control > label > span')
@@ -108,6 +130,15 @@ export default function (p) {
     $('#sin-period').addEventListener('input', (e) => {
       period = e.target.valueAsNumber
       periodValue.textContent = period
+      safeResume()
+    })
+
+    const frameRateValue = $(
+      '.frameRate-control > label > span',
+    )
+    $('#sin-frameRate').addEventListener('input', (e) => {
+      frameRate = e.target.valueAsNumber
+      frameRateValue.textContent = frameRate
       safeResume()
     })
 

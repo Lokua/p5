@@ -14,15 +14,18 @@
       </section>
       <section id="controls">
         <header>
-          <button id="redraw-button">draw [d]</button>
+          <button id="redraw-button">draw [r]</button>
           <button id="loop-button">loop [l]</button>
           <button id="bg-button">bg [b]</button>
           <button id="save-button">save [s]</button>
+          <button id="debug-button">debug [d]</button>
         </header>
         <main id="dynamic-controls"></main>
       </section>
     </main>
     <script src="p5/lib/p5.js"></script>
+    <!-- <script src="p5/lib/addons/p5.sound.js"></script> -->
+    <script src="socket.io/client-dist/socket.io.js"></script>
     <script src="index.mjs" type="module"></script>
   </body>
 </html>

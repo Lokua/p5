@@ -46,3 +46,22 @@ export const isEven = (x) => x % 2 === 0
 export const isOdd = (x) => !isEven(x)
 
 export const $ = document.querySelector.bind(document)
+
+export function average(values) {
+  return values.reduce((total, value) => total + value, 0) / values.length
+}
+
+// https://github.com/tmcw-up-for-adoption/simple-linear-scale/blob/master/index.js
+export function linearScale(domain, range, clamp) {
+  return function (value) {
+    if (domain[0] === domain[1] || range[0] === range[1]) {
+      return range[0]
+    }
+    var ratio = (range[1] - range[0]) / (domain[1] - domain[0]),
+      result = range[0] + ratio * (value - domain[0])
+    return clamp ? Math.min(range[1], Math.max(range[0], result)) : result
+  }
+}
+
+// bipolar [-1, 1] to float [0, 1]
+export const b2f = (x) => (x + 1) / 2

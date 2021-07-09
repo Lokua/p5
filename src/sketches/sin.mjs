@@ -1,4 +1,4 @@
-import { $, cross } from '../util.mjs'
+import { $ } from '../util.mjs'
 
 /* @see https://processing.org/examples/sinewave.html */
 

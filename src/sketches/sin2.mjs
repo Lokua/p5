@@ -1,4 +1,4 @@
-import { $, cross } from '../util.mjs'
+import { $ } from '../util.mjs'
 
 export default function (p) {
   const [w, h] = [500, 500]

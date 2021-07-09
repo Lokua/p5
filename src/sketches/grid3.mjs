@@ -1,5 +1,3 @@
-import { cross, isEven, randomBool, times } from '../util.mjs'
-
 export default function grid3(p) {
   const [w, h] = [500, 500]
 
@@ -18,8 +16,6 @@ export default function grid3(p) {
     p.noiseSeed(p.random(100))
 
     const n = Math.floor(w / 20)
-
-    const rc = () => p.random(3, 5)
 
     for (let x = n; x < w; x += n) {
       for (let y = n; y < h; y += n) {

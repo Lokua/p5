@@ -1,5 +1,6 @@
 import { $, uuid } from './util.mjs'
-import sketch from './sketches/sin4.mjs'
+import bus from './bus.mjs'
+import sketch from './sketches/sin3.mjs'
 
 new p5(main)
 
@@ -28,13 +29,15 @@ function setupPage(p, metadata) {
   $('#save-button').addEventListener('click', save)
   $('#bg-button').addEventListener('click', changeBg)
   $('#loop-button').addEventListener('click', toggleLoop)
+  $('#debug-button').addEventListener('click', debug)
   body.addEventListener('keyup', onKeyUp)
 
   const eventMap = {
-    d: p.draw,
+    r: p.draw,
     s: save,
     b: changeBg,
     l: toggleLoop,
+    d: debug,
   }
 
   function onKeyUp(e) {
@@ -42,7 +45,8 @@ function setupPage(p, metadata) {
   }
 
   function initBg() {
-    const storedBg = localStorage.getItem('backgroundColor') || BLACK
+    const storedBg =
+      localStorage.getItem('backgroundColor') || BLACK
     setBg(storedBg)
     return backgroundColors.indexOf(storedBg)
   }
@@ -57,13 +61,19 @@ function setupPage(p, metadata) {
   }
 
   function changeBg() {
-    backgroundColorIndex = (backgroundColorIndex + 1) % backgroundColors.length
-    const backgroundColor = backgroundColors[backgroundColorIndex]
+    backgroundColorIndex =
+      (backgroundColorIndex + 1) % backgroundColors.length
+    const backgroundColor =
+      backgroundColors[backgroundColorIndex]
     setBg(backgroundColor)
     localStorage.setItem('backgroundColor', backgroundColor)
   }
 
   function setBg(color) {
     body.style.backgroundColor = color
+  }
+
+  function debug() {
+    bus.emit('debug')
   }
 }

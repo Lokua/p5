@@ -1,4 +1,4 @@
-import { cross, isEven, randomBool, times } from '../util.mjs'
+import { cross, isEven } from '../util.mjs'
 
 export default function (p) {
   const [w, h] = [500, 500]

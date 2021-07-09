@@ -1,5 +1,3 @@
-import { cross } from '../util.mjs'
-
 export default function grid4(p) {
   const [w, h] = [500, 500]
 
