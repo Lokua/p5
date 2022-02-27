@@ -9,6 +9,8 @@ function init(sketch) {
     const { draw, setup, metadata } = sketch(p)
 
     p.setup = () => {
+      // turns 500x500 into 3000x3000
+      p.pixelDensity(6)
       const { canvas } = setup()
       canvas.parent('sketch')
     }
@@ -48,12 +50,8 @@ function setupPage(p, metadata) {
     return backgroundColors.indexOf(storedBg)
   }
 
-  function save() {
+  async function save() {
     const id = uuid()
-
-    // turns 500x500 into 3000x300
-    p.pixelDensity(6)
-
     p.saveCanvas(`${metadata.name}-${id}`, 'png')
   }
 
