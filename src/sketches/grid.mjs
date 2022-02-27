@@ -1,7 +1,7 @@
 import { cross, isEven, times } from '../util.mjs'
 
 export default function (p) {
-  const [w, h] = [1500, 1500]
+  const [w, h] = [500, 500]
   const alphaToss = () => p.random([255, 127, 63])
   const fillAlpha = 12
   let n = 0

@@ -46,3 +46,15 @@ button:not(:last-child) {
   display: flex;
   flex-direction: column;
 }
+
+#sketches {
+  padding: 16px;
+}
+
+#sketches li {
+  cursor: pointer;
+}
+
+#sketches li:hover {
+  color: magenta;
+}

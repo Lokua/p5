@@ -1,7 +1,7 @@
 import { $ } from '../util.mjs'
 
 export default function (p) {
-  const [w, h] = [1500, 1500]
+  const [w, h] = [500, 500]
   let xx = 0
 
   // dynamic controls

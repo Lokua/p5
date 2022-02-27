@@ -1,7 +1,7 @@
 import { cross, isEven } from '../util.mjs'
 
 export default function (p) {
-  const [w, h] = [1500, 1500]
+  const [w, h] = [500, 500]
 
   function setup() {
     const canvas = p.createCanvas(w, h)
