@@ -41,23 +41,13 @@ export default function (p) {
       p.stroke(Math.abs(yOffset), vc, 50)
 
       if (x % k === 0) {
-        p.ellipse(
-          w - x,
-          h - yCenter + yOffset,
-          x / 4,
-          x / 4,
-        )
+        p.rect(w - x, h - yCenter + yOffset, x / 4, x / 4)
       } else if (x % k === 1) {
-        p.ellipse(x, yCenter + yOffset, x / 4, x / 4)
+        p.rect(x, yCenter + yOffset, x / 4, x / 4)
       } else if (x % k === 3) {
-        p.ellipse(
-          h - yCenter,
-          w - x + yOffset,
-          x / 4,
-          x / 4,
-        )
+        p.rect(h - yCenter, w - x + yOffset, x / 4, x / 4)
       } else {
-        p.ellipse(yCenter + yOffset, x, x / 4, x / 4)
+        p.rect(yCenter + yOffset, x, x / 4, x / 4)
       }
 
       xx += dx

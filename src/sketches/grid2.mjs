@@ -1,7 +1,7 @@
 import { cross, isEven } from '../util.mjs'
 
 export default function (p) {
-  const [w, h] = [500, 500]
+  const [w, h] = [1500, 1500]
 
   function setup() {
     const canvas = p.createCanvas(w, h)
@@ -23,7 +23,9 @@ export default function (p) {
       for (let y = n; y < h; y += n) {
         p.stroke(0, 200)
         p.strokeWeight(2)
-        let hn = p.random([0, 1]) ? n / 2 - 4 : p.noise(n) * n
+        let hn = p.random([0, 1])
+          ? n / 2 - 4
+          : p.noise(n) * n
         if (isEven(x) && isEven(y)) {
           hn = hn * 3
           p.line(x - p.noise(x), y - p.noise(x) * n, x, y)

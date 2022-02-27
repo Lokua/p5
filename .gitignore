@@ -3,5 +3,4 @@ node_modules
 *.log
 .vscode
 tmp
-images
 exec.sh

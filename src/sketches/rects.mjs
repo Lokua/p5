@@ -14,7 +14,7 @@ export default function (p) {
     const w = p.width
     const h = p.height
 
-    p.background(p.getItem('bg'))
+    p.background(0)
     p.strokeWeight(2)
     p.rectMode(p.CENTER)
     p.noFill()

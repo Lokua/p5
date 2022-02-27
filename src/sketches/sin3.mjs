@@ -3,7 +3,7 @@ import { $, isEven } from '../util.mjs'
 /* @see https://processing.org/examples/sinewave.html */
 
 export default function (p) {
-  const [w, h] = [500, 500]
+  const [w, h] = [1500, 1500]
   let xx = 0
 
   // dynamic controls

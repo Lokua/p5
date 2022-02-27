@@ -1,5 +1,5 @@
 export default function grid3(p) {
-  const [w, h] = [500, 500]
+  const [w, h] = [1500, 1500]
 
   function setup() {
     const canvas = p.createCanvas(w, h)

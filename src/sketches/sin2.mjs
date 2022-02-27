@@ -1,7 +1,7 @@
 import { $ } from '../util.mjs'
 
 export default function (p) {
-  const [w, h] = [500, 500]
+  const [w, h] = [1500, 1500]
   let xx = 0
 
   // dynamic controls
@@ -28,26 +28,47 @@ export default function (p) {
     p.background(0)
     const n = Math.floor(w / size)
     const dx = ((Math.PI * 2) / period) * n
+    const emptySpaceOnRightSide = 16
 
-    for (let x = n; x < w - n; x += n) {
-      const yCenter = h / 2
-      const yOffset = p.sin(xx) * amplitude
-      p.fill(127, p.map(x, 0, w, 0, 255), Math.abs(yOffset) + 100, 127)
-      p.stroke(255, 127)
-      p.quad(
-        x,
-        yCenter + yOffset,
-        // 2
-        x + n,
-        p.map(yCenter + yOffset + 300, 0, yCenter + yOffset + 300, 0, h / 2),
-        // 3
-        x + n,
-        yCenter - yOffset * 2,
-        // 4
-        x + n * 1.5,
-        yCenter + yOffset + 3,
-      )
-      xx += dx
+    drawHorizontal(h / 4)
+    drawHorizontal(h / 2)
+    drawHorizontal(h / 2 + h / 4)
+
+    function drawHorizontal(yCenter) {
+      for (
+        let x = n;
+        x < w - n - emptySpaceOnRightSide;
+        x += n
+      ) {
+        const yOffset = p.sin(xx) * amplitude
+        p.fill(
+          127,
+          p.map(x, 0, w, 0, 255),
+          Math.abs(yOffset) + 100,
+          127,
+        )
+        p.stroke(255, 127)
+        p.quad(
+          x,
+          yCenter + yOffset,
+          // 2
+          x + n,
+          p.map(
+            yCenter + yOffset + 300,
+            0,
+            yCenter + yOffset + 300,
+            0,
+            h / 2,
+          ),
+          // 3
+          x + n,
+          yCenter - yOffset * 2,
+          // 4
+          x + n * 1.5,
+          yCenter + yOffset + 3,
+        )
+        xx += dx
+      }
     }
   }
 

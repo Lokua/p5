@@ -41,7 +41,7 @@ function setupPage(p, metadata) {
   }
 
   function onKeyUp(e) {
-    eventMap[e.key] && eventMap[e.key]()
+    eventMap[e.key]?.()
   }
 
   function initBg() {
