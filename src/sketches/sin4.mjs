@@ -1,22 +1,47 @@
-import { $ } from '../util.mjs'
+import ControlPanel, {
+  Range,
+} from '../ControlPanel/index.mjs'
 
 /* @see https://processing.org/examples/sinewave.html */
 
 export default function (p) {
   const [w, h] = [500, 500]
-  let xx = 0
 
-  // dynamic controls
-  let period = 496
-  let amplitude = 100
-  let size = 41
-  let frameRate = 30
+  const controlPanel = new ControlPanel({
+    controls: {
+      size: new Range({
+        name: 'size',
+        value: 100,
+        min: 1,
+        max: w,
+        step: 1,
+      }),
+      period: new Range({
+        name: 'period',
+        value: 496,
+        min: 2,
+        max: 1000,
+        step: 1,
+      }),
+      amplitude: new Range({
+        name: 'amplitude',
+        value: 100,
+        min: 0,
+        max: h / 2,
+      }),
+    },
+    inputHandler() {
+      !p.isLooping() && draw()
+    },
+  })
 
   function setup() {
-    addControls()
+    controlPanel.init()
+
     const canvas = p.createCanvas(w, h)
 
     p.ellipseMode(p.CENTER)
+    p.noStroke()
     p.noLoop()
 
     return {
@@ -25,121 +50,39 @@ export default function (p) {
   }
 
   function draw() {
+    const {
+      size,
+      period,
+      amplitude,
+    } = controlPanel.controls
+
     p.clear()
     p.background(0)
-    p.frameRate(frameRate)
 
-    const n = Math.floor(w / size)
-    const dx = ((Math.PI * 2) / period) * n
-    let k = 4
+    const n = Math.floor(w / size.value)
+    const dx = ((Math.PI * 2) / period.value) * n
 
-    for (let x = -n; x < w - n; x += n) {
-      const yCenter = h / 2
-      const yOffset = p.sin(xx) * amplitude
-      const vc = p.map(x, 0, w, 0, 127)
-      p.fill(Math.abs(yOffset) + 10, vc, 100, 240)
-      p.stroke(Math.abs(yOffset), vc, 50)
-
-      if (x % k === 0) {
-        p.rect(w - x, h - yCenter + yOffset, x / 4, x / 4)
-      } else if (x % k === 1) {
-        p.rect(x, yCenter + yOffset, x / 4, x / 4)
-      } else if (x % k === 3) {
-        p.rect(h - yCenter, w - x + yOffset, x / 4, x / 4)
-      } else {
-        p.rect(yCenter + yOffset, x, x / 4, x / 4)
-      }
-
-      xx += dx
-    }
+    sineWave(w, h / 4, n, dx, amplitude.value)
+    sineWave(w, h / 2, n, dx, amplitude.value)
+    sineWave(w, h / 2 + h / 4, n, dx, amplitude.value)
   }
 
-  function addControls() {
-    const panel = $('#dynamic-controls')
-
-    panel.innerHTML = `
-      <div class="control size-control">
-        <label>size (<span>${size}</span>)</label>
-        <input 
-          id="sin-size" 
-          type="range" 
-          min="1" 
-          max="${w}" 
-          step="1"
-          value="${size}"
-        >
-      </div>
-      <div class="control period-control">
-        <label>frequency (<span>${period}</span>)</label>
-        <input 
-          id="sin-period" 
-          type="range" 
-          min="2" 
-          max="1000" 
-          step="1"
-          value="${period}"
-        >
-      </div>
-      <div class="control amp-control">
-        <label>amplitude (<span>${amplitude}</span>)</label>
-        <input 
-          id="sin-amp" 
-          type="range" 
-          min="0" 
-          max="${h / 2}" 
-          value="${amplitude}"
-        >
-      </div>
-      <div class="control frameRate-control">
-        <label>frameRate (<span>${frameRate}</span>)</label>
-        <input 
-          id="sin-frameRate" 
-          type="range" 
-          min="1" 
-          max="30" 
-          value="${frameRate}"
-        >
-      </div>
-    `
-
-    const sizeValue = $('.size-control > label > span')
-    $('#sin-size').addEventListener('input', (e) => {
-      size = e.target.valueAsNumber
-      sizeValue.textContent = size
-      safeResume()
-    })
-
-    const ampValue = $('.amp-control > label > span')
-    $('#sin-amp').addEventListener('input', (e) => {
-      amplitude = e.target.valueAsNumber
-      ampValue.textContent = amplitude
-      safeResume()
-    })
-
-    const periodValue = $('.period-control > label > span')
-    $('#sin-period').addEventListener('input', (e) => {
-      period = e.target.valueAsNumber
-      periodValue.textContent = period
-      safeResume()
-    })
-
-    const frameRateValue = $(
-      '.frameRate-control > label > span',
-    )
-    $('#sin-frameRate').addEventListener('input', (e) => {
-      frameRate = e.target.valueAsNumber
-      frameRateValue.textContent = frameRate
-      safeResume()
-    })
-
-    function safeResume() {
-      !p.isLooping() && draw()
+  function sineWave(w, yCenter, n, dx, amplitude) {
+    for (let x = n, xx = 0; x < w; x += n) {
+      const yOffset =
+        p.sin(xx + p.noise(xx * p.random())) * amplitude
+      p.fill(200, 0, Math.abs(yOffset) + 100)
+      p.ellipse(x, yCenter + yOffset, n, n)
+      xx += dx
     }
   }
 
   return {
     setup,
     draw,
+    destroy() {
+      controlPanel.destroy()
+    },
     metadata: {
       name: 'sin4',
     },

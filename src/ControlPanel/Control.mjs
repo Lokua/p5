@@ -39,5 +39,8 @@ export default class Control {
 
   #onInput = (e) => {
     this.value = e.target.valueAsNumber
+    this.#getElement().querySelector(
+      'span',
+    ).textContent = this.value
   }
 }

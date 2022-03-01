@@ -6,7 +6,6 @@ import ControlPanel, {
 
 export default function (p) {
   const [w, h] = [500, 500]
-  let xx = 0
 
   const controlPanel = new ControlPanel({
     controls: {
@@ -14,7 +13,7 @@ export default function (p) {
         name: 'size',
         value: 100,
         min: 1,
-        max: 500,
+        max: w,
         step: 1,
       }),
       period: new Range({
@@ -43,6 +42,7 @@ export default function (p) {
 
     p.ellipseMode(p.CENTER)
     p.noStroke()
+    p.noLoop()
 
     return {
       canvas,
@@ -62,9 +62,13 @@ export default function (p) {
     const n = Math.floor(w / size.value)
     const dx = ((Math.PI * 2) / period.value) * n
 
-    for (let x = n; x < w; x += n) {
+    sineWave(w, h, n, dx, amplitude.value)
+  }
+
+  function sineWave(w, h, n, dx, amplitude) {
+    for (let x = n, xx = 0; x < w; x += n) {
       const yCenter = h / 2
-      const yOffset = p.sin(xx) * amplitude.value
+      const yOffset = p.sin(xx) * amplitude
       p.fill(200, 0, Math.abs(yOffset) + 100)
       p.ellipse(x, yCenter + yOffset, n, n)
       xx += dx

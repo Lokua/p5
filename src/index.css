@@ -58,3 +58,11 @@ button:not(:last-child) {
 #sketches li:hover {
   color: magenta;
 }
+
+li.active {
+  text-decoration: underline;
+}
+
+li.active::before {
+  content: '* ';
+}

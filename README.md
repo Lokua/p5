@@ -2,6 +2,10 @@
 
 Exploratory sketches made with p5.js
 
+Stuff like this:
+
+<img src="images/1000x/grid4-u2m4.png" alt="images/1000x/grid4-u2m4.png" width="400" height="400">
+
 ## Run
 
 ```sh

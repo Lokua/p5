@@ -14,7 +14,7 @@ export default class ControlPanel {
   init() {
     this.html()
     this.#mapControls((control) => control.bind())
-    this.inputHandler ?? this.onInput(this.inputHandler)
+    this.inputHandler && this.onInput(this.inputHandler)
   }
 
   html() {
@@ -23,14 +23,24 @@ export default class ControlPanel {
     ).join('\n')
   }
 
-  destroy() {
-    this.#getElement().innerHTML = ''
-  }
-
   onInput(fn) {
     this.#mapControls((control) => {
       control.addInputListener(fn)
     })
+  }
+
+  values() {
+    return Object.entries(this.controls).reduce(
+      (acc, [key, { value }]) => ({
+        ...acc,
+        [key]: value,
+      }),
+      {},
+    )
+  }
+
+  destroy() {
+    this.#getElement().innerHTML = ''
   }
 
   #getElement = () => document.querySelector(this.selector)

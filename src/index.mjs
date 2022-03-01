@@ -53,9 +53,20 @@ function setupPage({ p, metadata, destroy }) {
   }
 
   addEventListeners()
+  applyActiveClassToLastLoadedSketch()
 
   function onKeyUp(e) {
     eventMap[e.key]?.()
+  }
+
+  function applyActiveClassToLastLoadedSketch() {
+    document
+      .querySelectorAll('#sketches li')
+      .forEach((element) => {
+        if (element.textContent === metadata.name) {
+          element.classList.add('active')
+        }
+      })
   }
 
   function initBg() {
@@ -94,12 +105,17 @@ function setupPage({ p, metadata, destroy }) {
   async function onClickSketch(e) {
     if (e.target.tagName === 'LI') {
       loadSketch(e.target.textContent)
+      const lastActiveElement = document.querySelector(
+        '#sketches .active',
+      )
+      lastActiveElement?.classList?.remove('active')
+      e.target.classList.add('active')
     }
   }
 
   async function loadSketch(name) {
-    removeEventListeners()
     destroy?.()
+    removeEventListeners()
     p.remove()
     const sketch = await import(sketchNameToPath(name))
     new p5(init(sketch.default))
