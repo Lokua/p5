@@ -22,13 +22,10 @@ function generateMarkdownContent() {
     .readdirSync(imagesDir)
     .filter(isSupportedImageFile)
     .map((filename) =>
-      `
-        ## ${filename}
-        <img src="images/1000x/${filename}" alt="${filename}" width="500" height="500">
-      `
-        .split('\n')
-        .map((line) => line.trim())
-        .join('\n'),
+      [
+        `## ${filename}`,
+        `<img src="images/1000x/${filename}" alt="${filename}" width="500">`,
+      ].join('\n'),
     )
-    .join('\n')
+    .join('\n\n')
 }
