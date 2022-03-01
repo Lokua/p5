@@ -10,4 +10,8 @@ npm start
 
 Then navigate to http://localhost:3000 in browser
 
-To change the sketch adjust line 2 in src/index.mjs
+## Development
+
+To create a new sketch, copy one of the existing ones from
+the [sketches](src/sketches) folder then add its filename to
+the list in [index.html](src/index.html)

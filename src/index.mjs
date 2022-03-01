@@ -2,14 +2,29 @@ import { $, uuid } from './util.mjs'
 import bus from './bus.mjs'
 import sketch from './sketches/sketch.mjs'
 
-let p5Instance = new p5(init(sketch))
+loadInitialSketch()
+
+async function loadInitialSketch() {
+  const lastSketch = localStorage.getItem('lastSketch')
+
+  if (lastSketch) {
+    const sketch = await import(
+      sketchNameToPath(lastSketch)
+    )
+    new p5(init(sketch.default))
+  } else {
+    new p5(init(sketch))
+  }
+}
 
 function init(sketch) {
   return (p) => {
-    const { draw, setup, metadata } = sketch(p)
+    const { draw, setup, metadata, destroy } = sketch(p)
 
     p.setup = () => {
       // turns 500x500 into 3000x3000
+      // note: width and height of 500 renders a 1000x1000 image due to
+      // default pixel density
       p.pixelDensity(6)
       const { canvas } = setup()
       canvas.parent('sketch')
@@ -17,11 +32,11 @@ function init(sketch) {
 
     p.draw = draw
 
-    setupPage(p, metadata)
+    setupPage({ p, metadata, destroy })
   }
 }
 
-function setupPage(p, metadata) {
+function setupPage({ p, metadata, destroy }) {
   const body = document.body
   const BLACK = 'rgb(0, 0, 0)'
   const WHITE = 'rgb(255, 255, 255)'
@@ -78,13 +93,17 @@ function setupPage(p, metadata) {
 
   async function onClickSketch(e) {
     if (e.target.tagName === 'LI') {
-      removeEventListeners()
-      p5Instance.remove()
-      const { default: sketch } = await import(
-        `./sketches/${e.target.textContent}.mjs`
-      )
-      p5Instance = new p5(init(sketch))
+      loadSketch(e.target.textContent)
     }
+  }
+
+  async function loadSketch(name) {
+    removeEventListeners()
+    destroy?.()
+    p.remove()
+    const sketch = await import(sketchNameToPath(name))
+    new p5(init(sketch.default))
+    localStorage.setItem('lastSketch', name)
   }
 
   function addEventListeners() {
@@ -112,4 +131,8 @@ function setupPage(p, metadata) {
     )
     body.removeEventListener('keyup', onKeyUp)
   }
+}
+
+function sketchNameToPath(name) {
+  return `./sketches/${name}.mjs`
 }
