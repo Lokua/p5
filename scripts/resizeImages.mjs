@@ -1,7 +1,9 @@
 import fs from 'fs'
-import path from 'path'
 import sharp from 'sharp'
-import { getDirname } from './util.mjs'
+import {
+  getDirname,
+  isSupportedImageFile,
+} from './util.mjs'
 
 const __dirname = getDirname(import.meta.url)
 const imagesDir = `${__dirname}/../images`
@@ -21,8 +23,3 @@ imagesFilenames.forEach(async (filename) => {
       .toFile(`${images1000xDir}/${filename}`)
   }
 })
-
-function isSupportedImageFile(filename) {
-  const ext = path.extname(filename)
-  return ext === '.png' || ext === '.jpg'
-}

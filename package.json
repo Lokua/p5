@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.mjs",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "resize": "node scripts/resizeImages.mjs"
+    "resize": "node scripts/resizeImages.mjs",
+    "generate-markdown-index": "node scripts/generateMarkdownIndex.mjs"
   },
   "keywords": [],
   "author": "",
