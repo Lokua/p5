@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.mjs",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "resize": "node scripts/resizeImages.mjs"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +17,8 @@
     "lodash": "4.17.21",
     "p5": "1.2.0",
     "random-int": "2.0.1",
+    "sharp": "^0.30.1",
+    "sharp-cli": "^1.15.0",
     "socket.io": "3.1.2"
   },
   "devDependencies": {
