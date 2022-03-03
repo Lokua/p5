@@ -25,6 +25,12 @@
 ## burst-p3iu4.png
 <img src="images/1000x/burst-p3iu4.png" alt="burst-p3iu4.png" width="500">
 
+## burst2-0ghq7.png
+<img src="images/1000x/burst2-0ghq7.png" alt="burst2-0ghq7.png" width="500">
+
+## burst2-o6qa.png
+<img src="images/1000x/burst2-o6qa.png" alt="burst2-o6qa.png" width="500">
+
 ## grid3-1v3cb--median=17.png
 <img src="images/1000x/grid3-1v3cb--median=17.png" alt="grid3-1v3cb--median=17.png" width="500">
 

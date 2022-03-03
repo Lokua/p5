@@ -76,3 +76,22 @@ export function linearScale(domain, range, clamp) {
 
 // bipolar float [-1, 1] to unipolar float [0, 1]
 export const b2u = (x) => (x + 1) / 2
+
+export function isPrime(n) {
+  for (let i = 2; i < n; i++) {
+    if (n % i === 0) {
+      return false
+    }
+  }
+  return true
+}
+
+export function primes(n) {
+  const array = []
+  for (let i = 1; array.length < n; i++) {
+    if (isPrime(i)) {
+      array.push(i)
+    }
+  }
+  return array
+}
