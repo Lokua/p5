@@ -5,7 +5,29 @@ import ControlPanel, {
 export default function grid4(p) {
   const [w, h] = [500, 500]
 
+  // default 2 and 4 will create a grid like:
+  // +-------+
+  // | X   X |
+  // |   X   |
+  // | X   X |
+  // +-------+
+  const createSections = (a = 2, b = 4) => [
+    // center
+    [w / a, h / a],
+    // top left
+    [w / b, h / b],
+    // top-right
+    [w / a + w / b, h / b],
+    // bottom left
+    [w / b, h / a + h / b],
+    // bottom right
+    [w / a + w / b, h / a + h / b],
+  ]
+
   const rb = () => p.random() < 0.5
+  const red = () => p.color(p.random([200, 255]), 0, 0, 127)
+  const orange = () =>
+    p.color(p.random([200, 255]), 127, 0, 127)
 
   const controlPanel = new ControlPanel({
     controls: {
@@ -37,6 +59,7 @@ export default function grid4(p) {
     controlPanel.init()
     const canvas = p.createCanvas(w, h)
     p.noLoop()
+    p.angleMode(p.DEGREES)
 
     return {
       canvas,
@@ -48,53 +71,34 @@ export default function grid4(p) {
     p.background(0)
     p.noiseSeed(p.random(100))
 
-    // center
-    burst({
-      count,
-      x: w / 2,
-      y: h / 2,
-      size,
-      offset,
-    })
-    // top left
-    burst({
-      count,
-      x: w / 4,
-      y: h / 4,
-      size,
-      offset,
-    })
-    //top right
-    burst({
-      count,
-      x: w / 2 + w / 4,
-      y: h / 4,
-      size,
-      offset,
-    })
-    //bottom left
-    burst({
-      count,
-      x: w / 4,
-      y: h / 2 + h / 4,
-      size,
-      offset,
-    })
-    //bottom right
-    burst({
-      count,
-      x: w / 2 + w / 4,
-      y: h / 2 + h / 4,
-      size,
-      offset,
+    const bustBursts = (color, otherShit) => ([x, y]) => {
+      otherShit?.()
+      burst({
+        color,
+        count,
+        size,
+        offset,
+        x,
+        y,
+      })
+    }
+
+    createSections(2, 4).forEach(([xx]) => {
+      p.translate(xx, 0)
+      createSections(2, 4).forEach(bustBursts(red))
+      p.resetMatrix()
+
+      p.translate(xx * -1, 0)
+      createSections(2, 4).forEach(bustBursts(orange))
+      p.resetMatrix()
     })
   }
 
-  function burst({ count, x, y, size, offset }) {
+  function burst({ color, count, size, offset, x, y }) {
     p.noStroke()
 
     for (let i = 0; i < count; i++) {
-      p.fill(255, 0, 0, 180)
+      p.fill(color())
 
       const randomOffset = () =>
         p.noise(offset * i) * offset

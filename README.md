@@ -22,3 +22,9 @@ Then navigate to http://localhost:3000 in browser
 To create a new sketch, copy one of the existing ones from
 the [sketches](src/sketches) folder then add its filename to
 the list in [index.html](src/index.html)
+
+## Learning Resources
+
+Resources I'm using to guide myself:
+
+- https://genekogan.com/code/p5js-transformations/

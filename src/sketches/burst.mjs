@@ -94,12 +94,7 @@ export default function grid4(p) {
     p.noStroke()
 
     for (let i = 0; i < count; i++) {
-      p.fill(
-        255,
-        p.noise(i) * 200,
-        p.random([50, 90, 170]),
-        180,
-      )
+      p.fill(p.random(200, 255), 0, 0, 200)
 
       const randomOffset = () =>
         p.noise(offset * i) * offset
