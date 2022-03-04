@@ -122,3 +122,15 @@ export function setAlpha(color, alpha) {
   copy[3] = alpha
   return copy
 }
+
+export class P5Helpers {
+  constructor(p) {
+    this.p = p
+  }
+
+  pushPop = (fn) => {
+    this.p.push()
+    fn()
+    this.p.pop()
+  }
+}

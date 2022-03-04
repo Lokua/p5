@@ -1,11 +1,7 @@
 import ControlPanel, {
   Range,
 } from '../ControlPanel/index.mjs'
-import {
-  createQuintants,
-  times,
-  setAlpha,
-} from '../util.mjs'
+import { createQuintants, times } from '../util.mjs'
 
 export default function grid4(p) {
   const [w, h] = [500, 500]
@@ -36,6 +32,12 @@ export default function grid4(p) {
         min: 1,
         max: 32,
       }),
+      alpha: new Range({
+        name: 'alpha',
+        value: 30,
+        min: 1,
+        max: 255,
+      }),
     },
     inputHandler() {
       !p.isLooping() && draw()
@@ -43,9 +45,19 @@ export default function grid4(p) {
   })
 
   const color1 = () =>
-    p.color(0, p.random(127), p.random(255), 10)
+    p.color(
+      0,
+      p.random(127),
+      p.random(255),
+      controlPanel.get('alpha'),
+    )
   const color2 = () =>
-    p.color(p.random(255), p.random(127), 0, 10)
+    p.color(
+      p.random(255),
+      p.random(127),
+      0,
+      controlPanel.get('alpha'),
+    )
   const colors = [color1, color2]
 
   function setup() {
@@ -131,13 +143,11 @@ export default function grid4(p) {
   }
 
   function burst({ count, size, offset }) {
-    p.noStroke()
     p.noiseSeed(p.random(1, 100))
 
     for (let i = 0; i < count; i++) {
-      const color = colors[i % colors.length]()
-      p.stroke(setAlpha(color, 20))
-      p.fill(color)
+      p.stroke(colors[i % colors.length]())
+      p.fill(255, 25)
       const r = () => p.noise(i) * p.random(1, 10)
       p.triangle(
         0,

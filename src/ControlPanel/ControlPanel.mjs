@@ -39,6 +39,10 @@ export default class ControlPanel {
     )
   }
 
+  get(key) {
+    return this.controls[key].value
+  }
+
   destroy() {
     this.#getElement().innerHTML = ''
   }

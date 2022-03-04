@@ -4,6 +4,7 @@ export default function grid4(p) {
   function setup() {
     const canvas = p.createCanvas(w, h)
     p.noLoop()
+    p.rectMode(p.CORNER)
 
     return {
       canvas,

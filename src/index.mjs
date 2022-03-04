@@ -1,6 +1,7 @@
 import { $, uuid } from './util.mjs'
 import bus from './bus.mjs'
-import sketch from './sketches/sketch.mjs'
+import defaultSketch from './sketches/sketch.mjs'
+import { P5Helpers } from './util.mjs'
 
 loadInitialSketch()
 
@@ -8,31 +9,45 @@ async function loadInitialSketch() {
   const lastSketch = localStorage.getItem('lastSketch')
 
   if (lastSketch) {
-    const sketch = await import(
-      sketchNameToPath(lastSketch)
-    )
-    new p5(init(sketch.default))
+    try {
+      const sketch = await import(
+        sketchNameToPath(lastSketch)
+      )
+      new p5(init(sketch.default))
+    } catch (error) {
+      localStorage.removeItem('lastSketch')
+      window.location.reload()
+    }
   } else {
-    new p5(init(sketch))
+    new p5(init(defaultSketch))
   }
 }
 
 function init(sketch) {
   return (p) => {
-    const { draw, setup, metadata, destroy } = sketch(p)
+    const { draw, setup, metadata, destroy } = sketch(
+      p,
+      new P5Helpers(p),
+    )
 
     p.setup = () => {
       // turns 500x500 into 3000x3000
       // note: width and height of 500 renders a 1000x1000 image due to
       // default pixel density
       p.pixelDensity(6)
+      p.rectMode(p.CENTER)
+      p.ellipseMode(p.CENTER)
       const { canvas } = setup()
       canvas.parent('sketch')
     }
 
     p.draw = draw
 
-    setupPage({ p, metadata, destroy })
+    setupPage({
+      p,
+      metadata,
+      destroy,
+    })
   }
 }
 
