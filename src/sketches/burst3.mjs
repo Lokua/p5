@@ -1,7 +1,11 @@
 import ControlPanel, {
   Range,
 } from '../ControlPanel/index.mjs'
-import { times } from '../util.mjs'
+import {
+  createQuintants,
+  times,
+  setAlpha,
+} from '../util.mjs'
 
 export default function grid4(p) {
   const [w, h] = [500, 500]
@@ -10,19 +14,19 @@ export default function grid4(p) {
     controls: {
       size: new Range({
         name: 'size',
-        value: 10,
+        value: 50,
         min: 1,
         max: 500,
       }),
       offset: new Range({
         name: 'offset',
-        value: 100,
+        value: 70,
         min: 1,
         max: 500,
       }),
       count: new Range({
         name: 'count',
-        value: 40,
+        value: 20,
         min: 1,
         max: 500,
       }),
@@ -38,51 +42,63 @@ export default function grid4(p) {
     },
   })
 
-  // default 2 and 4 will create a grid like:
-  // +-------+
-  // | X   X |
-  // |   X   |
-  // | X   X |
-  // +-------+
-  const createSections = (a = 2, b = 4) => [
-    // center
-    [w / a, h / a],
-    // top left
-    [w / b, h / b],
-    // top-right
-    [w / a + w / b, h / b],
-    // bottom left
-    [w / b, h / a + h / b],
-    // bottom right
-    [w / a + w / b, h / a + h / b],
-  ]
-
-  const red = () => p.color(p.random([200, 255]), 0, 0, 127)
-  const orange = () =>
-    p.color(p.random([200, 255]), 90, 0, 63)
+  const color1 = () =>
+    p.color(0, p.random(127), p.random(255), 10)
+  const color2 = () =>
+    p.color(p.random(255), p.random(127), 0, 10)
+  const colors = [color1, color2]
 
   function setup() {
     controlPanel.init()
     const canvas = p.createCanvas(w, h)
     p.noLoop()
     p.rectMode(p.CENTER)
+    p.ellipseMode(p.CENTER)
 
     return {
       canvas,
     }
   }
 
+  function pushPop(fn) {
+    p.push()
+    fn()
+    p.pop()
+  }
+
   function draw() {
+    p.background(255)
+    p.noiseSeed(p.random(100))
+
+    pushPop(() => {
+      rocket(4, 8)
+    })
+    pushPop(() => {
+      p.translate(w / 2, 0)
+      rocket(4, 8)
+    })
+    pushPop(() => {
+      p.translate(0, h / 2)
+      rocket(4, 8)
+    })
+    pushPop(() => {
+      p.translate(w / 2, h / 2)
+      rocket(4, 8)
+    })
+    pushPop(() => {
+      rocket(2, 4)
+    })
+  }
+
+  function rocket(x, y) {
     const {
       count,
       offset,
       size,
       rotations,
     } = controlPanel.values()
-    p.background(255)
-    p.noiseSeed(p.random(100))
 
-    createSections(2, 4).forEach(([x, y]) => {
+    createQuintants(w, h, x, y).forEach(([x, y]) => {
       p.push()
       p.translate(x, y)
 
@@ -92,12 +108,9 @@ export default function grid4(p) {
         p.push()
         p.rotate((p.TWO_PI * i) / rotations)
         burst({
-          color: orange,
           count,
           size,
           offset,
-          x: p.noise(i),
-          y: p.noise(i),
         })
         p.pop()
       })
@@ -107,12 +120,9 @@ export default function grid4(p) {
         p.push()
         p.rotate((p.TWO_PI * i) / rotations)
         burst({
-          color: red,
           count,
           size,
           offset,
-          x: p.noise(i),
-          y: p.noise(i),
         })
         p.pop()
       })
@@ -120,17 +130,22 @@ export default function grid4(p) {
     })
   }
 
-  function burst({ color, count, size, offset, x, y }) {
+  function burst({ count, size, offset }) {
     p.noStroke()
-    p.noiseSeed(p.random([1, 100]))
+    p.noiseSeed(p.random(1, 100))
 
     for (let i = 0; i < count; i++) {
-      p.fill(color())
-      p.ellipse(
-        p.noise(i) * offset,
-        p.noise(i) * offset,
-        x * p.random([0, size]),
-        y * p.random([0, size]),
+      const color = colors[i % colors.length]()
+      p.stroke(setAlpha(color, 20))
+      p.fill(color)
+      const r = () => p.noise(i) * p.random(1, 10)
+      p.triangle(
+        0,
+        offset + r(),
+        offset,
+        offset + r(),
+        size,
+        size,
       )
     }
   }

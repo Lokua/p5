@@ -24,7 +24,7 @@ export function randomInt(minimum, maximum) {
   )
 }
 
-export const randomBool = () => randomInt(1) > 0.5
+export const randomBool = () => randomInt(1) > 0
 
 export function uuid(length = 5) {
   const letters = 'abcdefghijklmnopqrstuvwxyz'
@@ -94,4 +94,31 @@ export function primes(n) {
     }
   }
   return array
+}
+
+// default 2 and 4 will create a grid like:
+// +-------+
+// | X   X |
+// |   X   |
+// | X   X |
+// +-------+
+export function createQuintants(w, h, a = 2, b = 4) {
+  return [
+    // center
+    [w / a, h / a],
+    // top left
+    [w / b, h / b],
+    // top-right
+    [w / a + w / b, h / b],
+    // bottom left
+    [w / b, h / a + h / b],
+    // bottom right
+    [w / a + w / b, h / a + h / b],
+  ]
+}
+
+export function setAlpha(color, alpha) {
+  const copy = color.levels.slice()
+  copy[3] = alpha
+  return copy
 }
