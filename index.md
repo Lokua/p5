@@ -192,3 +192,12 @@
 
 ## sn2-363vo.png
 <img src="images/1000x/sn2-363vo.png" alt="sn2-363vo.png" width="500">
+
+## sphereOfCubes-275s5.png
+<img src="images/1000x/sphereOfCubes-275s5.png" alt="sphereOfCubes-275s5.png" width="500">
+
+## tstrip-x72kd.png
+<img src="images/1000x/tstrip-x72kd.png" alt="tstrip-x72kd.png" width="500">
+
+## tstrip-z4fa6.png
+<img src="images/1000x/tstrip-z4fa6.png" alt="tstrip-z4fa6.png" width="500">

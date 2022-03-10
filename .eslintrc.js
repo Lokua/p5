@@ -7,7 +7,8 @@ module.exports = {
     'no-unused-vars': [
       'error',
       {
-        varsIgnorePattern: 'cross',
+        varsIgnorePattern: 'cross|u',
+        argsIgnorePattern: 'cross|u',
       },
     ],
   },

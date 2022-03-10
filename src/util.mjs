@@ -123,6 +123,16 @@ export function setAlpha(color, alpha) {
   return copy
 }
 
+export function toXY(index, width) {
+  const y = index / width
+  const x = index % width
+  return [x, y]
+}
+
+export function fromXY(width, x, y) {
+  return x + width * y
+}
+
 export class P5Helpers {
   constructor(p) {
     this.p = p
@@ -132,5 +142,23 @@ export class P5Helpers {
     this.p.push()
     fn()
     this.p.pop()
+  }
+
+  xToLongitude(resolution, x) {
+    return this.p.map(x, 0, resolution, 0, this.p.PI)
+  }
+
+  yToLatitude(resolution, y) {
+    return this.p.map(y, 0, resolution, 0, this.p.TWO_PI)
+  }
+
+  geographicToCartesian(longitude, latitude, radius) {
+    const x =
+      radius * this.p.sin(longitude) * this.p.cos(latitude)
+    const y =
+      radius * this.p.sin(longitude) * this.p.sin(latitude)
+    const z = radius * this.p.cos(longitude)
+
+    return [x, y, z]
   }
 }

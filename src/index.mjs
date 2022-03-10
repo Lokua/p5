@@ -35,8 +35,8 @@ function init(sketch) {
       // note: width and height of 500 renders a 1000x1000 image due to
       // default pixel density
       p.pixelDensity(6)
-      p.rectMode(p.CENTER)
-      p.ellipseMode(p.CENTER)
+      // p.rectMode(p.CENTER)
+      // p.ellipseMode(p.CENTER)
       const { canvas } = setup()
       canvas.parent('sketch')
     }

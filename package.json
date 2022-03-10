@@ -5,9 +5,11 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.mjs",
+    "lint": "eslint \"src/**/*.mjs\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "resize": "node scripts/resizeImages.mjs",
-    "generate-markdown-index": "node scripts/generateMarkdownIndex.mjs"
+    "generate-markdown-index": "node scripts/generateMarkdownIndex.mjs",
+    "build": "npm run resize && npm run generate-markdown-index"
   },
   "keywords": [],
   "author": "",
