@@ -160,6 +160,15 @@
 ## burst3-yo7xc.png
 <img src="images/1000x/burst3-yo7xc.png" alt="burst3-yo7xc.png" width="500">
 
+## collatz-1n0q9.png
+<img src="images/1000x/collatz-1n0q9.png" alt="collatz-1n0q9.png" width="500">
+
+## collatz-ak30t.png
+<img src="images/1000x/collatz-ak30t.png" alt="collatz-ak30t.png" width="500">
+
+## collatz-v20v.png
+<img src="images/1000x/collatz-v20v.png" alt="collatz-v20v.png" width="500">
+
 ## grid3-1v3cb--median=17.png
 <img src="images/1000x/grid3-1v3cb--median=17.png" alt="grid3-1v3cb--median=17.png" width="500">
 
@@ -222,6 +231,39 @@
 
 ## sphereOfCubes-u0688.png
 <img src="images/1000x/sphereOfCubes-u0688.png" alt="sphereOfCubes-u0688.png" width="500">
+
+## spiral-4003b.png
+<img src="images/1000x/spiral-4003b.png" alt="spiral-4003b.png" width="500">
+
+## spiral-6o8f4.png
+<img src="images/1000x/spiral-6o8f4.png" alt="spiral-6o8f4.png" width="500">
+
+## spiral-73hg.png
+<img src="images/1000x/spiral-73hg.png" alt="spiral-73hg.png" width="500">
+
+## spiral-7bbz2.png
+<img src="images/1000x/spiral-7bbz2.png" alt="spiral-7bbz2.png" width="500">
+
+## spiral-8o435.png
+<img src="images/1000x/spiral-8o435.png" alt="spiral-8o435.png" width="500">
+
+## spiral-ky301.png
+<img src="images/1000x/spiral-ky301.png" alt="spiral-ky301.png" width="500">
+
+## spiral-m4l1.png
+<img src="images/1000x/spiral-m4l1.png" alt="spiral-m4l1.png" width="500">
+
+## spiral-o0sq7.png
+<img src="images/1000x/spiral-o0sq7.png" alt="spiral-o0sq7.png" width="500">
+
+## spiral-qyv7o.png
+<img src="images/1000x/spiral-qyv7o.png" alt="spiral-qyv7o.png" width="500">
+
+## spiral-ryv9j.png
+<img src="images/1000x/spiral-ryv9j.png" alt="spiral-ryv9j.png" width="500">
+
+## spiral-tvb8s.png
+<img src="images/1000x/spiral-tvb8s.png" alt="spiral-tvb8s.png" width="500">
 
 ## tstrip-08f0m.png
 <img src="images/1000x/tstrip-08f0m.png" alt="tstrip-08f0m.png" width="500">
