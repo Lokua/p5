@@ -8,15 +8,15 @@ export default function sphereOfCubes(p, u) {
     controls: {
       cameraX: new Range({
         name: 'cameraX',
-        value: 10,
-        min: 0,
-        max: 100,
+        value: 0,
+        min: -400,
+        max: 400,
       }),
       cameraY: new Range({
         name: 'cameraY',
-        value: 10,
-        min: 0,
-        max: 100,
+        value: 0,
+        min: -400,
+        max: 400,
       }),
       resolution: new Range({
         name: 'resolution',
@@ -30,6 +30,24 @@ export default function sphereOfCubes(p, u) {
         min: 1,
         max: 500,
       }),
+      boxSize: new Range({
+        name: 'boxSize',
+        value: 10,
+        min: 1,
+        max: 100,
+      }),
+      colorRange: new Range({
+        name: 'colorRange',
+        value: 100,
+        min: 1,
+        max: 200,
+      }),
+      colorOffset: new Range({
+        name: 'colorOffset',
+        value: 0,
+        min: 0,
+        max: 100,
+      }),
     },
     inputHandler() {
       !p.isLooping() && draw()
@@ -39,7 +57,8 @@ export default function sphereOfCubes(p, u) {
   function setup() {
     controlPanel.init()
     const canvas = p.createCanvas(w, h, p.WEBGL)
-    // p.noLoop()
+    p.noFill()
+    p.colorMode(p.HSB, 1)
 
     return {
       canvas,
@@ -47,14 +66,17 @@ export default function sphereOfCubes(p, u) {
   }
 
   function draw() {
-    const { resolution, radius } = controlPanel.values()
+    const {
+      resolution,
+      radius,
+      boxSize,
+      colorRange,
+      colorOffset,
+    } = controlPanel.values()
 
     setCamera()
 
     p.background(0)
-    p.stroke(255)
-    p.fill(255, 100)
-    p.lights()
 
     u.pushPop(() => {
       for (let i = 0; i < resolution; i++) {
@@ -67,8 +89,14 @@ export default function sphereOfCubes(p, u) {
             radius,
           )
           u.pushPop(() => {
+            p.stroke(
+              p.fract(i / colorRange + colorOffset * 0.01),
+              1,
+              1,
+              0.1,
+            )
             p.translate(x, y, z)
-            p.box(10, 10, 10)
+            p.box(boxSize, boxSize, boxSize)
           })
         }
       }
@@ -80,20 +108,8 @@ export default function sphereOfCubes(p, u) {
 
     p.camera(
       // eye
-      p.map(
-        0,
-        controlPanel.controls.cameraX.max,
-        cameraX,
-        -w / 2,
-        w / 2,
-      ),
-      p.map(
-        0,
-        controlPanel.controls.cameraY.max,
-        cameraY,
-        -h / 2,
-        h / 2,
-      ),
+      cameraX,
+      cameraY,
       h / 2 / p.tan(p.PI / 6),
       // center
       0,

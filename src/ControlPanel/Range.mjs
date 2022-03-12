@@ -20,7 +20,7 @@ export default class Range extends Control {
   html() {
     return super.html(`
       <input 
-        id="sin-amp" 
+        id="${this.id}" 
         type="range" 
         min="${this.min}" 
         max="${this.max}" 
