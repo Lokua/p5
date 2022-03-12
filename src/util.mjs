@@ -1,3 +1,5 @@
+export const PHI = (1 + Math.sqrt(5)) / 2
+
 export function times(n, fn) {
   return Array(n)
     .fill(null)
