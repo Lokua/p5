@@ -8,7 +8,7 @@ export default function sphereOfCubes(p, u) {
     controls: {
       cameraX: new Range({
         name: 'cameraX',
-        value: 0,
+        value: -160,
         min: -400,
         max: 400,
       }),
@@ -75,8 +75,8 @@ export default function sphereOfCubes(p, u) {
     } = controlPanel.values()
 
     setCamera()
-
     p.background(0)
+    p.lights()
 
     u.pushPop(() => {
       for (let i = 0; i < resolution; i++) {

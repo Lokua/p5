@@ -7,8 +7,21 @@ export default class ControlPanel {
     inputHandler,
   }) {
     this.controls = controls
+    this.validateControls()
     this.selector = selector
     this.inputHandler = inputHandler
+  }
+
+  validateControls() {
+    Object.entries(this.controls).forEach(
+      ([key, { name }]) => {
+        if (key !== name) {
+          throw new Error(
+            `Invalid control name "${name}" provided for key "${key}"`,
+          )
+        }
+      },
+    )
   }
 
   init() {

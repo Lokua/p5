@@ -2,13 +2,12 @@ import ControlPanel, {
   Range,
 } from '../ControlPanel/index.mjs'
 
-export default function tstrip(p, u) {
+export default function tstrip(p) {
   const [w, h] = [500, 500]
   const randomInts = []
   const scale = 2
   let flying = 0
   let index = 0
-  let direction = 1
 
   const controlPanel = new ControlPanel({
     controls: {
@@ -36,14 +35,14 @@ export default function tstrip(p, u) {
         min: 0,
         max: 100,
       }),
-      colorRangeMin: new Range({
-        name: 'colorRangeMin',
+      colorOffset: new Range({
+        name: 'colorOffset',
         value: 0,
         min: 0,
         max: 100,
       }),
-      colorRangeMax: new Range({
-        name: 'colorRangeMax',
+      colorRange: new Range({
+        name: 'colorRange',
         value: 100,
         min: 0,
         max: 100,
@@ -55,12 +54,8 @@ export default function tstrip(p, u) {
         max: 1000,
       }),
     },
-    inputHandler(e) {
+    inputHandler() {
       !p.isLooping() && draw()
-
-      if (e.target.id.startsWith('colorRange')) {
-        index = controlPanel.controls.colorRangeMin.value
-      }
     },
   })
 
@@ -85,8 +80,8 @@ export default function tstrip(p, u) {
   function draw() {
     const {
       saturation,
-      colorRangeMin,
-      colorRangeMax,
+      colorOffset,
+      colorRange,
       noise,
     } = controlPanel.values()
     const count = w / scale
@@ -98,8 +93,8 @@ export default function tstrip(p, u) {
     const colors = createColors({
       count,
       saturation,
-      colorRangeMin,
-      colorRangeMax,
+      colorOffset,
+      colorRange,
     })
 
     setCamera()
@@ -121,13 +116,7 @@ export default function tstrip(p, u) {
       p.endShape()
     }
 
-    if (index === colorRangeMax) {
-      direction = -1
-    } else if (index === colorRangeMin) {
-      direction = 1
-    }
-
-    index = (index + direction) % count
+    index = (index + 1) % count
   }
 
   function setCamera() {
@@ -171,25 +160,14 @@ export default function tstrip(p, u) {
     return terrain
   }
 
-  function createColors({
-    count,
-    saturation,
-    colorRangeMin,
-    colorRangeMax,
-  }) {
+  function createColors({ count, saturation, colorRange }) {
     return Array(count)
       .fill()
       .map((_, index) =>
         p.color(
-          p.map(
-            index,
-            0,
-            count,
-            colorRangeMin,
-            colorRangeMax,
-          ),
-          saturation,
-          randomInts[index],
+          p.map(index, 0, count, 0, colorRange),
+          index % 17 === 0 ? 100 : saturation,
+          index % 7 === 0 ? 100 : randomInts[index],
         ),
       )
   }

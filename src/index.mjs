@@ -15,6 +15,7 @@ async function loadInitialSketch() {
       )
       new p5(init(sketch.default))
     } catch (error) {
+      console.error(error)
       localStorage.removeItem('lastSketch')
       window.location.reload()
     }
