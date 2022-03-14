@@ -163,8 +163,17 @@
 ## collatz-1n0q9.png
 <img src="images/1000x/collatz-1n0q9.png" alt="collatz-1n0q9.png" width="500">
 
+## collatz-47v2z.png
+<img src="images/1000x/collatz-47v2z.png" alt="collatz-47v2z.png" width="500">
+
+## collatz-9j1a9.png
+<img src="images/1000x/collatz-9j1a9.png" alt="collatz-9j1a9.png" width="500">
+
 ## collatz-ak30t.png
 <img src="images/1000x/collatz-ak30t.png" alt="collatz-ak30t.png" width="500">
+
+## collatz-dgh8q.png
+<img src="images/1000x/collatz-dgh8q.png" alt="collatz-dgh8q.png" width="500">
 
 ## collatz-v20v.png
 <img src="images/1000x/collatz-v20v.png" alt="collatz-v20v.png" width="500">
