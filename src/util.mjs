@@ -1,4 +1,5 @@
 export const PHI = (1 + Math.sqrt(5)) / 2
+export const FRAMERATE_BPM_130 = Math.round(34.67)
 
 export function times(n, fn) {
   return Array(n)
@@ -162,5 +163,23 @@ export class P5Helpers {
     const z = radius * this.p.cos(longitude)
 
     return [x, y, z]
+  }
+}
+
+export class BidirectionalCounter {
+  constructor(min, max) {
+    this.min = min
+    this.max = max
+    this.direction = 1
+    this.count = min
+  }
+
+  tick() {
+    if (this.count === this.min) {
+      this.direction = 1
+    } else if (this.count === this.max) {
+      this.direction = -1
+    }
+    this.count += this.direction
   }
 }

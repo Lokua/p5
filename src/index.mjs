@@ -3,6 +3,10 @@ import bus from './bus.mjs'
 import defaultSketch from './sketches/sketch.mjs'
 import { P5Helpers } from './util.mjs'
 
+let canvasElement
+let recording = false
+const recordedImages = []
+
 loadInitialSketch()
 
 async function loadInitialSketch() {
@@ -26,6 +30,8 @@ async function loadInitialSketch() {
 
 function init(sketch) {
   return (p) => {
+    window.p = p
+
     const { draw, setup, metadata, destroy } = sketch(
       p,
       new P5Helpers(p),
@@ -36,13 +42,18 @@ function init(sketch) {
       // note: width and height of 500 renders a 1000x1000 image due to
       // default pixel density
       p.pixelDensity(6)
-      // p.rectMode(p.CENTER)
-      // p.ellipseMode(p.CENTER)
       const { canvas } = setup()
       canvas.parent('sketch')
+      canvasElement = canvas.elt
     }
 
-    p.draw = draw
+    p.draw = () => {
+      draw()
+
+      if (recording) {
+        recordedImages.push(canvasElement.toDataURL())
+      }
+    }
 
     setupPage({
       p,
@@ -131,11 +142,42 @@ function setupPage({ p, metadata, destroy }) {
 
   async function loadSketch(name) {
     destroy?.()
+    // capturer = null
     removeEventListeners()
     p.remove()
     const sketch = await import(sketchNameToPath(name))
     new p5(init(sketch.default))
     localStorage.setItem('lastSketch', name)
+  }
+
+  async function onClickRecord() {
+    if (!recording) {
+      console.info('recording started')
+      recording = true
+      $('#record-button').textContent = 'RECORDING'
+      // capturer.start()
+    } else {
+      // capturer.stop()
+      recording = false
+      console.info('recording stopped')
+      $('#record-button').textContent = 'record'
+      // capturer.save()
+      const response = await fetch('/recording', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          metadata,
+          recordedImages,
+        }),
+      })
+
+      console.info(
+        'recording response status:',
+        response.status,
+      )
+    }
   }
 
   function addEventListeners() {
@@ -145,6 +187,10 @@ function setupPage({ p, metadata, destroy }) {
     $('#loop-button').addEventListener('click', toggleLoop)
     $('#debug-button').addEventListener('click', debug)
     $('#sketches').addEventListener('click', onClickSketch)
+    $('#record-button').addEventListener(
+      'click',
+      onClickRecord,
+    )
     body.addEventListener('keyup', onKeyUp)
   }
 
@@ -160,6 +206,10 @@ function setupPage({ p, metadata, destroy }) {
     $('#sketches').removeEventListener(
       'click',
       onClickSketch,
+    )
+    $('#record-button').removeEventListener(
+      'click',
+      onClickRecord,
     )
     body.removeEventListener('keyup', onKeyUp)
   }

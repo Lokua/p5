@@ -1,13 +1,20 @@
 import ControlPanel, {
   Range,
 } from '../ControlPanel/index.mjs'
+import { FRAMERATE_BPM_130 } from '../util.mjs'
 
 export default function tstrip(p) {
   const [w, h] = [500, 500]
   const randomInts = []
   const scale = 2
+  const frameRate = FRAMERATE_BPM_130
   let flying = 0
   let index = 0
+
+  const metadata = {
+    name: 'tstrip',
+    frameRate,
+  }
 
   const controlPanel = new ControlPanel({
     controls: {
@@ -178,8 +185,6 @@ export default function tstrip(p) {
     destroy() {
       controlPanel.destroy()
     },
-    metadata: {
-      name: 'tstrip',
-    },
+    metadata,
   }
 }

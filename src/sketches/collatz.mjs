@@ -13,7 +13,7 @@ export default function collatzSketch(p) {
         name: 'count',
         value: 3000,
         min: 1,
-        max: 5000,
+        max: 10000,
       }),
       angle: new Range({
         name: 'angle',
@@ -53,7 +53,6 @@ export default function collatzSketch(p) {
     } = controlPanel.values()
 
     p.background(1)
-    p.stroke(0.25, 0.7, 0.5, 0.05)
 
     const angle = a * 0.01
 
@@ -73,9 +72,26 @@ export default function collatzSketch(p) {
 
       for (let j = 0; j < sequence.length; j++) {
         const v = sequence[j]
+        p.stroke(0, 0.05)
         p.rotate(isEven(v) ? angle : -angle)
         p.line(0, 0, 0, -length)
         p.translate(0, -length)
+        p.push()
+
+        if (j % 3 === 0) {
+          p.stroke(0, 0.1, 1, 0.1)
+          p.rotate(angle / 2)
+          p.push()
+          p.line(0, 0, 0, -length * 5)
+          p.pop()
+
+          // p.stroke(0, 0.1, 1, 0.1)
+          // p.rotate(-angle * 2)
+          // p.push()
+          // p.line(0, 0, 0, -length * 10)
+          // p.pop()
+        }
+        p.pop()
       }
     }
   }

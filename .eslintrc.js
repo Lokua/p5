@@ -2,14 +2,15 @@ module.exports = {
   extends: ['lokua'],
   globals: {
     p5: false,
+    CCapture: false,
   },
   rules: {
     'no-unused-vars': [
       'error',
       {
         // varsIgnorePattern: 'u',
-        // argsIgnorePattern: 'cross|u',
-        // ignoreRestSiblings: false,
+        // argsIgnorePattern: '^_',
+        ignoreRestSiblings: true,
       },
     ],
   },

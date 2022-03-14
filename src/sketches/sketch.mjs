@@ -1,9 +1,11 @@
 import ControlPanel, {
   Range,
 } from '../ControlPanel/index.mjs'
+import { BidirectionalCounter } from '../util.mjs'
 
 export default function sketch(p, { pushPop }) {
   const [w, h] = [500, 500]
+  const counter = new BidirectionalCounter(0, 100)
 
   const controlPanel = new ControlPanel({
     controls: {
@@ -35,8 +37,7 @@ export default function sketch(p, { pushPop }) {
     controlPanel.init()
     const canvas = p.createCanvas(500, 500)
 
-    p.noLoop()
-    p.noFill()
+    p.noStroke()
 
     return {
       canvas,
@@ -44,24 +45,17 @@ export default function sketch(p, { pushPop }) {
   }
 
   function draw() {
-    const { a, b } = controlPanel.values()
+    const { a } = controlPanel.values()
     p.background(255)
-    p.stroke(0, 40)
+    p.fill(255, 127, 63)
 
-    pushPop(() => {
-      p.translate(w / 2, h / 2)
-      shape(2 * a)
-    })
     pushPop(() => {
       p.translate(w / 2, h / 2)
       p.rotate(p.radians(45))
-      shape(3 * b)
+      p.circle(0, 0, a + counter.count)
     })
-  }
 
-  function shape(circleSize, squareSize = circleSize) {
-    p.circle(0, 0, circleSize)
-    p.square(0, 0, squareSize)
+    counter.tick()
   }
 
   return {
