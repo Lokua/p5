@@ -182,4 +182,41 @@ export class BidirectionalCounter {
     }
     this.count += this.direction
   }
+
+  get value() {
+    return this.count
+  }
 }
+
+export function chunk(array, chunkSize) {
+  if (!chunkSize) {
+    throw new Error('chunkSize must be greater than 0')
+  }
+
+  return array.reduce((chunked, value, i) => {
+    if (!(i % chunkSize)) {
+      chunked.push([])
+    }
+
+    chunked[chunked.length - 1].push(value)
+
+    return chunked
+  }, [])
+}
+
+export const post = (url, data) =>
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  })
+
+export const get = (url) =>
+  fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  }).then((res) => res.json())

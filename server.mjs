@@ -11,9 +11,16 @@ const getDirname = (importMetaUrl) =>
 
 const app = express()
 const port = 3000
+const recording = {
+  images: [],
+}
 
 const log = (...args) => {
-  console.info(c.cyan(...args))
+  console.info(
+    ...args.map((arg) =>
+      typeof arg === 'string' ? c.cyan(arg) : arg,
+    ),
+  )
 }
 
 app.use(express.static('src'))
@@ -30,20 +37,40 @@ app.get('/', (req, res) => {
   )
 })
 
-app.post('/recording', async (req, res) => {
+app.post('/recording/init', (req, res) => {
+  log('recording init', req.body)
+  recording.metadata = req.body.metadata
+  res.sendStatus(200)
+})
+
+app.post('/recording/chunk', (req, res) => {
+  const { index, chunk } = req.body
+  log('recieved chunk', index)
+  recording.images[index] = chunk
+  res.sendStatus(200)
+})
+
+app.post('/recording/done', async (req, res) => {
   const {
     metadata: { name, frameRate = 30 },
-    recordedImages,
-  } = req.body
-  const padCount = recordedImages.length.toString().length
+    images: imagesChunks,
+  } = recording
+
+  const images = imagesChunks.flat()
+  const padCount = images.length.toString().length
   const date = new Date()
   const folder = `./captures/${name}-${prettyDate(date)}`
 
-  log('creating folder', folder)
+  log('writing temporary png files', {
+    folder,
+    chunksLength: imagesChunks.length,
+    imagesCount: images.length,
+  })
+
   await fs.mkdir(folder)
 
   const writes = await Promise.all(
-    recordedImages.map(async (dataURL, index) => {
+    images.map(async (dataURL, index) => {
       const data = dataURL.slice(dataURL.indexOf(','))
       const filename = index
         .toString()

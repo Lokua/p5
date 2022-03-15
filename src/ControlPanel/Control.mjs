@@ -43,4 +43,11 @@ export default class Control {
       'span',
     ).textContent = this.value
   }
+
+  setValue(value) {
+    this.value = value
+    const element = this.#getElement()
+    element.querySelector('span').textContent = value
+    element.querySelector('input').value = value
+  }
 }
