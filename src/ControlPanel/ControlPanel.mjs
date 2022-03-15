@@ -2,14 +2,18 @@ export default class ControlPanel {
   static defaultSelector = '#dynamic-controls'
 
   constructor({
+    id,
     controls,
     selector = ControlPanel.defaultSelector,
     inputHandler,
+    attemptReload = false,
   }) {
+    this.id = id
     this.controls = controls
     this.validateControls()
     this.selector = selector
     this.inputHandler = inputHandler
+    this.attemptReload = attemptReload
   }
 
   validateControls() {
@@ -28,6 +32,13 @@ export default class ControlPanel {
     this.html()
     this.#mapControls((control) => control.bind())
     this.inputHandler && this.onInput(this.inputHandler)
+    if (this.attemptReload && this.id) {
+      console.log(
+        '[ControlPanel] restoring from localStorage',
+      )
+      this.localStorageKey = `ControlPanel-${this.id}`
+      this.#reloadControls()
+    }
   }
 
   html() {
@@ -38,7 +49,15 @@ export default class ControlPanel {
 
   onInput(fn) {
     this.#mapControls((control) => {
-      control.addInputListener(fn)
+      control.addInputListener((e) => {
+        fn(e)
+        if (this.attemptReload && this.id) {
+          localStorage.setItem(
+            this.localStorageKey,
+            JSON.stringify(this.values()),
+          )
+        }
+      })
     })
   }
 
@@ -64,4 +83,19 @@ export default class ControlPanel {
 
   #mapControls = (fn) =>
     Object.values(this.controls).map(fn)
+
+  #reloadControls = () => {
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem(this.localStorageKey),
+      )
+      this.#mapControls((control) => {
+        control.setValue(saved[control.name])
+      })
+    } catch (error) {
+      console.error(
+        '[ControlPanel] failed to restore from localStorage',
+      )
+    }
+  }
 }

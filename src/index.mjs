@@ -1,7 +1,6 @@
-import { $, uuid } from './util.mjs'
+import { $, uuid, chunk, P5Helpers, post } from './util.mjs'
 import bus from './bus.mjs'
 import defaultSketch from './sketches/sketch.mjs'
-import { P5Helpers } from './util.mjs'
 
 let canvasElement
 let recording = false
@@ -52,6 +51,12 @@ function init(sketch) {
 
       if (recording) {
         recordedImages.push(canvasElement.toDataURL())
+        if (recordedImages.length % 30 === 0) {
+          console.log(
+            'seconds captured (estimate):',
+            recordedImages.length / 30,
+          )
+        }
       }
     }
 
@@ -142,7 +147,6 @@ function setupPage({ p, metadata, destroy }) {
 
   async function loadSketch(name) {
     destroy?.()
-    // capturer = null
     removeEventListeners()
     p.remove()
     const sketch = await import(sketchNameToPath(name))
@@ -155,28 +159,27 @@ function setupPage({ p, metadata, destroy }) {
       console.info('recording started')
       recording = true
       $('#record-button').textContent = 'RECORDING'
-      // capturer.start()
     } else {
-      // capturer.stop()
-      recording = false
       console.info('recording stopped')
+      recording = false
       $('#record-button').textContent = 'record'
-      // capturer.save()
-      const response = await fetch('/recording', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          metadata,
-          recordedImages,
-        }),
+
+      await post('/recording/init', {
+        metadata,
       })
 
-      console.info(
-        'recording response status:',
-        response.status,
+      const requests = chunk(recordedImages, 100).map(
+        (chunk, index) =>
+          post('/recording/chunk', {
+            index,
+            chunk,
+          }),
       )
+
+      await Promise.all(requests)
+
+      const response = await post('/recording/done', {})
+      console.log(response.status)
     }
   }
 

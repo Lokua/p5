@@ -1,13 +1,18 @@
 import ControlPanel, {
   Range,
 } from '../ControlPanel/index.mjs'
+import { BidirectionalCounter } from '../util.mjs'
 
-export default function grid4(p) {
+export default function burst(p) {
   const [w, h] = [500, 500]
-
+  const counter = new BidirectionalCounter(1, 100)
+  const sizeCounter = new BidirectionalCounter(1, 80)
+  const offsetCounter = new BidirectionalCounter(1, 100)
   const rb = () => p.random() < 0.5
 
   const controlPanel = new ControlPanel({
+    id: 'burst',
+    attemptReload: true,
     controls: {
       size: new Range({
         name: 'size',
@@ -36,7 +41,7 @@ export default function grid4(p) {
   function setup() {
     controlPanel.init()
     const canvas = p.createCanvas(w, h)
-    p.noLoop()
+    // p.noLoop()
 
     return {
       canvas,
@@ -88,16 +93,25 @@ export default function grid4(p) {
       size,
       offset,
     })
+
+    counter.tick()
+    if (p.frameCount % 2 === 0) {
+      sizeCounter.tick()
+    }
+    if (p.frameCount % 3 === 0) {
+      offsetCounter.tick()
+    }
   }
 
   function burst({ count, x, y, size, offset }) {
     p.noStroke()
 
     for (let i = 0; i < count; i++) {
-      p.fill(p.random(200, 255), 0, 0, 200)
+      p.fill(p.random(200, 255), 0, counter.value, 200)
 
       const randomOffset = () =>
-        p.noise(offset * i) * offset
+        p.noise(offset * i) * (counter.value + offset) +
+        offsetCounter.value
 
       const xx = rb()
         ? x + randomOffset()
@@ -110,8 +124,8 @@ export default function grid4(p) {
       p.ellipse(
         yy,
         xx,
-        p.noise(size * i + x) * size,
-        p.noise(size * i + y) * size,
+        p.noise(size * i + x) * (size + sizeCounter.value),
+        p.noise(size * i + y) * (size + sizeCounter.value),
       )
     }
   }

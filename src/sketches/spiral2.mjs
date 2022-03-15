@@ -9,6 +9,8 @@ export default function spiral2(p) {
   const frameRate = FRAMERATE_BPM_130
 
   const controlPanel = new ControlPanel({
+    id: 'spiral2',
+    attemptReload: true,
     controls: {
       count: new Range({
         name: 'count',
@@ -30,11 +32,11 @@ export default function spiral2(p) {
         max: 1,
         step: 0.01,
       }),
-      frame: new Range({
-        name: 'frame',
-        value: 300,
+      gap: new Range({
+        name: 'gap',
+        value: 6,
         min: 1,
-        max: 1000,
+        max: 100,
       }),
     },
     inputHandler() {
@@ -48,7 +50,7 @@ export default function spiral2(p) {
 
     p.colorMode(p.HSB, 1)
     p.noStroke()
-    p.frameRate(34.67)
+    p.frameRate(FRAMERATE_BPM_130)
 
     return {
       canvas,
@@ -61,12 +63,12 @@ export default function spiral2(p) {
       count,
       size,
       radius: radiusControl,
+      gap,
     } = controlPanel.values()
 
     p.push()
     p.scale(w, h)
-    p.background(1, 0.02, 1)
-    p.fill(1)
+    p.background(0)
 
     const radius = Math.sqrt(radiusControl)
     const t = p.fract(p.frameCount / 500)
@@ -79,13 +81,13 @@ export default function spiral2(p) {
       const x = 0.5 + p.cos(angle * p.TWO_PI) * dist
       const y = 0.5 + p.sin(angle * p.TWO_PI) * dist
 
-      const sig = p.pow(cosn(f - t), 2)
+      const sig = p.pow(cosn(f - t * gap), 2)
       const r = f * sig * size
 
       const hue = p.fract(t + f * 0.5)
       const sat = 1
       const light = 0.6 * sig + 0.25
-      const color = p.color(hue, sat, light, 0.5)
+      const color = p.color(hue, sat, light)
       p.fill(color)
 
       p.circle(x, y, r)
