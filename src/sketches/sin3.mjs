@@ -9,7 +9,13 @@ export default function (p) {
   const [w, h] = [500, 500]
   let xx = 0
 
+  const metadata = {
+    name: 'sin3',
+  }
+
   const controlPanel = new ControlPanel({
+    id: metadata.name,
+    attemptReload: true,
     controls: {
       size: new Range({
         name: 'size',
@@ -93,8 +99,6 @@ export default function (p) {
     destroy() {
       controlPanel.destroy()
     },
-    metadata: {
-      name: 'sin3',
-    },
+    metadata,
   }
 }

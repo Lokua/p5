@@ -25,6 +25,7 @@ const log = (...args) => {
 
 app.use(express.static('src'))
 app.use(express.static('node_modules'))
+app.use('/assets', express.static('assets'))
 app.use(
   express.json({
     limit: 1e9,

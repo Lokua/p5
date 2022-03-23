@@ -3,27 +3,35 @@ import ControlPanel, {
 } from '../ControlPanel/index.mjs'
 import { BidirectionalCounter } from '../util.mjs'
 
-export default function sketch(p, { pushPop }) {
+export default function sketch(p) {
   const [w, h] = [500, 500]
-  const counter = new BidirectionalCounter(0, 100)
+  const counter = new BidirectionalCounter(-100, 100)
 
   const controlPanel = new ControlPanel({
+    id: 'sketch',
+    attemptReload: true,
     controls: {
       count: new Range({
         name: 'count',
         value: 100,
         min: 1,
-        max: 500,
+        max: 1000,
       }),
-      a: new Range({
-        name: 'a',
+      size: new Range({
+        name: 'size',
         value: 60,
         min: 1,
         max: 100,
       }),
-      b: new Range({
-        name: 'b',
-        value: 70,
+      radius: new Range({
+        name: 'radius',
+        value: 0,
+        min: 0,
+        max: 500,
+      }),
+      a: new Range({
+        name: 'a',
+        value: 2,
         min: 1,
         max: 100,
       }),
@@ -37,7 +45,11 @@ export default function sketch(p, { pushPop }) {
     controlPanel.init()
     const canvas = p.createCanvas(500, 500)
 
-    p.noStroke()
+    p.colorMode(p.HSB, 100)
+    p.noiseSeed(312)
+    p.angleMode(p.DEGRESS)
+    p.strokeCap(p.SQUARE)
+    p.background(255)
 
     return {
       canvas,
@@ -45,16 +57,24 @@ export default function sketch(p, { pushPop }) {
   }
 
   function draw() {
-    const { a } = controlPanel.values()
+    const { size, radius, count, a } = controlPanel.values()
+
     p.background(255)
-    p.fill(255, 127, 63)
 
-    pushPop(() => {
-      p.translate(w / 2, h / 2)
-      p.rotate(p.radians(45))
-      p.circle(0, 0, a + counter.count)
-    })
+    p.translate(w / 2, h / 2)
+    p.push()
 
+    for (let i = 0; i < count; i++) {
+      p.push()
+      p.stroke(0, 10)
+      p.rotate(p.sin(i) * a)
+      for (let j = 0; j < w / 2; j += 10) {
+        p.line(j, j, 0, size + p.noise(i, i * 2) * radius)
+      }
+      p.pop()
+    }
+
+    p.pop()
     counter.tick()
   }
 

@@ -28,6 +28,7 @@ export function randomInt(minimum, maximum) {
 }
 
 export const randomBool = () => randomInt(1) > 0
+export const randomSign = () => (randomBool() ? 1 : -1)
 
 export function uuid(length = 5) {
   const letters = 'abcdefghijklmnopqrstuvwxyz'
@@ -184,6 +185,7 @@ export class BidirectionalCounter {
   }
 
   get value() {
+    console.warn('value() is deprecated. use count')
     return this.count
   }
 }

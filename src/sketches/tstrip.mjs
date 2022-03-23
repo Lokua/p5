@@ -17,6 +17,8 @@ export default function tstrip(p) {
   }
 
   const controlPanel = new ControlPanel({
+    id: metadata.name,
+    attemptReload: true,
     controls: {
       cameraX: new Range({
         name: 'cameraX',

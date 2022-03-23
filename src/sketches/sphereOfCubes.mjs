@@ -4,7 +4,10 @@ import ControlPanel, {
 
 export default function sphereOfCubes(p, u) {
   const [w, h] = [500, 500]
+
   const controlPanel = new ControlPanel({
+    id: 'sphereOfCubes',
+    attemptReload: true,
     controls: {
       cameraX: new Range({
         name: 'cameraX',
@@ -70,12 +73,11 @@ export default function sphereOfCubes(p, u) {
       resolution,
       radius,
       boxSize,
-      colorRange,
-      colorOffset,
     } = controlPanel.values()
 
     setCamera()
-    p.background(0)
+    p.background(1)
+    p.stroke(0, 0.9)
     p.lights()
 
     u.pushPop(() => {
@@ -89,14 +91,8 @@ export default function sphereOfCubes(p, u) {
             radius,
           )
           u.pushPop(() => {
-            p.stroke(
-              p.fract(i / colorRange + colorOffset * 0.01),
-              1,
-              1,
-              0.1,
-            )
             p.translate(x, y, z)
-            p.box(boxSize, boxSize, boxSize)
+            p.circle(boxSize, boxSize, boxSize)
           })
         }
       }

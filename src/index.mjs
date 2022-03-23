@@ -31,10 +31,17 @@ function init(sketch) {
   return (p) => {
     window.p = p
 
-    const { draw, setup, metadata, destroy } = sketch(
-      p,
-      new P5Helpers(p),
-    )
+    const {
+      draw,
+      setup,
+      metadata,
+      destroy,
+      preload,
+    } = sketch(p, new P5Helpers(p))
+
+    if (preload) {
+      p.preload = preload
+    }
 
     p.setup = () => {
       // turns 500x500 into 3000x3000

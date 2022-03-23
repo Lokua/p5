@@ -1,9 +1,11 @@
 import ControlPanel, {
   Range,
 } from '../ControlPanel/index.mjs'
+import { BidirectionalCounter } from '../util.mjs'
 
 export default function grid4(p) {
   const [w, h] = [500, 500]
+  const counter = new BidirectionalCounter(0, 8)
 
   // default 2 and 4 will create a grid like:
   // +-------+
@@ -45,7 +47,7 @@ export default function grid4(p) {
       }),
       count: new Range({
         name: 'count',
-        value: 147,
+        value: 40,
         min: 1,
         max: 500,
       }),
@@ -58,7 +60,6 @@ export default function grid4(p) {
   function setup() {
     controlPanel.init()
     const canvas = p.createCanvas(w, h)
-    p.noLoop()
     p.angleMode(p.DEGREES)
 
     return {
@@ -92,6 +93,8 @@ export default function grid4(p) {
       createSections(2, 4).forEach(bustBursts(orange))
       p.resetMatrix()
     })
+
+    counter.tick()
   }
 
   function burst({ color, count, size, offset, x, y }) {
