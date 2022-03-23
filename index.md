@@ -199,20 +199,80 @@
 ## grid5-rhc13.png
 <img src="images/1000x/grid5-rhc13.png" alt="grid5-rhc13.png" width="500">
 
+## imageStudy2-039y1.png
+<img src="images/1000x/imageStudy2-039y1.png" alt="imageStudy2-039y1.png" width="500">
+
+## imageStudy2-638f5.png
+<img src="images/1000x/imageStudy2-638f5.png" alt="imageStudy2-638f5.png" width="500">
+
+## imageStudy2-7y7a2.png
+<img src="images/1000x/imageStudy2-7y7a2.png" alt="imageStudy2-7y7a2.png" width="500">
+
+## imageStudy2-8p1g0.png
+<img src="images/1000x/imageStudy2-8p1g0.png" alt="imageStudy2-8p1g0.png" width="500">
+
+## imageStudy2-b72yy.png
+<img src="images/1000x/imageStudy2-b72yy.png" alt="imageStudy2-b72yy.png" width="500">
+
+## imageStudy2-nwxh.png
+<img src="images/1000x/imageStudy2-nwxh.png" alt="imageStudy2-nwxh.png" width="500">
+
+## imageStudy2-ny76.png
+<img src="images/1000x/imageStudy2-ny76.png" alt="imageStudy2-ny76.png" width="500">
+
+## imageStudy2-ohxj.png
+<img src="images/1000x/imageStudy2-ohxj.png" alt="imageStudy2-ohxj.png" width="500">
+
+## imageStudy2-pa8.png
+<img src="images/1000x/imageStudy2-pa8.png" alt="imageStudy2-pa8.png" width="500">
+
 ## sin2-363vo.png
 <img src="images/1000x/sin2-363vo.png" alt="sin2-363vo.png" width="500">
 
 ## sin2-725fb.png
 <img src="images/1000x/sin2-725fb.png" alt="sin2-725fb.png" width="500">
 
+## sketch-17qa5.png
+<img src="images/1000x/sketch-17qa5.png" alt="sketch-17qa5.png" width="500">
+
 ## sketch-41kic.png
 <img src="images/1000x/sketch-41kic.png" alt="sketch-41kic.png" width="500">
+
+## sketch-a2l71.png
+<img src="images/1000x/sketch-a2l71.png" alt="sketch-a2l71.png" width="500">
 
 ## sketch-e52ua.png
 <img src="images/1000x/sketch-e52ua.png" alt="sketch-e52ua.png" width="500">
 
+## sketch-s8p84.png
+<img src="images/1000x/sketch-s8p84.png" alt="sketch-s8p84.png" width="500">
+
 ## sn2-363vo.png
 <img src="images/1000x/sn2-363vo.png" alt="sn2-363vo.png" width="500">
+
+## sphere2-1rvm.png
+<img src="images/1000x/sphere2-1rvm.png" alt="sphere2-1rvm.png" width="500">
+
+## sphere2-2c6rh.png
+<img src="images/1000x/sphere2-2c6rh.png" alt="sphere2-2c6rh.png" width="500">
+
+## sphere2-330k.png
+<img src="images/1000x/sphere2-330k.png" alt="sphere2-330k.png" width="500">
+
+## sphere2-4o1qm.png
+<img src="images/1000x/sphere2-4o1qm.png" alt="sphere2-4o1qm.png" width="500">
+
+## sphere2-7640z.png
+<img src="images/1000x/sphere2-7640z.png" alt="sphere2-7640z.png" width="500">
+
+## sphere2-9v8ec.png
+<img src="images/1000x/sphere2-9v8ec.png" alt="sphere2-9v8ec.png" width="500">
+
+## sphere2-g3741.png
+<img src="images/1000x/sphere2-g3741.png" alt="sphere2-g3741.png" width="500">
+
+## sphere2-xm4e8.png
+<img src="images/1000x/sphere2-xm4e8.png" alt="sphere2-xm4e8.png" width="500">
 
 ## sphereOfCubes-0gci.png
 <img src="images/1000x/sphereOfCubes-0gci.png" alt="sphereOfCubes-0gci.png" width="500">
@@ -342,3 +402,12 @@
 
 ## tstrip-z4fa6.png
 <img src="images/1000x/tstrip-z4fa6.png" alt="tstrip-z4fa6.png" width="500">
+
+## tstrip3-7dm3z.png
+<img src="images/1000x/tstrip3-7dm3z.png" alt="tstrip3-7dm3z.png" width="500">
+
+## tstrip3-el03m.png
+<img src="images/1000x/tstrip3-el03m.png" alt="tstrip3-el03m.png" width="500">
+
+## tstrip3-mt98.png
+<img src="images/1000x/tstrip3-mt98.png" alt="tstrip3-mt98.png" width="500">
