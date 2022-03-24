@@ -1,14 +1,23 @@
 import ControlPanel, {
   Range,
 } from '../ControlPanel/index.mjs'
-import { randomSign, FRAMERATE_BPM_130 } from '../util.mjs'
+import {
+  BidirectionalCounter,
+  randomSign,
+  FRAMERATE_BPM_130,
+} from '../util.mjs'
 
 export default function (p) {
   const [w, h] = [500, 500]
+  const offsetCounter = new BidirectionalCounter(1, 50)
+  const resolutionCounter = new BidirectionalCounter(
+    20,
+    100,
+  )
   let image
 
   const metadata = {
-    name: 'imageStudy2',
+    name: 'imageStudy3',
     frameRate: FRAMERATE_BPM_130 / 2,
   }
 
@@ -57,10 +66,12 @@ export default function (p) {
     // eslint-disable-next-line no-unused-vars
     const { resolution, offset } = controlPanel.values()
 
-    p.background(0)
+    // p.background(0)
+    const offs = offset + offsetCounter.count
+    const res = resolutionCounter.count
 
-    for (let y = 0; y < image.width; y += resolution) {
-      for (let x = 0; x < image.height; x += resolution) {
+    for (let y = 0; y < image.width; y += res) {
+      for (let x = 0; x < image.height; x += res) {
         p.push()
         const color = image.get(x, y)
         p.stroke(color)
@@ -69,19 +80,25 @@ export default function (p) {
         p.curve(
           x * randomSign(),
           y * randomSign(),
-          p.sin(x) * offset * randomSign(),
-          p.cos(x) * offset * randomSign(),
-          offset * randomSign(),
-          offset * randomSign(),
+          p.sin(x) * offs * randomSign(),
+          p.cos(x) * offs * randomSign(),
+          offs * randomSign(),
+          offs * randomSign(),
           p.sin(p.noise(x + p.random())) *
-            offset *
+            offs *
             randomSign(),
           p.cos(p.noise(y + p.random())) *
-            offset *
+            offs *
             randomSign(),
         )
         p.pop()
       }
+    }
+
+    offsetCounter.tick()
+
+    if (p.frameCount % 10 === 0) {
+      resolutionCounter.tick()
     }
   }
 

@@ -171,20 +171,31 @@ function setupPage({ p, metadata, destroy }) {
       recording = false
       $('#record-button').textContent = 'record'
 
+      try {
+        await doPost(50)
+      } catch (error) {
+        console.error(error)
+        console.info('trying again with smaller chunk size')
+        await doPost(25)
+      }
+    }
+
+    async function doPost(chunkSize) {
       await post('/recording/init', {
         metadata,
       })
 
-      const requests = chunk(recordedImages, 100).map(
-        (chunk, index) =>
-          post('/recording/chunk', {
+      const requests = chunk(recordedImages, chunkSize).map(
+        (chunk, index) => {
+          console.info('sending chunk', index)
+          return post('/recording/chunk', {
             index,
             chunk,
-          }),
+          })
+        },
       )
 
       await Promise.all(requests)
-
       const response = await post('/recording/done', {})
       console.log(response.status)
     }

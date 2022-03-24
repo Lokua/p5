@@ -41,6 +41,7 @@ app.get('/', (req, res) => {
 app.post('/recording/init', (req, res) => {
   log('recording init', req.body)
   recording.metadata = req.body.metadata
+  recording.images = []
   res.sendStatus(200)
 })
 
