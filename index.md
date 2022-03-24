@@ -226,6 +226,9 @@
 ## imageStudy2-pa8.png
 <img src="images/1000x/imageStudy2-pa8.png" alt="imageStudy2-pa8.png" width="500">
 
+## imageStudy2-r12qj.png
+<img src="images/1000x/imageStudy2-r12qj.png" alt="imageStudy2-r12qj.png" width="500">
+
 ## sin2-363vo.png
 <img src="images/1000x/sin2-363vo.png" alt="sin2-363vo.png" width="500">
 
