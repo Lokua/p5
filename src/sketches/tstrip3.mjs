@@ -1,13 +1,17 @@
 import ControlPanel, {
   Range,
 } from '../ControlPanel/index.mjs'
-import { FRAMERATE_BPM_130 } from '../util.mjs'
+import {
+  BidirectionalCounter,
+  FRAMERATE_BPM_130,
+} from '../util.mjs'
 
 export default function tstrip3(p) {
   const [w, h] = [500, 500]
   const randomInts = []
   const scale = 2
   const frameRate = FRAMERATE_BPM_130
+  const zCounter = new BidirectionalCounter(70, 350)
   let flying = 0
   let index = 0
 
@@ -82,11 +86,7 @@ export default function tstrip3(p) {
   }
 
   function draw() {
-    const {
-      saturation,
-      brightness,
-      noise,
-    } = controlPanel.values()
+    const { noise } = controlPanel.values()
     const count = w / scale
     const terrain = createTerrain(
       count,
@@ -113,20 +113,17 @@ export default function tstrip3(p) {
     }
 
     index = (index + 1) % count
+    zCounter.tick()
   }
 
   function setCamera() {
-    const {
-      cameraX,
-      cameraY,
-      cameraZ,
-    } = controlPanel.values()
+    const { cameraX, cameraY } = controlPanel.values()
 
     p.camera(
       // eye
       cameraX,
       cameraY,
-      cameraZ,
+      zCounter.count,
       // center
       0,
       0,

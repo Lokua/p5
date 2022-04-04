@@ -7,7 +7,7 @@ export default function tstrip2(p) {
   const [w, h] = [500, 500]
   const randomInts = []
   const scale = 2
-  const frameRate = FRAMERATE_BPM_130
+  const frameRate = FRAMERATE_BPM_130 / 4
   let flying = 0
   let index = 0
 
@@ -77,9 +77,11 @@ export default function tstrip2(p) {
   function setup() {
     controlPanel.init()
     const canvas = p.createCanvas(w, h, p.WEBGL)
+
     p.colorMode(p.HSB, 100)
     p.noiseSeed(617)
     p.noStroke()
+    p.frameRate(metadata.frameRate)
 
     Array(w)
       .fill()
