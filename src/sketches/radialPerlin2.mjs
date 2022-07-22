@@ -2,18 +2,22 @@ import ControlPanel, {
   Range,
 } from '../ControlPanel/index.mjs'
 
-export default function sketch(p) {
+export default function (p) {
   const [w, h] = [500, 500]
 
+  const metadata = {
+    name: 'radialPerlin2',
+  }
+
   const controlPanel = new ControlPanel({
-    id: 'sketch',
+    id: metadata.name,
     attemptReload: true,
     controls: {
       size: new Range({
         name: 'size',
         value: 60,
         min: 1,
-        max: 100,
+        max: 400,
       }),
       resolution: new Range({
         name: 'resolution',
@@ -27,6 +31,12 @@ export default function sketch(p) {
         value: 10,
         min: 1,
         max: 100,
+      }),
+      nPoints: new Range({
+        name: 'nPoints',
+        value: 100,
+        min: 1,
+        max: 400,
       }),
     },
     inputHandler() {
@@ -54,30 +64,35 @@ export default function sketch(p) {
       size,
       resolution,
       scale,
+      nPoints,
     } = controlPanel.values()
-    p.background(220)
-    p.stroke(0)
-    p.strokeWeight(4)
+    p.background(0)
+    p.stroke(0, 90)
+    p.strokeWeight(1)
+    p.fill(100, 50)
 
-    p.translate(w / 2, h / 2)
-    p.push()
-
-    p.beginShape()
-    for (let a = 0; a < p.TAU; a += 0.1) {
-      const x = size * p.cos(a)
-      const y = size * p.sin(a)
-      const n = p.map(
-        p.noise(x * resolution, y * resolution),
-        0,
-        1,
-        -scale,
-        scale,
-      )
-      p.curveVertex(x + n, y + n)
+    for (let i = 0; i < 10; i += 1) {
+      p.translate(w / 2, h / 2)
+      p.scale(3 - i * 0.05)
+      p.beginShape()
+      for (let a = 0; a < p.TAU; a += p.TAU / nPoints) {
+        const x = size * p.cos(a)
+        const y = size * p.sin(a)
+        const n = p.map(
+          p.noise(x * resolution, y * resolution),
+          0,
+          1,
+          -scale,
+          scale,
+        )
+        p.curveVertex(
+          (x + n) * (p.noise(x) + (n % i)),
+          (y + n) * (p.noise(y) + n),
+        )
+      }
+      p.endShape(p.CLOSE)
+      p.resetMatrix()
     }
-    p.endShape(p.CLOSE)
-
-    p.pop()
   }
 
   return {
@@ -86,8 +101,6 @@ export default function sketch(p) {
     destroy() {
       controlPanel.destroy()
     },
-    metadata: {
-      name: 'sketch',
-    },
+    metadata,
   }
 }
