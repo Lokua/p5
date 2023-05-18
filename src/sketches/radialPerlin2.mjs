@@ -1,9 +1,11 @@
 import ControlPanel, {
   Range,
 } from '../ControlPanel/index.mjs'
+import { BidirectionalCounter } from '../util.mjs'
 
 export default function (p) {
   const [w, h] = [500, 500]
+  const counter = new BidirectionalCounter(1, 100)
 
   const metadata = {
     name: 'radialPerlin2',
@@ -76,8 +78,8 @@ export default function (p) {
       p.scale(3 - i * 0.05)
       p.beginShape()
       for (let a = 0; a < p.TAU; a += p.TAU / nPoints) {
-        const x = size * p.cos(a)
-        const y = size * p.sin(a)
+        const x = p.cos(a)
+        const y = p.sin(a)
         const n = p.map(
           p.noise(x * resolution, y * resolution),
           0,
@@ -85,14 +87,13 @@ export default function (p) {
           -scale,
           scale,
         )
-        p.curveVertex(
-          (x + n) * (p.noise(x) + (n % i)),
-          (y + n) * (p.noise(y) + n),
-        )
+        p.curveVertex(x, y)
       }
-      p.endShape(p.CLOSE)
+      p.endShape()
       p.resetMatrix()
     }
+
+    counter.tick()
   }
 
   return {
