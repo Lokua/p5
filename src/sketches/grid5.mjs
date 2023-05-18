@@ -8,11 +8,27 @@ import {
 
 export default function grid5(p) {
   const [w, h] = [500, 500]
-  const frameRate = FRAMERATE_BPM_130 / 4
+  // const frameRate = FRAMERATE_BPM_130 / 4
+  const frameRate = FRAMERATE_BPM_130
   const strokeDeciders = []
   const fillDeciders = []
   const xCounter = new BidirectionalCounter(2, 24, 24)
   const yCounter = new BidirectionalCounter(2, 16, 16)
+  const strokeMinCounter = new BidirectionalCounter(0, 255)
+  const strokeMaxCounter = new BidirectionalCounter(0, 255)
+  const fillMinCounter = new BidirectionalCounter(0, 255)
+  const fillMaxCounter = new BidirectionalCounter(0, 255)
+  let phaseIndex = 0
+  const phases = [
+    { counter: fillMaxCounter, direction: 1 },
+    { counter: strokeMaxCounter, direction: 1 },
+    { counter: strokeMinCounter, direction: 1 },
+    { counter: fillMaxCounter, direction: -1 },
+    { counter: strokeMaxCounter, direction: -1 },
+    { counter: strokeMinCounter, direction: -1 },
+    { counter: fillMinCounter, direction: 1 },
+    { counter: fillMinCounter, direction: -1 },
+  ]
 
   const controlPanel = new ControlPanel({
     id: 'grid5',
@@ -23,30 +39,6 @@ export default function grid5(p) {
         value: 38,
         min: 2,
         max: 64,
-      }),
-      strokeMin: new Range({
-        name: 'strokeMin',
-        value: 0,
-        min: 0,
-        max: 255,
-      }),
-      strokeMax: new Range({
-        name: 'strokeMax',
-        value: 255,
-        min: 0,
-        max: 255,
-      }),
-      fillMin: new Range({
-        name: 'fillMin',
-        value: 255,
-        min: 0,
-        max: 255,
-      }),
-      fillMax: new Range({
-        name: 'fillMax',
-        value: 255,
-        min: 0,
-        max: 255,
       }),
     },
     inputHandler() {
@@ -76,13 +68,7 @@ export default function grid5(p) {
   }
 
   function draw() {
-    const {
-      count,
-      strokeMin,
-      strokeMax,
-      fillMin,
-      fillMax,
-    } = controlPanel.values()
+    const { count } = controlPanel.values()
     p.background(0)
 
     const n = Math.floor(w / count)
@@ -91,12 +77,22 @@ export default function grid5(p) {
     for (let x = 0; x < w; x += n) {
       for (let y = 0; y < h; y += n) {
         strokeDeciders[i] < 0.3
-          ? p.stroke(p.random(strokeMin, strokeMax))
-          : p.stroke(strokeMin)
+          ? p.stroke(
+              p.random(
+                strokeMinCounter.count,
+                strokeMaxCounter.count,
+              ),
+            )
+          : p.stroke(strokeMinCounter.count)
 
         fillDeciders[i] < 0.1
-          ? p.fill(p.random(fillMin, fillMax))
-          : p.fill(fillMax)
+          ? p.fill(
+              p.random(
+                fillMinCounter.count,
+                fillMaxCounter.count,
+              ),
+            )
+          : p.fill(fillMaxCounter.count)
 
         const rb = () => Boolean(p.noise(x) > 0.5)
         p.strokeWeight(rb() ? 1 : rb() ? 3 : 4)
@@ -116,6 +112,16 @@ export default function grid5(p) {
         xCounter.tick()
         yCounter.tick()
       }
+    }
+
+    const { counter, direction } = phases[phaseIndex]
+    if (
+      (direction === 1 && counter.count < counter.max) ||
+      (direction === -1 && counter.count > counter.min)
+    ) {
+      counter.tick()
+    } else {
+      phaseIndex = (phaseIndex + 1) % phases.length
     }
   }
 
