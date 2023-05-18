@@ -1,6 +1,10 @@
 export const PHI = (1 + Math.sqrt(5)) / 2
 export const FRAMERATE_BPM_130 = Math.round(34.67)
 
+export function isNumeric(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n)
+}
+
 export function times(n, fn) {
   return Array(n)
     .fill(null)
@@ -168,11 +172,11 @@ export class P5Helpers {
 }
 
 export class BidirectionalCounter {
-  constructor(min, max) {
+  constructor(min, max, initialValue) {
     this.min = min
     this.max = max
     this.direction = 1
-    this.count = min
+    this.count = initialValue ?? min
   }
 
   tick() {
