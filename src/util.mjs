@@ -173,6 +173,9 @@ export class P5Helpers {
 
 export class BidirectionalCounter {
   constructor(min, max, initialValue) {
+    console.warn(
+      '[BidirectionalCounter] deprecated. Use `src/Counter.mjs` instead.',
+    )
     this.min = min
     this.max = max
     this.direction = 1
@@ -185,6 +188,7 @@ export class BidirectionalCounter {
     } else if (this.count === this.max) {
       this.direction = -1
     }
+
     this.count += this.direction
   }
 

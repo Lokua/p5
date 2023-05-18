@@ -5,29 +5,36 @@ import {
   FRAMERATE_BPM_130,
   BidirectionalCounter,
 } from '../util.mjs'
+import Counter from '../Counter.mjs'
 
 export default function grid5(p) {
   const [w, h] = [500, 500]
-  // const frameRate = FRAMERATE_BPM_130 / 4
-  const frameRate = FRAMERATE_BPM_130
+  const frameRate = FRAMERATE_BPM_130 * 2
   const strokeDeciders = []
   const fillDeciders = []
   const xCounter = new BidirectionalCounter(2, 24, 24)
   const yCounter = new BidirectionalCounter(2, 16, 16)
-  const strokeMinCounter = new BidirectionalCounter(0, 255)
-  const strokeMaxCounter = new BidirectionalCounter(0, 255)
-  const fillMinCounter = new BidirectionalCounter(0, 255)
-  const fillMaxCounter = new BidirectionalCounter(0, 255)
+
+  const counterConfig = {
+    min: 0,
+    max: 255,
+    step: 1,
+  }
+  const strokeMinCounter = new Counter(counterConfig)
+  const strokeMaxCounter = new Counter(counterConfig)
+  const fillMinCounter = new Counter(counterConfig)
+  const fillMaxCounter = new Counter(counterConfig)
   let phaseIndex = 0
   const phases = [
-    { counter: fillMaxCounter, direction: 1 },
-    { counter: strokeMaxCounter, direction: 1 },
-    { counter: strokeMinCounter, direction: 1 },
-    { counter: fillMaxCounter, direction: -1 },
-    { counter: strokeMaxCounter, direction: -1 },
-    { counter: strokeMinCounter, direction: -1 },
-    { counter: fillMinCounter, direction: 1 },
-    { counter: fillMinCounter, direction: -1 },
+    fillMaxCounter,
+    strokeMaxCounter,
+    strokeMinCounter,
+    fillMaxCounter,
+    strokeMaxCounter,
+    fillMaxCounter,
+    strokeMinCounter,
+    fillMinCounter,
+    strokeMaxCounter,
   ]
 
   const controlPanel = new ControlPanel({
@@ -69,58 +76,57 @@ export default function grid5(p) {
 
   function draw() {
     const { count } = controlPanel.values()
-    p.background(0)
 
-    const n = Math.floor(w / count)
-    let i = 0
+    if (p.frameCount % 4 === 0) {
+      p.background(0)
 
-    for (let x = 0; x < w; x += n) {
-      for (let y = 0; y < h; y += n) {
-        strokeDeciders[i] < 0.3
-          ? p.stroke(
-              p.random(
-                strokeMinCounter.count,
-                strokeMaxCounter.count,
-              ),
-            )
-          : p.stroke(strokeMinCounter.count)
+      const n = Math.floor(w / count)
+      let i = 0
 
-        fillDeciders[i] < 0.1
-          ? p.fill(
-              p.random(
-                fillMinCounter.count,
-                fillMaxCounter.count,
-              ),
-            )
-          : p.fill(fillMaxCounter.count)
+      for (let x = 0; x < w; x += n) {
+        for (let y = 0; y < h; y += n) {
+          strokeDeciders[i] < 0.3
+            ? p.stroke(
+                p.random(
+                  strokeMinCounter.count,
+                  strokeMaxCounter.count,
+                ),
+              )
+            : p.stroke(strokeMinCounter.count)
 
-        const rb = () => Boolean(p.noise(x) > 0.5)
-        p.strokeWeight(rb() ? 1 : rb() ? 3 : 4)
+          fillDeciders[i] < 0.1
+            ? p.fill(
+                p.random(
+                  fillMinCounter.count,
+                  fillMaxCounter.count,
+                ),
+              )
+            : p.fill(fillMaxCounter.count)
 
-        const hn = n / 2 - 4
-        const r = () => p.noise(hn * x * y) * hn
+          const rb = () => Boolean(p.noise(x) > 0.5)
+          p.strokeWeight(rb() ? 1 : rb() ? 3 : 4)
 
-        p.rect(
-          x - r(),
-          y - r(),
-          r() * xCounter.count,
-          r() * yCounter.count,
-        )
+          const hn = n / 2 - 4
+          const r = () => p.noise(hn * x * y) * hn
 
-        i++
+          p.rect(
+            x - r(),
+            y - r(),
+            r() * xCounter.count,
+            r() * yCounter.count,
+          )
 
-        xCounter.tick()
-        yCounter.tick()
+          i++
+
+          xCounter.tick()
+          yCounter.tick()
+        }
       }
     }
 
-    const { counter, direction } = phases[phaseIndex]
-    if (
-      (direction === 1 && counter.count < counter.max) ||
-      (direction === -1 && counter.count > counter.min)
-    ) {
-      counter.tick()
-    } else {
+    phases[phaseIndex].tick()
+
+    if (p.frameCount % 255 === 0) {
       phaseIndex = (phaseIndex + 1) % phases.length
     }
   }

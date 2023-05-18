@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node --max-old-space-size=4096 server.mjs",
     "lint": "eslint \"src/**/*.mjs\"",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "uvu src \".*\\.spec\\.mjs\"",
     "resize": "node scripts/resizeImages.mjs",
     "generate-markdown-index": "node scripts/generateMarkdownIndex.mjs",
     "build": "npm run resize && npm run generate-markdown-index"
@@ -30,6 +30,7 @@
   "devDependencies": {
     "eslint": "7.20.0",
     "eslint-config-lokua": "9.0.3",
-    "prettier": "2.2.1"
+    "prettier": "2.2.1",
+    "uvu": "0.5.6"
   }
 }
