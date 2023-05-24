@@ -24,7 +24,7 @@
     "random-int": "2.0.1",
     "rimraf": "^3.0.2",
     "sharp": "^0.30.1",
-    "sharp-cli": "^1.15.0",
+    "sharp-cli": "^4.1.1",
     "socket.io": "3.1.2"
   },
   "devDependencies": {
