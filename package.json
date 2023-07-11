@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node --max-old-space-size=4096 server.mjs",
+    "start": "node --max-old-space-size=8192 server.mjs",
     "lint": "eslint \"src/**/*.mjs\"",
     "test": "uvu src \".*\\.spec\\.mjs\"",
     "resize": "node scripts/resizeImages.mjs",
