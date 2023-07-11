@@ -27,7 +27,7 @@
     "sharp-cli": "^4.1.1"
   },
   "devDependencies": {
-    "eslint": "7.20.0",
+    "eslint": "^7.32.0",
     "eslint-config-lokua": "9.0.3",
     "prettier": "2.2.1",
     "uvu": "0.5.6"
