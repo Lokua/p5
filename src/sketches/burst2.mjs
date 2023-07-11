@@ -1,11 +1,26 @@
 import ControlPanel, {
   Range,
 } from '../ControlPanel/index.mjs'
-import { BidirectionalCounter } from '../util.mjs'
+import Counter from '../Counter.mjs'
 
 export default function grid4(p) {
   const [w, h] = [500, 500]
-  const counter = new BidirectionalCounter(0, 8)
+  const counter = new Counter({
+    min: 2,
+    max: 8,
+  })
+  const sizeCounter = new Counter({
+    min: 2,
+    max: 100,
+  })
+  const countCounter = new Counter({
+    min: 10,
+    max: 66,
+  })
+  const offsetCounter = new Counter({
+    min: 0,
+    max: 500,
+  })
 
   // default 2 and 4 will create a grid like:
   // +-------+
@@ -26,28 +41,18 @@ export default function grid4(p) {
     [w / a + w / b, h / a + h / b],
   ]
 
+  const alpha = 90
   const rb = () => p.random() < 0.5
-  const red = () => p.color(p.random([200, 255]), 0, 0, 127)
-  const orange = () =>
-    p.color(p.random([200, 255]), 127, 0, 127)
+  const color1 = () =>
+    p.color(0, 0, p.random([200, 255]), alpha)
+  const color2 = () =>
+    p.color(p.random([200, 255]), 63, 99, alpha)
 
   const controlPanel = new ControlPanel({
     controls: {
-      size: new Range({
-        name: 'size',
-        value: 20,
-        min: 1,
-        max: 500,
-      }),
-      offset: new Range({
-        name: 'offset',
+      unused: new Range({
+        name: 'unused',
         value: 100,
-        min: 1,
-        max: 500,
-      }),
-      count: new Range({
-        name: 'count',
-        value: 40,
         min: 1,
         max: 500,
       }),
@@ -68,7 +73,6 @@ export default function grid4(p) {
   }
 
   function draw() {
-    const { count, offset, size } = controlPanel.values()
     p.background(0)
     p.noiseSeed(p.random(100))
 
@@ -76,9 +80,9 @@ export default function grid4(p) {
       otherShit?.()
       burst({
         color,
-        count,
-        size,
-        offset,
+        count: countCounter.count,
+        size: sizeCounter.count,
+        offset: offsetCounter.count,
         x,
         y,
       })
@@ -86,15 +90,23 @@ export default function grid4(p) {
 
     createSections(2, 4).forEach(([xx]) => {
       p.translate(xx, 0)
-      createSections(2, 4).forEach(bustBursts(red))
+      createSections(2, 4).forEach(bustBursts(color1))
       p.resetMatrix()
 
       p.translate(xx * -1, 0)
-      createSections(2, 4).forEach(bustBursts(orange))
+      createSections(2, 4).forEach(bustBursts(color2))
       p.resetMatrix()
     })
 
     counter.tick()
+    offsetCounter.tick()
+
+    if (p.frameCount % 3 === 0) {
+      countCounter.tick()
+    }
+    if (p.frameCount % 2 === 0) {
+      sizeCounter.tick()
+    }
   }
 
   function burst({ color, count, size, offset, x, y }) {

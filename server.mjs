@@ -38,6 +38,10 @@ app.get('/', (req, res) => {
   )
 })
 
+app.get('/sketches', async (req, res) => {
+  res.send(await fs.readdir('./src/sketches'))
+})
+
 app.post('/recording/init', (req, res) => {
   log('recording init', req.body)
   recording.metadata = req.body.metadata

@@ -1,10 +1,17 @@
-import { $, uuid, chunk, P5Helpers, post } from './util.mjs'
+import {
+  $,
+  uuid,
+  chunk,
+  P5Helpers,
+  get,
+  post,
+} from './util.mjs'
 import bus from './bus.mjs'
 import defaultSketch from './sketches/sketch.mjs'
 
 let canvasElement
 let recording = false
-const recordedImages = []
+let recordedImages = []
 
 loadInitialSketch()
 
@@ -92,20 +99,28 @@ function setupPage({ p, metadata, destroy }) {
   }
 
   addEventListeners()
-  applyActiveClassToLastLoadedSketch()
+  populateSketchesDropdown()
 
   function onKeyUp(e) {
     eventMap[e.key]?.()
   }
 
-  function applyActiveClassToLastLoadedSketch() {
-    document
-      .querySelectorAll('#sketches li')
-      .forEach((element) => {
-        if (element.textContent === metadata.name) {
-          element.classList.add('active')
-        }
+  async function populateSketchesDropdown() {
+    const sketches = await get('/sketches')
+    const sketchesSelect = $('#sketches-select')
+    sketchesSelect.innerHTML = sketches
+      .map((sketch) => {
+        const name = sketch.replace('.mjs', '')
+        return `<option value="${name}">${name}</option>`
       })
+      .join('\n')
+    sketchesSelect.value = localStorage.getItem(
+      'lastSketch',
+    )
+  }
+
+  function onSelectSketch(e) {
+    loadSketch(e.target.value)
   }
 
   function initBg() {
@@ -141,17 +156,6 @@ function setupPage({ p, metadata, destroy }) {
     bus.emit('debug')
   }
 
-  async function onClickSketch(e) {
-    if (e.target.tagName === 'LI') {
-      loadSketch(e.target.textContent)
-      const lastActiveElement = document.querySelector(
-        '#sketches .active',
-      )
-      lastActiveElement?.classList?.remove('active')
-      e.target.classList.add('active')
-    }
-  }
-
   async function loadSketch(name) {
     destroy?.()
     removeEventListeners()
@@ -165,6 +169,7 @@ function setupPage({ p, metadata, destroy }) {
     if (!recording) {
       console.info('recording started')
       recording = true
+      recordedImages = []
       $('#record-button').textContent = 'RECORDING'
     } else {
       console.info('recording stopped')
@@ -207,10 +212,13 @@ function setupPage({ p, metadata, destroy }) {
     $('#bg-button').addEventListener('click', changeBg)
     $('#loop-button').addEventListener('click', toggleLoop)
     $('#debug-button').addEventListener('click', debug)
-    $('#sketches').addEventListener('click', onClickSketch)
     $('#record-button').addEventListener(
       'click',
       onClickRecord,
+    )
+    $('#sketches-select').addEventListener(
+      'change',
+      onSelectSketch,
     )
     body.addEventListener('keyup', onKeyUp)
   }
@@ -224,13 +232,13 @@ function setupPage({ p, metadata, destroy }) {
       toggleLoop,
     )
     $('#debug-button').removeEventListener('click', debug)
-    $('#sketches').removeEventListener(
-      'click',
-      onClickSketch,
-    )
     $('#record-button').removeEventListener(
       'click',
       onClickRecord,
+    )
+    $('#sketches-select').removeEventListener(
+      'change',
+      onSelectSketch,
     )
     body.removeEventListener('keyup', onKeyUp)
   }

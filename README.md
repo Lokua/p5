@@ -19,9 +19,17 @@ Then navigate to http://localhost:3000 in browser
 
 ## Development
 
+A copy of ffmpeg must be available on your PATH.
+
+To get OSX to STFU about ffmpeg permissions run:
+
+```sh
+xattr -dr com.apple.quarantine /usr/local/bin/ffmpeg
+```
+
 To create a new sketch, copy one of the existing ones from
-the [sketches](src/sketches) folder then add its filename to
-the list in [index.html](src/index.html)
+the [sketches](src/sketches) folder. All sketches in this
+folder are available to load in the UI
 
 ## Learning Resources
 

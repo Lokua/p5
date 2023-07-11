@@ -2,6 +2,7 @@
 *:before,
 *:after {
   box-sizing: border-box;
+  font-family: 'Fira Code', monospace;
 }
 
 body {
@@ -12,10 +13,7 @@ body {
 
 button {
   min-width: 70px;
-}
-
-button:not(:last-child) {
-  margin-right: 2px;
+  margin: 2px;
 }
 
 ul {
@@ -46,6 +44,14 @@ li {
 #controls > header {
   display: flex;
   flex-wrap: wrap;
+}
+
+#controls > header > section:first-child {
+  margin-bottom: 16px;
+}
+
+select {
+  font-size: 16px;
 }
 
 #dynamic-controls {
