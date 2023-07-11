@@ -19,6 +19,8 @@ Then navigate to http://localhost:3000 in browser
 
 ## Development
 
+> TODO: move images to Git LFS!
+
 A copy of ffmpeg must be available on your PATH.
 
 To get OSX to STFU about ffmpeg permissions run:
