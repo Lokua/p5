@@ -1,4 +1,4 @@
-import { cross, isEven } from '../util.mjs'
+import { isEven } from '../util.mjs'
 
 export default function (p) {
   const [w, h] = [500, 500]
@@ -22,7 +22,7 @@ export default function (p) {
     for (let x = n; x < w; x += n) {
       for (let y = n; y < h; y += n) {
         p.stroke(0, 200)
-        p.strokeWeight(2)
+        p.strokeWeight(p.random(1, 5))
         let hn = p.random([0, 1])
           ? n / 2 - 4
           : p.noise(n) * n

@@ -1,9 +1,15 @@
 import ControlPanel, {
   Range,
 } from '../ControlPanel/index.mjs'
+import Counter from '../Counter.mjs'
 
 export default function sphereOfCubes(p, u) {
   const [w, h] = [500, 500]
+  const counter = new Counter({
+    min: -400,
+    max: 400,
+    initialValue: -400,
+  })
 
   const controlPanel = new ControlPanel({
     id: 'sphereOfCubes',
@@ -97,14 +103,16 @@ export default function sphereOfCubes(p, u) {
         }
       }
     })
+
+    counter.tick()
   }
 
   function setCamera() {
-    const { cameraX, cameraY } = controlPanel.values()
+    const { cameraY } = controlPanel.values()
 
     p.camera(
       // eye
-      cameraX,
+      counter.count,
       cameraY,
       h / 2 / p.tan(p.PI / 6),
       // center
