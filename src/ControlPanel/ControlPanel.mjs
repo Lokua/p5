@@ -16,6 +16,10 @@ export default class ControlPanel {
     this.selector = selector
     this.inputHandler = inputHandler
     this.attemptReload = attemptReload
+
+    if (this.attemptReload && !this.id) {
+      throw new Error('Cannot attemptReload without an id.')
+    }
   }
 
   validateControls() {
