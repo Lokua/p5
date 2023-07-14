@@ -127,6 +127,9 @@ function setupPage({ p, metadata, destroy }) {
     const storedBg =
       localStorage.getItem('backgroundColor') || BLACK
     setBg(storedBg)
+    $('#controls').style.backgroundColor =
+      localStorage.getItem('controlsBackgroundColor') ||
+      '#444'
     return backgroundColors.indexOf(storedBg)
   }
 
@@ -146,6 +149,15 @@ function setupPage({ p, metadata, destroy }) {
       backgroundColors[backgroundColorIndex]
     setBg(backgroundColor)
     localStorage.setItem('backgroundColor', backgroundColor)
+    const controlsBackgroundColor =
+      backgroundColor === WHITE ? '#ddd' : '#444'
+    $(
+      '#controls',
+    ).style.backgroundColor = controlsBackgroundColor
+    localStorage.setItem(
+      'controlsBackgroundColor',
+      controlsBackgroundColor,
+    )
   }
 
   function setBg(color) {
