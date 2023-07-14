@@ -1,7 +1,6 @@
 import ControlPanel, {
   Range,
 } from '../ControlPanel/index.mjs'
-// import Counter from '../Counter.mjs'
 import { mapTimes } from '../util.mjs'
 
 export default function lerp(p) {
@@ -24,7 +23,7 @@ export default function lerp(p) {
       pointSize: new Range({
         name: 'pointSize',
         value: 1,
-        min: 1,
+        min: 0,
         max: 100,
       }),
     },
@@ -38,7 +37,6 @@ export default function lerp(p) {
     const canvas = p.createCanvas(w, h)
 
     p.colorMode(p.HSB, 1)
-    p.noStroke()
 
     return {
       canvas,
@@ -46,34 +44,36 @@ export default function lerp(p) {
   }
 
   function draw() {
-    const { nLines } = controlPanel.values()
+    const { nLines, pointSize } = controlPanel.values()
 
-    p.background(1, 0.02, 1)
+    p.background(0.5, 0.05, 1)
     p.fill(0)
 
     for (let y = 0; y < h; y += Math.floor(h / nLines)) {
-      drawLine(0, y, w, n)
+      drawLine(0, y, w, n, pointSize)
     }
 
     n = (n + 1) % Number.MAX_SAFE_INTEGER
   }
 
-  function drawLine(lineX, lineY, length, yNoiseRange) {
+  function drawLine(
+    lineX,
+    lineY,
+    length,
+    yNoiseRange,
+    pointSize,
+  ) {
     for (let x = lineX; x < lineX + length; x++) {
       const r = randoms[lineY * x]
       const noiseForY = p.noise(x % r)
       let y = lineY + noiseForY * yNoiseRange
-
-      p.stroke(p.noise(lineY * r), r / 10, p.noise(r * r))
-      p.strokeWeight(Math.floor(r / 3))
+      p.stroke(
+        p.lerp(p.noise(lineY * r), 0.75, 0.2),
+        1,
+        0.8,
+      )
+      p.strokeWeight(Math.floor(r / 3) + pointSize)
       p.point(x, y % h)
-
-      // p.stroke(p.noise(lineY * r), 0.1)
-      // p.strokeWeight(Math.floor(r / 3) * 2)
-      // p.point(x - 10, y % h)
-
-      // p.strokeWeight(Math.floor(r / 3) * 2)
-      // p.point(x + 10, y % h)
     }
   }
 
