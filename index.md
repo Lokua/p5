@@ -244,6 +244,15 @@
 ## imageStudy2-r12qj.png
 <img src="images/1000x/imageStudy2-r12qj.png" alt="imageStudy2-r12qj.png" width="500">
 
+## lerp2-1d10.png
+<img src="images/1000x/lerp2-1d10.png" alt="lerp2-1d10.png" width="500">
+
+## lerp2-m4x.png
+<img src="images/1000x/lerp2-m4x.png" alt="lerp2-m4x.png" width="500">
+
+## lerp3-r5ni0.png
+<img src="images/1000x/lerp3-r5ni0.png" alt="lerp3-r5ni0.png" width="500">
+
 ## radialPerlin-4grr9.png
 <img src="images/1000x/radialPerlin-4grr9.png" alt="radialPerlin-4grr9.png" width="500">
 

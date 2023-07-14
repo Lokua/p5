@@ -13,7 +13,7 @@ export function times(n, fn) {
     })
 }
 
-export function mapTimes(n, fn) {
+export function mapTimes(n, fn = (x) => x) {
   return Array(n)
     .fill(null)
     .map((_, index) => fn(index))
