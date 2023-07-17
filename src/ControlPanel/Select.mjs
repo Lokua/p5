@@ -20,7 +20,7 @@ export default class Select extends Control {
           (value) =>
             `<option value="${value}">${value}</option>`,
         )}
-      </button>
+      </select>
     `)
   }
 

@@ -27,14 +27,16 @@ export default class Toggle extends Control {
   }
 
   bind() {
-    this.getElement()
+    document
       .getElementById(this.id)
       .addEventListener('click', this.onClick)
   }
 
   addInputListener(fn) {
     super.addInputListener(fn)
-    this.getElement().addEventListener('click', fn)
+    document
+      .getElementById(this.id)
+      .addEventListener('click', fn)
   }
 
   onClick = () => {

@@ -3,7 +3,6 @@ import ControlPanel, {
   Toggle,
   createBlendMode,
 } from '../ControlPanel/index.mjs'
-import { isEven } from '../util.mjs'
 
 export default function lines(p) {
   const [w, h] = [500, 500]
@@ -62,7 +61,6 @@ export default function lines(p) {
   function draw() {
     const {
       nLines,
-      lineSpacing,
       strokeWeight,
       blendMode,
       debug,
@@ -76,7 +74,7 @@ export default function lines(p) {
     for (let y = 0, i = 0; y < h; y += h / nLines, i++) {
       drawLine({
         x: 0,
-        y: y + lineSpacing * (isEven(i) ? 1 : -1),
+        y,
         length: w,
       })
     }
@@ -84,7 +82,11 @@ export default function lines(p) {
     if (debug) {
       p.stroke(0.5, 1, 1, 0.5)
       p.strokeWeight(3)
-      drawLine(0, h / 2, w / 2)
+      drawLine({
+        x: 0,
+        y: h / 2,
+        length: w / 2,
+      })
     }
   }
 
