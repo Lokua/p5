@@ -68,7 +68,6 @@ export default function spiral(p) {
 
     const radius = Math.sqrt(radiusControl)
     const t = p.fract(frame / 1000)
-    // const t = p.fract(p.frameCount / 1000)
 
     for (let i = 1; i < count * invCosn(t); i++) {
       const f = i / count

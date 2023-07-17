@@ -1,5 +1,3 @@
-import { isNumeric } from '../util.mjs'
-
 export default class ControlPanel {
   static defaultSelector = '#dynamic-controls'
 
@@ -97,8 +95,8 @@ export default class ControlPanel {
       )
       this.#mapControls((control) => {
         const value = saved[control.name]
-        if (isNumeric(value)) {
-          control.setValue(saved[control.name])
+        if (value !== undefined && value !== null) {
+          control.setValue(value)
         } else {
           console.warn(
             '[ControlPanel] skipping nil value for',
@@ -107,6 +105,7 @@ export default class ControlPanel {
         }
       })
     } catch (error) {
+      console.error(error)
       console.warn(
         '[ControlPanel] failed to restore from localStorage',
       )

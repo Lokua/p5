@@ -1,5 +1,6 @@
 import ControlPanel, {
   Range,
+  createBlendMode,
 } from '../ControlPanel/index.mjs'
 import { isEven } from '../util.mjs'
 
@@ -41,6 +42,7 @@ export default function (p) {
         min: 1,
         max: 30,
       }),
+      blendMode: createBlendMode(),
     },
     inputHandler() {
       !p.isLooping() && draw()
@@ -65,10 +67,12 @@ export default function (p) {
       period,
       amplitude,
       frameRate,
+      blendMode,
     } = controlPanel.controls
     p.clear()
     p.background(0)
     p.frameRate(frameRate.value)
+    p.blendMode(p[blendMode] || p.BLEND)
 
     const n = Math.floor(w / size.value)
     const dx = ((Math.PI * 2) / period.value) * n

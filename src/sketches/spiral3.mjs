@@ -1,6 +1,7 @@
 // code forked from https://editor.p5js.org/MaximSchoemaker/sketches/hSUoBvPJB
 import ControlPanel, {
   Range,
+  createBlendMode,
 } from '../ControlPanel/index.mjs'
 import { PHI } from '../util.mjs'
 import Counter from '../Counter.mjs'
@@ -34,12 +35,7 @@ export default function spiral(p) {
         max: 1,
         step: 0.01,
       }),
-      // frame: new Range({
-      //   name: 'frame',
-      //   value: 300,
-      //   min: 1,
-      //   max: 1000,
-      // }),
+      blendMode: createBlendMode(),
     },
     inputHandler() {
       !p.isLooping() && draw()
@@ -63,8 +59,10 @@ export default function spiral(p) {
       count,
       size,
       radius: radiusControl,
+      blendMode,
     } = controlPanel.values()
 
+    p.blendMode(p[blendMode])
     p.push()
     p.scale(w, h)
     p.background(1, 0.02, 1)
