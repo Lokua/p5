@@ -230,3 +230,6 @@ export const get = (url) =>
       'Content-Type': 'application/json',
     },
   }).then((res) => res.json())
+
+export const arrayModLookup = (array, i) =>
+  array[i % array.length]

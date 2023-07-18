@@ -1,14 +1,18 @@
+/* eslint-disable no-unused-vars */
+// https://www.youtube.com/watch?v=lNKFhaOQJys&t=259s
+
 import ControlPanel, {
   Range,
   Toggle,
   createBlendMode,
 } from '../ControlPanel/index.mjs'
+import { arrayModLookup, mapTimes } from '../util.mjs'
 
 export default function lines(p) {
   const [w, h] = [500, 500]
 
   const metadata = {
-    name: 'lineStudy',
+    name: 'lineStudy5',
   }
 
   const controlPanel = new ControlPanel({
@@ -17,13 +21,18 @@ export default function lines(p) {
     controls: {
       nLines: new Range({
         name: 'nLines',
-        value: 10,
+        value: 1,
         min: 1,
         max: 100,
-        step: 1,
       }),
-      lineSpacing: new Range({
-        name: 'lineSpacing',
+      range: new Range({
+        name: 'range',
+        value: 2,
+        min: 0,
+        max: 100,
+      }),
+      segmentLength: new Range({
+        name: 'segmentLength',
         value: 10,
         min: 1,
         max: 100,
@@ -35,10 +44,6 @@ export default function lines(p) {
         max: 20,
       }),
       blendMode: createBlendMode(),
-      debug: new Toggle({
-        name: 'debug',
-        value: false,
-      }),
     },
     inputHandler() {
       !p.isLooping() && draw()
@@ -61,9 +66,10 @@ export default function lines(p) {
   function draw() {
     const {
       nLines,
+      segmentLength,
       strokeWeight,
       blendMode,
-      debug,
+      range,
     } = controlPanel.values()
     p.blendMode(p[blendMode])
     p.background(1, 0.02, 1)
@@ -71,31 +77,39 @@ export default function lines(p) {
     p.stroke(0)
     p.strokeWeight(strokeWeight)
 
-    for (let y = 0, i = 0; y < h; y += h / nLines, i++) {
-      if (i !== 0) {
-        drawLine({
-          x: 0,
-          y,
-          length: w,
-        })
-      }
-    }
-
-    if (debug) {
-      p.stroke(0.5, 1, 1, 0.5)
-      p.strokeWeight(3)
+    const n = Math.floor(h / nLines)
+    const pad = 8
+    for (let y = n; y < h - n; y += n) {
       drawLine({
-        x: 0,
-        y: h / 2,
-        length: w / 2,
+        x: pad,
+        y,
+        length: w - pad * 2,
+        segmentLength,
+        range,
       })
     }
   }
 
-  function drawLine({ x: lineX, y: lineY, length }) {
-    // < or <= ?
-    for (let x = lineX; x <= lineX + length; x++) {
-      p.point(x, lineY)
+  function drawLine({
+    x: lineX,
+    y: lineY,
+    length,
+    segmentLength,
+    range,
+  }) {
+    let prevX = lineX
+    let prevY = lineY
+    const r = p.map(lineY, 0, h, 0, range)
+
+    for (
+      let x = lineX + segmentLength;
+      x < lineX + length;
+      x += segmentLength
+    ) {
+      const y = lineY + p.random(-r, r)
+      p.line(prevX, prevY, x, y)
+      prevX = x
+      prevY = y
     }
   }
 

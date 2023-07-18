@@ -105,7 +105,6 @@ export default class ControlPanel {
         }
       })
     } catch (error) {
-      console.error(error)
       console.warn(
         '[ControlPanel] failed to restore from localStorage',
       )
