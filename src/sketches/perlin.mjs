@@ -40,6 +40,19 @@ export default function (p) {
         min: 1,
         max: 100,
       }),
+      nCircles: new Range({
+        name: 'nCircles',
+        value: 3,
+        min: 1,
+        max: 100,
+      }),
+      noiseFalloff: new Range({
+        name: 'noiseFalloff',
+        value: 0,
+        min: 0,
+        max: 10,
+        step: 0.01,
+      }),
       flip: new Toggle({
         name: 'flip',
         value: true,
@@ -54,7 +67,6 @@ export default function (p) {
     controlPanel.init()
     const canvas = p.createCanvas(w, h)
 
-    p.colorMode(p.HSB, 1)
     p.angleMode(p.DEGREES)
     p.noStroke()
 
@@ -70,12 +82,15 @@ export default function (p) {
       space,
       thinness,
       flip,
+      nCircles,
+      noiseFalloff,
     } = controlPanel.values()
     p.blendMode(p[blendMode])
+    p.noiseDetail(2, noiseFalloff)
     p.background(0)
-    p.fill(0.5, 0.7, 0.7)
+    p.fill(255)
 
-    for (let j = 0; j < 10; j++) {
+    for (let j = 0; j < nCircles; j++) {
       p.push()
       p.translate(w / 2, h / 2)
       for (let i = 0; i < 360; i += space) {
@@ -83,6 +98,11 @@ export default function (p) {
         const yOff = p.map(p.sin(i + phase), -1, 1, 0, 3)
         const n = p.noise(xOff, yOff, j)
         const hh = p.map(n, 0, 1, flip ? -size : 0, size)
+        p.fill(
+          p.map(p.sin(i), -1, 1, 100, j * 100),
+          p.map(hh, -size, size, 0, size),
+          p.map(n, 0, 1, 150, 255),
+        )
         p.rotate(space)
         p.rect((phase + j * 100) % 1000, 0, hh, thinness)
       }

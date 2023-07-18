@@ -11,10 +11,9 @@ import { arrayModLookup, mapTimes } from '../util.mjs'
 export default function (p) {
   const [w, h] = [500, 500]
   let phase = 0
-  let phaseMod = 0
 
   const metadata = {
-    name: 'perlin2',
+    name: 'perlin3',
   }
 
   const controlPanel = new ControlPanel({
@@ -46,6 +45,12 @@ export default function (p) {
         min: 0.1,
         max: 100,
         step: 0.1,
+      }),
+      nCircles: new Range({
+        name: 'nCircles',
+        value: 3,
+        min: 1,
+        max: 100,
       }),
       noiseFalloff: new Range({
         name: 'noiseFalloff',
@@ -85,24 +90,36 @@ export default function (p) {
       space,
       flip,
       thinness,
+      nCircles,
       noiseFalloff,
     } = controlPanel.values()
     p.blendMode(p[blendMode])
     p.noiseDetail(2, noiseFalloff)
     p.background(0)
-    p.fill(1)
+    p.fill(1, 0, 1, 0.8)
 
-    p.push()
-    p.translate(w / 2, h / 2)
-    for (let i = 0; i < 360; i += space) {
-      const xOff = p.map(p.cos(i), -1, 1, 0, 3)
-      const yOff = p.map(p.sin(i), -1, 1, 0, 3)
-      const n = p.noise(xOff, yOff)
-      const hh = p.map(n, 0, 1, flip ? -height : 0, height)
-      p.rotate(space)
-      p.rect(size, 0, hh, thinness)
+    for (let o = 1; o < nCircles + 1; o++) {
+      p.push()
+      p.translate(w / 2, h / 2)
+      for (let ii = 0; ii < 360; ii += space) {
+        const i = (ii - o * 30) % 360
+        const xOff = p.map(p.cos(i), -1, 1, 0, 3)
+        const yOff = p.map(p.sin(i), -1, 1, 0, 3)
+        const n = p.noise(xOff + phase, yOff + phase)
+        const hh = p.map(
+          n,
+          0,
+          1,
+          flip ? -(height * o) : 0,
+          height * o,
+        )
+        p.rotate(space)
+        p.rect(o * size, 0, hh + n * 20, thinness)
+      }
+      p.pop()
     }
-    p.pop()
+
+    phase += 0.01
   }
 
   return {

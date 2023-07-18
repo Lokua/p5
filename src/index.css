@@ -9,6 +9,7 @@ body {
   background-color: #222;
   font-family: 'Fira Code', monospace;
   font-size: 16px;
+  overflow: hidden;
 }
 
 button {
@@ -36,7 +37,9 @@ li {
 #controls {
   display: flex;
   flex-direction: column;
+  overflow: auto;
   min-height: 500px;
+  max-height: 100vh;
   padding: 1rem;
   background-color: #444;
 }
