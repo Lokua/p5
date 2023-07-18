@@ -99,6 +99,10 @@ export default function (p) {
         max: 1,
         step: 0.001,
       }),
+      tanSinZFlip: new Toggle({
+        name: 'tanSinZFlip',
+        value: false,
+      }),
     },
     inputHandler() {
       !p.isLooping() && draw()
@@ -132,6 +136,7 @@ export default function (p) {
       saturation,
       lightness,
       alpha,
+      tanSinZFlip,
     } = controlPanel.values()
     p.blendMode(p[blendMode])
     p.noiseDetail(2, noiseFalloff)
@@ -149,7 +154,9 @@ export default function (p) {
         const x = rad * p.cos(j)
         const y = rad * p.sin(j)
         const z =
-          p.sin(p.frameCount * speed + i * zOffset) * 50
+          p[tanSinZFlip ? 'tan' : 'sin'](
+            p.frameCount * speed + i * zOffset,
+          ) * 50
         p.vertex(x, y, z)
       }
       p.endShape(p.CLOSE)

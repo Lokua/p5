@@ -75,7 +75,7 @@ export default function (p) {
 
     for (let i = 0; i < 10; i += 1) {
       p.translate(w / 2, h / 2)
-      p.scale(3 - i * 0.05)
+      // p.scale(3 - i * 0.05)
       p.beginShape()
       for (let a = 0; a < p.TAU; a += p.TAU / nPoints) {
         const x = p.cos(a)
