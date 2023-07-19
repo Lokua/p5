@@ -184,6 +184,33 @@
 ## collatz-v20v.png
 <img src="images/1000x/collatz-v20v.png" alt="collatz-v20v.png" width="500">
 
+## flowField-4f924.png
+<img src="images/1000x/flowField-4f924.png" alt="flowField-4f924.png" width="500">
+
+## flowField-88tg9.png
+<img src="images/1000x/flowField-88tg9.png" alt="flowField-88tg9.png" width="500">
+
+## flowField-e03sm.png
+<img src="images/1000x/flowField-e03sm.png" alt="flowField-e03sm.png" width="500">
+
+## flowField-npm26.png
+<img src="images/1000x/flowField-npm26.png" alt="flowField-npm26.png" width="500">
+
+## flowField-v00k.png
+<img src="images/1000x/flowField-v00k.png" alt="flowField-v00k.png" width="500">
+
+## flowField-xecb7.png
+<img src="images/1000x/flowField-xecb7.png" alt="flowField-xecb7.png" width="500">
+
+## flowField3-12r3l.png
+<img src="images/1000x/flowField3-12r3l.png" alt="flowField3-12r3l.png" width="500">
+
+## flowField3-1pci.png
+<img src="images/1000x/flowField3-1pci.png" alt="flowField3-1pci.png" width="500">
+
+## flowField3-ssgr.png
+<img src="images/1000x/flowField3-ssgr.png" alt="flowField3-ssgr.png" width="500">
+
 ## grid3-1v3cb--median=17.png
 <img src="images/1000x/grid3-1v3cb--median=17.png" alt="grid3-1v3cb--median=17.png" width="500">
 
@@ -252,6 +279,33 @@
 
 ## lerp3-r5ni0.png
 <img src="images/1000x/lerp3-r5ni0.png" alt="lerp3-r5ni0.png" width="500">
+
+## lineStudy3-wctr.png
+<img src="images/1000x/lineStudy3-wctr.png" alt="lineStudy3-wctr.png" width="500">
+
+## lineStudy5-7n4h0.png
+<img src="images/1000x/lineStudy5-7n4h0.png" alt="lineStudy5-7n4h0.png" width="500">
+
+## lineStudy5-ev9by.png
+<img src="images/1000x/lineStudy5-ev9by.png" alt="lineStudy5-ev9by.png" width="500">
+
+## lineStudy5-jwq2a.png
+<img src="images/1000x/lineStudy5-jwq2a.png" alt="lineStudy5-jwq2a.png" width="500">
+
+## lineStudy6-0138a.png
+<img src="images/1000x/lineStudy6-0138a.png" alt="lineStudy6-0138a.png" width="500">
+
+## lineStudy6-1h66.png
+<img src="images/1000x/lineStudy6-1h66.png" alt="lineStudy6-1h66.png" width="500">
+
+## perlin2-k410p.png
+<img src="images/1000x/perlin2-k410p.png" alt="perlin2-k410p.png" width="500">
+
+## perlin3-2fyzr.png
+<img src="images/1000x/perlin3-2fyzr.png" alt="perlin3-2fyzr.png" width="500">
+
+## perlin3-5d556.png
+<img src="images/1000x/perlin3-5d556.png" alt="perlin3-5d556.png" width="500">
 
 ## radialPerlin-4grr9.png
 <img src="images/1000x/radialPerlin-4grr9.png" alt="radialPerlin-4grr9.png" width="500">

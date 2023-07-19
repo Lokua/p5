@@ -1,3 +1,5 @@
+// https://www.youtube.com/watch?v=ikwNrFvnL3g
+
 import ControlPanel, {
   Range,
 } from '../ControlPanel/index.mjs'
@@ -6,7 +8,7 @@ export default function (p) {
   const [w, h] = [500, 500]
 
   const metadata = {
-    name: 'template',
+    name: '2dPerlinNoise',
     frameRate: 30,
   }
 
@@ -14,11 +16,12 @@ export default function (p) {
     id: metadata.name,
     attemptReload: true,
     controls: {
-      a: new Range({
-        name: 'a',
-        value: 50,
-        min: 0,
-        max: 1000,
+      increment: new Range({
+        name: 'increment',
+        value: 0.1,
+        min: 0.001,
+        max: 1,
+        step: 0.001,
       }),
     },
     inputHandler() {
@@ -30,22 +33,25 @@ export default function (p) {
     controlPanel.init()
     const canvas = p.createCanvas(w, h)
 
-    p.colorMode(p.HSB, 100)
-
     return {
       canvas,
     }
   }
 
   function draw() {
-    const { a } = controlPanel.values()
+    const { increment } = controlPanel.values()
     p.background(255)
-    p.fill(0, 50, 100)
-    p.stroke(100, 0, 0)
-    p.push()
-    p.translate(w / 2, h / 2)
-    p.circle(0, 0, a)
-    p.pop()
+
+    let xoff = 0
+    for (let x = 0; x < w; x++) {
+      let yoff = 0
+      for (let y = 0; y < h; y++) {
+        p.stroke(p.noise(xoff, yoff) * 255)
+        p.point(x, y)
+        yoff += increment
+      }
+      xoff += increment
+    }
   }
 
   return {

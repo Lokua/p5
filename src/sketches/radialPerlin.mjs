@@ -46,7 +46,7 @@ export default function (p) {
 
   function setup() {
     controlPanel.init()
-    const canvas = p.createCanvas(w, h)
+    const canvas = p.createCanvas(w, h, p.WEBGL)
 
     p.colorMode(p.HSB, 100)
     p.noiseSeed(312)

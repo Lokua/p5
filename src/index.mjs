@@ -86,8 +86,9 @@ function setupPage({ p, metadata, destroy }) {
   const body = document.body
   const BLACK = 'rgb(0, 0, 0)'
   const WHITE = 'rgb(255, 255, 255)'
+  const LIGHT_GRAY = 'rgb(200, 200, 200)'
   const GRAY = 'rgb(127, 127, 127)'
-  const backgroundColors = [BLACK, GRAY, WHITE]
+  const backgroundColors = [BLACK, GRAY, LIGHT_GRAY, WHITE]
   let backgroundColorIndex = initBg()
 
   const eventMap = {
@@ -150,7 +151,10 @@ function setupPage({ p, metadata, destroy }) {
     setBg(backgroundColor)
     localStorage.setItem('backgroundColor', backgroundColor)
     const controlsBackgroundColor =
-      backgroundColor === WHITE ? '#ddd' : '#444'
+      backgroundColor === WHITE ||
+      backgroundColor === LIGHT_GRAY
+        ? '#ddd'
+        : '#444'
     $(
       '#controls',
     ).style.backgroundColor = controlsBackgroundColor
