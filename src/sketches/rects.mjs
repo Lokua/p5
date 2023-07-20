@@ -3,7 +3,11 @@ import { mapTimes } from '../util.mjs'
 export default function (p) {
   function setup() {
     const canvas = p.createCanvas(500, 500)
+
     p.noLoop()
+    p.strokeWeight(2)
+    p.rectMode(p.CENTER)
+    p.noFill()
 
     return {
       canvas,
@@ -15,9 +19,6 @@ export default function (p) {
     const h = p.height
 
     p.background(0)
-    p.strokeWeight(2)
-    p.rectMode(p.CENTER)
-    p.noFill()
 
     const topLeft = (i) => {
       const size = 10 * i

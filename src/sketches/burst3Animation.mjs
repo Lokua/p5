@@ -1,13 +1,25 @@
 import ControlPanel, {
   Range,
 } from '../ControlPanel/index.mjs'
+import Counter from '../Counter.mjs'
 import { createQuintants, times } from '../util.mjs'
 
 export default function (p) {
   const [w, h] = [500, 500]
   const metadata = {
-    name: 'burst3',
+    name: 'burst3Animation',
   }
+
+  const max = 200
+  const sizeCounter = new Counter({
+    min: 1,
+    max: max,
+  })
+  const offsetCounter = new Counter({
+    min: 1,
+    max: max,
+    direction: -1,
+  })
 
   const controlPanel = new ControlPanel({
     id: metadata.name,
@@ -52,13 +64,13 @@ export default function (p) {
   const color1 = () =>
     p.color(
       0,
-      p.random(127),
+      p.random(100, 127),
       p.random(255),
       controlPanel.get('alpha'),
     )
   const color2 = () =>
     p.color(
-      p.random(255),
+      p.random(200, 255),
       p.random(127),
       0,
       controlPanel.get('alpha'),
@@ -68,7 +80,7 @@ export default function (p) {
   function setup() {
     controlPanel.init()
     const canvas = p.createCanvas(w, h)
-    p.noLoop()
+
     p.rectMode(p.CENTER)
     p.ellipseMode(p.CENTER)
 
@@ -105,6 +117,9 @@ export default function (p) {
     pushPop(() => {
       rocket(2, 4)
     })
+
+    sizeCounter.tick()
+    offsetCounter.tick()
   }
 
   function rocket(x, y) {
@@ -126,8 +141,8 @@ export default function (p) {
         p.rotate((p.TWO_PI * i) / rotations)
         burst({
           count,
-          size,
-          offset,
+          size: size + sizeCounter.count,
+          offset: offset + offsetCounter.count,
         })
         p.pop()
       })
@@ -138,8 +153,8 @@ export default function (p) {
         p.rotate((p.TWO_PI * i) / rotations)
         burst({
           count,
-          size,
-          offset,
+          size: size + sizeCounter.count,
+          offset: offset + offsetCounter.count,
         })
         p.pop()
       })
@@ -152,7 +167,7 @@ export default function (p) {
 
     for (let i = 0; i < count; i++) {
       p.stroke(colors[i % colors.length]())
-      p.fill(255, 25)
+      p.fill(255, 100)
       const r = () => p.noise(i) * p.random(1, 10)
       p.triangle(
         0,

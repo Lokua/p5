@@ -1,17 +1,21 @@
 import ControlPanel, {
   Range,
 } from '../ControlPanel/index.mjs'
-import { BidirectionalCounter } from '../util.mjs'
+import Counter from '../Counter.mjs'
 
-export default function burst(p) {
+export default function (p) {
   const [w, h] = [500, 500]
-  const counter = new BidirectionalCounter(1, 100)
-  const sizeCounter = new BidirectionalCounter(1, 80)
-  const offsetCounter = new BidirectionalCounter(1, 100)
+  const counter = new Counter({ min: 1, max: 100 })
+  const sizeCounter = new Counter({ min: 1, max: 80 })
+  const offsetCounter = new Counter({ min: 1, max: 100 })
   const rb = () => p.random() < 0.5
 
+  const metadata = {
+    name: 'burst',
+  }
+
   const controlPanel = new ControlPanel({
-    id: 'burst',
+    id: metadata.name,
     attemptReload: true,
     controls: {
       size: new Range({
@@ -107,11 +111,11 @@ export default function burst(p) {
     p.noStroke()
 
     for (let i = 0; i < count; i++) {
-      p.fill(p.random(200, 255), 0, counter.value, 200)
+      p.fill(p.random(200, 255), 0, counter.count, 200)
 
       const randomOffset = () =>
-        p.noise(offset * i) * (counter.value + offset) +
-        offsetCounter.value
+        p.noise(offset * i) * (counter.count + offset) +
+        offsetCounter.count
 
       const xx = rb()
         ? x + randomOffset()
@@ -124,8 +128,8 @@ export default function burst(p) {
       p.ellipse(
         yy,
         xx,
-        p.noise(size * i + x) * (size + sizeCounter.value),
-        p.noise(size * i + y) * (size + sizeCounter.value),
+        p.noise(size * i + x) * (size + sizeCounter.count),
+        p.noise(size * i + y) * (size + sizeCounter.count),
       )
     }
   }
@@ -136,8 +140,6 @@ export default function burst(p) {
     destroy() {
       controlPanel.destroy()
     },
-    metadata: {
-      name: 'burst',
-    },
+    metadata,
   }
 }

@@ -131,14 +131,14 @@ export function setAlpha(color, alpha) {
   return copy
 }
 
-export function toXY(index, width) {
-  const y = index / width
-  const x = index % width
+export function toXY(index, nColumns) {
+  const y = index / nColumns
+  const x = index % nColumns
   return [x, y]
 }
 
-export function fromXY(width, x, y) {
-  return x + width * y
+export function fromXY(x, y, nColumns) {
+  return nColumns * x + y
 }
 
 export class P5Helpers {
@@ -226,9 +226,6 @@ export const post = (url, data) =>
 export const upload = (url, formData) =>
   fetch(url, {
     method: 'POST',
-    // headers: {
-    //   'Content-Type': 'multipart/form-data',
-    // },
     body: formData,
   })
 
