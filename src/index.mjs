@@ -1,17 +1,12 @@
-import {
-  $,
-  uuid,
-  chunk,
-  P5Helpers,
-  get,
-  post,
-} from './util.mjs'
+import { $, uuid, P5Helpers, get, upload } from './util.mjs'
 import bus from './bus.mjs'
 import defaultSketch from './sketches/sketch.mjs'
 
 let canvasElement
 let recording = false
-let recordedImages = []
+let recorder = null
+let recordedChunks = []
+let recordingTimer = null
 
 loadInitialSketch()
 
@@ -58,21 +53,37 @@ function init(sketch) {
       const { canvas } = setup()
       canvas.parent('sketch')
       canvasElement = canvas.elt
-    }
 
-    p.draw = () => {
-      draw()
+      recorder = new MediaRecorder(
+        canvasElement.captureStream(
+          metadata.frameRate || 30,
+        ),
+        {
+          mimeType: 'video/webm;codecs=vp9',
+        },
+      )
 
-      if (recording) {
-        recordedImages.push(canvasElement.toDataURL())
-        if (recordedImages.length % 30 === 0) {
+      recorder.addEventListener('start', () => {
+        let secondsElapsed = 0
+        recordingTimer = setInterval(() => {
+          secondsElapsed++
           console.log(
-            'seconds captured (estimate):',
-            recordedImages.length / 30,
+            '[recording] seconds elapsed:',
+            secondsElapsed,
           )
-        }
-      }
+        }, 1000)
+      })
+      recorder.addEventListener('stop', () => {
+        clearInterval(recordingTimer)
+        recordingTimer = null
+        downloadRecording(metadata.name)
+      })
+      recorder.addEventListener('dataavailable', (e) => {
+        recordedChunks.push(e.data)
+      })
     }
+
+    p.draw = draw
 
     setupPage({
       p,
@@ -185,40 +196,13 @@ function setupPage({ p, metadata, destroy }) {
     if (!recording) {
       console.info('recording started')
       recording = true
-      recordedImages = []
+      recorder.start()
       $('#record-button').textContent = 'RECORDING'
     } else {
       console.info('recording stopped')
       recording = false
+      recorder.stop()
       $('#record-button').textContent = 'record'
-
-      try {
-        await doPost(50)
-      } catch (error) {
-        console.error(error)
-        console.info('trying again with smaller chunk size')
-        await doPost(25)
-      }
-    }
-
-    async function doPost(chunkSize) {
-      await post('/recording/init', {
-        metadata,
-      })
-
-      const requests = chunk(recordedImages, chunkSize).map(
-        (chunk, index) => {
-          console.info('sending chunk', index)
-          return post('/recording/chunk', {
-            index,
-            chunk,
-          })
-        },
-      )
-
-      await Promise.all(requests)
-      const response = await post('/recording/done', {})
-      console.log(response.status)
     }
   }
 
@@ -262,4 +246,19 @@ function setupPage({ p, metadata, destroy }) {
 
 function sketchNameToPath(name) {
   return `./sketches/${name}.mjs`
+}
+
+async function downloadRecording(name) {
+  const blob = new Blob(recordedChunks, {
+    type: 'video/webm',
+  })
+
+  const formData = new FormData()
+  formData.append('name', name)
+  formData.append('file', blob)
+
+  await upload('/download-recording', formData)
+  console.log(
+    'File sent for recording. Check server logs for status.',
+  )
 }
