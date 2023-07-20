@@ -226,9 +226,9 @@ export const post = (url, data) =>
 export const upload = (url, formData) =>
   fetch(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
+    // headers: {
+    //   'Content-Type': 'multipart/form-data',
+    // },
     body: formData,
   })
 

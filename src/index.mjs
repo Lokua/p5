@@ -248,7 +248,7 @@ function sketchNameToPath(name) {
   return `./sketches/${name}.mjs`
 }
 
-async function downloadRecording() {
+async function downloadRecording(name) {
   const blob = new Blob(recordedChunks, {
     type: 'video/webm',
   })
@@ -258,17 +258,7 @@ async function downloadRecording() {
   formData.append('file', blob)
 
   await upload('/download-recording', formData)
-  // await post('/download-recording', {
-  //   name,
-  //   blob,
-  // })
-
-  // const url = URL.createObjectURL(blob)
-  // const a = document.createElement('a')
-  // document.body.appendChild(a)
-  // a.style = 'display: none'
-  // a.href = url
-  // a.download = `${name}.webm`
-  // a.click()
-  // window.URL.revokeObjectURL(url)
+  console.log(
+    'File sent for recording. Check server logs for status.',
+  )
 }
