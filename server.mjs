@@ -5,6 +5,9 @@ import { fileURLToPath } from 'url'
 import { spawn } from 'child_process'
 import c from 'chalk'
 import rimraf from 'rimraf'
+import multer from 'multer'
+
+const upload = multer()
 
 const getDirname = (importMetaUrl) =>
   dirname(fileURLToPath(importMetaUrl))
@@ -55,6 +58,15 @@ app.post('/recording/chunk', (req, res) => {
   recording.images[index] = chunk
   res.sendStatus(200)
 })
+
+app.post(
+  '/download-recording',
+  upload.single('file'),
+  (req, res) => {
+    console.info(req.file, req.name)
+    res.sendStatus(200)
+  },
+)
 
 app.post('/recording/done', async (req, res) => {
   const {

@@ -1,4 +1,4 @@
-import { $, uuid, P5Helpers, get } from './util.mjs'
+import { $, uuid, P5Helpers, get, upload } from './util.mjs'
 import bus from './bus.mjs'
 import defaultSketch from './sketches/sketch.mjs'
 
@@ -6,6 +6,7 @@ let canvasElement
 let recording = false
 let recorder = null
 let recordedChunks = []
+let recordingTimer = null
 
 loadInitialSketch()
 
@@ -62,7 +63,19 @@ function init(sketch) {
         },
       )
 
+      recorder.addEventListener('start', () => {
+        let secondsElapsed = 0
+        recordingTimer = setInterval(() => {
+          secondsElapsed++
+          console.log(
+            '[recording] seconds elapsed:',
+            secondsElapsed,
+          )
+        }, 1000)
+      })
       recorder.addEventListener('stop', () => {
+        clearInterval(recordingTimer)
+        recordingTimer = null
         downloadRecording(metadata.name)
       })
       recorder.addEventListener('dataavailable', (e) => {
@@ -235,25 +248,27 @@ function sketchNameToPath(name) {
   return `./sketches/${name}.mjs`
 }
 
-function downloadRecording(name) {
+async function downloadRecording() {
   const blob = new Blob(recordedChunks, {
     type: 'video/webm',
   })
 
-  const videoElement = document.createElement('video')
-  videoElement.setAttribute('id', Date.now())
-  videoElement.style = 'display: none'
-  videoElement.controls = true
-  document.body.appendChild(videoElement)
-  videoElement.src = window.URL.createObjectURL(blob)
+  const formData = new FormData()
+  formData.append('name', name)
+  formData.append('file', blob)
 
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  document.body.appendChild(a)
-  a.style = 'display: none'
-  a.href = url
-  a.download = `${name}.webm`
-  a.click()
-  window.URL.revokeObjectURL(url)
-  videoElement.remove()
+  await upload('/download-recording', formData)
+  // await post('/download-recording', {
+  //   name,
+  //   blob,
+  // })
+
+  // const url = URL.createObjectURL(blob)
+  // const a = document.createElement('a')
+  // document.body.appendChild(a)
+  // a.style = 'display: none'
+  // a.href = url
+  // a.download = `${name}.webm`
+  // a.click()
+  // window.URL.revokeObjectURL(url)
 }
