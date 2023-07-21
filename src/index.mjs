@@ -1,12 +1,10 @@
-import { $, uuid, P5Helpers, get, upload } from './util.mjs'
+import { $, uuid, P5Helpers, get } from './util.mjs'
 import bus from './bus.mjs'
 import defaultSketch from './sketches/sketch.mjs'
 
 let canvasElement
 let recording = false
 let recorder = null
-let recordedChunks = []
-let recordingTimer = null
 
 loadInitialSketch()
 
@@ -54,36 +52,18 @@ function init(sketch) {
       canvas.parent('sketch')
       canvasElement = canvas.elt
 
-      recorder = new MediaRecorder(
-        canvasElement.captureStream(
-          metadata.frameRate || 30,
-        ),
-        {
-          mimeType: 'video/webm;codecs=vp9',
-        },
-      )
-
-      recorder.addEventListener('start', () => {
-        let secondsElapsed = 0
-        recordingTimer = setInterval(() => {
-          secondsElapsed++
-          console.log(
-            '[recording] seconds elapsed:',
-            secondsElapsed,
-          )
-        }, 1000)
-      })
-      recorder.addEventListener('stop', () => {
-        clearInterval(recordingTimer)
-        recordingTimer = null
-        downloadRecording(metadata.name)
-      })
-      recorder.addEventListener('dataavailable', (e) => {
-        recordedChunks.push(e.data)
+      recorder = new CCapture({
+        format: 'webm',
+        timeLimit: 60,
+        verbose: true,
+        framerate: 24,
       })
     }
 
-    p.draw = draw
+    p.draw = () => {
+      draw()
+      recorder.capture(canvasElement)
+    }
 
     setupPage({
       p,
@@ -202,6 +182,7 @@ function setupPage({ p, metadata, destroy }) {
       console.info('recording stopped')
       recording = false
       recorder.stop()
+      recorder.save()
       $('#record-button').textContent = 'record'
     }
   }
@@ -246,19 +227,4 @@ function setupPage({ p, metadata, destroy }) {
 
 function sketchNameToPath(name) {
   return `./sketches/${name}.mjs`
-}
-
-async function downloadRecording(name) {
-  const blob = new Blob(recordedChunks, {
-    type: 'video/webm',
-  })
-
-  const formData = new FormData()
-  formData.append('name', name)
-  formData.append('file', blob)
-
-  await upload('/download-recording', formData)
-  console.log(
-    'File sent for recording. Check server logs for status.',
-  )
 }

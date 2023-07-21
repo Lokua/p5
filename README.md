@@ -33,6 +33,12 @@ To create a new sketch, copy one of the existing ones from
 the [sketches](src/sketches) folder. All sketches in this
 folder are available to load in the UI
 
+To convert recorded webm to mp4:
+
+```sh
+ffmpeg -i <IN_FILE> -vf scale=1080x1080 -vcodec libx264 <OUT_FILE>
+```
+
 ## Learning Resources
 
 Resources I'm using to guide myself:

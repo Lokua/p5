@@ -94,12 +94,19 @@ export default function (p5Instance) {
     p.rect(0, 0, w, h)
 
     for (var i = 0; i < agentCount; i++) {
-      p.stroke(
-        i % 11 === 0 ? p.random(20, 70) : 0,
-        0,
-        i % 2 === 0 ? 128 : 66,
-        agentAlpha,
-      )
+      Math.random() > 0.5
+        ? p.stroke(
+            p.random(20, 70),
+            0,
+            i % 2 === 0 ? 128 : 66,
+            agentAlpha,
+          )
+        : p.stroke(
+            i % 11 === 0 ? p.random(20, 70) : 0,
+            0,
+            i % 2 === 0 ? 128 : 66,
+            agentAlpha,
+          )
       agents[i].update(
         strokeWidth,
         noiseScale,

@@ -4,6 +4,7 @@
 import ControlPanel, {
   Range,
   Toggle,
+  Select,
   createBlendMode,
 } from '../ControlPanel/index.mjs'
 import Counter from '../Counter.mjs'
@@ -21,6 +22,15 @@ export default function (p) {
 
   const metadata = {
     name: 'perlin3Animation',
+    frameRate: 24,
+  }
+
+  const fns = {
+    tan: (n) => p.tan(n),
+    tanh: (n) => Math.tanh(n),
+    cos: (n) => p.cos(n),
+    sin: (n) => p.sin(n),
+    sinh: (n) => Math.sinh(n),
   }
 
   const controlPanel = new ControlPanel({
@@ -70,6 +80,22 @@ export default function (p) {
         name: 'flip',
         value: true,
       }),
+      fns: new Select({
+        name: 'fns',
+        value: 'tan,cos',
+        options: [
+          'tan,cos',
+          'tan,sin',
+          'tan,tan',
+          'cos,cos',
+          'cos,sin',
+          'cos,tan',
+          'sin,cos',
+          'sin,sin',
+          'sin,tan',
+          'sinh,sin',
+        ],
+      }),
     },
     inputHandler() {
       !p.isLooping() && draw()
@@ -99,6 +125,7 @@ export default function (p) {
       thinness,
       nCircles,
       noiseFalloff,
+      fns: fnsSelector,
     } = controlPanel.values()
     p.blendMode(p[blendMode])
     p.noiseDetail(
@@ -108,14 +135,16 @@ export default function (p) {
     p.background(0)
     p.fill(1, 0, 1, 0.8)
 
+    const [fnNameA, fnNameB] = fnsSelector.split(',')
+    const [fnA, fnB] = [fns[fnNameA], fns[fnNameB]]
+
     for (let o = 1; o < nCircles + 1; o++) {
       p.push()
       p.translate(w / 2, h / 2)
       for (let ii = 0; ii < 360; ii += space) {
         const i = (ii - o * 30) % 360
-        // switch with cos, sin, Math.tanh, etc.
-        const xOff = p.map(p.tan(i), -1, 1, 0, 3) * phase
-        const yOff = p.map(p.tan(i), -1, 1, 0, 3) * phase
+        const xOff = p.map(fnA(i), -1, 1, 0, 3) * phase
+        const yOff = p.map(fnB(i), -1, 1, 0, 3) * phase
         const n = p.noise(xOff + phase, yOff + phase)
         const hh = p.map(
           n,

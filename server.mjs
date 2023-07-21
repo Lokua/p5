@@ -47,7 +47,7 @@ app.post(
   async (req, res) => {
     const { name } = req.body
 
-    log(`received ${c.green(name)}. converting to mp4`)
+    log(`Received ${c.green(name)}; converting to mp4`)
 
     const prefix = `./captures/${name}-${prettyDate(
       new Date(),
@@ -62,8 +62,8 @@ app.post(
       pathname: webmPathname,
     })
 
+    // eslint-disable-next-line no-unreachable
     await new Promise((resolve, reject) => {
-      // ffmpeg -i ./flowField-20230720-183221.webm -vf scale=1080x1080 -r 30 -vcodec libx264 test.mp4
       const childProcess = spawn(
         'ffmpeg',
         [
@@ -83,12 +83,12 @@ app.post(
 
       childProcess.on('close', (code) => {
         if (code === 0) {
-          log('done. file available at', mp4Pathname)
+          log('Done. File available at', mp4Pathname)
           resolve()
         } else {
           reject(
             new Error(
-              `spawned process closed with a non-zero exit code ${code}`,
+              `Spawned process closed with a non-zero exit code ${code}`,
             ),
           )
         }

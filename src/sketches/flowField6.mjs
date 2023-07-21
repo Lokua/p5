@@ -33,6 +33,13 @@ export default function (p) {
         max: 10,
         step: 0.01,
       }),
+      zoom: new Range({
+        name: 'zoom',
+        value: 1,
+        min: 1,
+        max: 100,
+        step: 1,
+      }),
       octaves: new Range({
         name: 'octaves',
         value: 4,
@@ -77,22 +84,23 @@ export default function (p) {
     const {
       noiseScale: ns,
       velocity: vel,
+      zoom,
       octaves,
       octaveMult,
       particleAlpha,
     } = controlPanel.values()
     p.background(0, 5)
-    p.stroke(255, particleAlpha)
     p.strokeWeight(1)
     p.noiseDetail(octaves, octaveMult)
 
     for (let i = 0; i < nPoints; i++) {
+      p.stroke(p.random(0, 100), 100, 100, particleAlpha)
       const point = points[i]
       p.point(point.x, point.y)
       const n = p.noise(point.x * ns, point.y * ns)
-      const a = p.TWO_PI * 6 * n
-      point.x += p.cos(a) * vel
-      point.y += p.sin(a) * vel
+      const a = p.TWO_PI * zoom * n
+      point.x += Math.tan(a) * vel
+      point.y += Math.tanh(a) * vel
       if (!onScreen(point)) {
         point.x = p.random(w)
         point.y = p.random(h)
