@@ -57,14 +57,24 @@ app.post(
 
     await fs.writeFile(webmPathname, req.file.buffer)
 
+    log(`webm file written to ${webmPathname}`)
     res.send({
-      pathname: mp4Pathname,
+      pathname: webmPathname,
     })
 
     await new Promise((resolve, reject) => {
+      // ffmpeg -i ./flowField-20230720-183221.webm -vf scale=1080x1080 -r 30 -vcodec libx264 test.mp4
       const childProcess = spawn(
         'ffmpeg',
-        ['-i', webmPathname, mp4Pathname],
+        [
+          '-i',
+          webmPathname,
+          '-vf',
+          'scale=1080x1080',
+          '-vcodec',
+          'libx264',
+          mp4Pathname,
+        ],
         {
           stdio: 'inherit',
           shell: true,
