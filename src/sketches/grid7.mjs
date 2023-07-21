@@ -43,23 +43,15 @@ export default function (p) {
   }
 
   function draw() {
-    const { offset, mod } = controlPanel.values()
     p.background(230, 240, 240)
 
     const n = Math.floor(w / 20)
     for (let x = n, i = 0; x < w; x += n, i++) {
       for (let y = n, j = 0; y < h; y += n, j++) {
         const index = fromXY(i, j, w)
-        const offs =
-          p.noise(i, j) *
-          (index % mod === 0 ? -offset : offset)
-        const size = isPrime(index) ? n + 10 : n
-        p.rect(
-          (x + offs * (isEven(index) ? 1 : -1)) % w,
-          (y + offs * (isEven(index) ? 1 : -1)) % h,
-          size,
-          size,
-        )
+        const offs = p.noise(i, j)
+        const size = index % n
+        p.rect((x + offs) % w, (y + offs) % h, size, size)
       }
     }
   }

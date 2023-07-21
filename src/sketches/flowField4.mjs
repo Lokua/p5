@@ -45,7 +45,7 @@ export default function (p5Instance) {
   function setup() {
     controlPanel.init()
     const canvas = p.createCanvas(w, h)
-    p.background(255, 10)
+    p.background(255)
 
     for (let i = 0; i < 500; i++) {
       particles[i] = new Particle()
@@ -59,7 +59,9 @@ export default function (p5Instance) {
   function draw() {
     const { increment, zVelocity } = controlPanel.values()
 
+    p.background(255, 0)
     p.strokeWeight(1)
+    p.stroke(0, 5)
 
     const cols = p.floor(w / scale)
     const rows = p.floor(h / scale)
@@ -71,14 +73,13 @@ export default function (p5Instance) {
         const angle =
           p.noise(xoff, yoff, zoff) * p.TWO_PI * 2
         const v = p5.Vector.fromAngle(angle)
-        v.setMag(1)
+        v.setMag(2)
         flowField[x + y * cols] = v
-        p.stroke(0, 10)
         p.push()
         const nudge = 5
         p.translate(x * scale + nudge, y * scale + nudge)
         p.rotate(v.heading())
-        // p.line(0, 0, scale, 0)
+        p.line(0, 0, scale, 0)
         p.pop()
         yoff += increment
       }
@@ -86,13 +87,13 @@ export default function (p5Instance) {
     }
     zoff += zVelocity
 
-    for (let i = 0; i < particles.length; i++) {
-      const particle = particles[i]
-      particle.follow(flowField)
-      particle.update()
-      particle.edges()
-      particle.show()
-    }
+    // for (let i = 0; i < particles.length; i++) {
+    //   const particle = particles[i]
+    //   particle.follow(flowField)
+    //   particle.update()
+    //   particle.edges()
+    //   particle.show()
+    // }
   }
 
   return {

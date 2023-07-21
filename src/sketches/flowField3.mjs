@@ -4,6 +4,7 @@ import ControlPanel, {
   Range,
   Toggle,
 } from '../ControlPanel/index.mjs'
+import Counter from '../Counter.mjs'
 
 let p
 
@@ -14,6 +15,11 @@ export default function (p5Instance) {
   const agents = []
   const agentCount = 100000
   const noiseZRange = 0.4
+
+  const noiseScaleCounter = new Counter({
+    min: 1,
+    max: 40,
+  })
 
   const metadata = {
     name: 'flowField3',
@@ -90,6 +96,7 @@ export default function (p5Instance) {
   function setup() {
     controlPanel.init()
     const canvas = p.createCanvas(w, h)
+    p.background(0, 0, 50)
 
     for (let i = 0; i < agentCount; i++) {
       agents[i] = new Agent(
@@ -121,10 +128,9 @@ export default function (p5Instance) {
       return
     }
 
-    p.fill(255, overlayAlpha)
+    p.fill(0, 0, 50, overlayAlpha)
     p.noStroke()
     p.rect(0, 0, w, h)
-    p.stroke(0, agentAlpha)
 
     if (
       randomSeedEverySoOften &&
@@ -134,13 +140,23 @@ export default function (p5Instance) {
     }
 
     for (var i = 0; i < count; i++) {
+      p.stroke(
+        0,
+        p.random(77, 120),
+        p.random(120, 222),
+        agentAlpha,
+      )
       agents[i].stepSize = stepSize
       agents[i].update(
         strokeWidth,
-        noiseScale,
+        noiseScale + noiseScaleCounter.count,
         noiseStrength,
         noiseZVelocity,
       )
+    }
+
+    if (p.frameCount % 60 === 0) {
+      noiseScaleCounter.tick()
     }
   }
 
