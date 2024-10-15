@@ -9,12 +9,28 @@ body {
   background-color: #222;
   font-family: 'Fira Code', monospace;
   font-size: 16px;
+  line-height: 1.6;
   overflow: hidden;
 }
 
 button {
-  min-width: 70px;
-  margin: 2px;
+  min-width: 100px;
+  padding: 10px 16px;
+  margin: 8px;
+  border: none;
+  border-radius: 4px;
+  background-color: #666;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+  background-color: #888;
+}
+
+button:active {
+  transform: scale(0.98);
 }
 
 ul {
@@ -50,15 +66,78 @@ li {
 }
 
 #controls > header > section:first-child {
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+#controls > header > section:first-child select {
+  width: 100%;
+}
+
+#controls > header > section:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+#controls,
+#sketches {
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  background: #555;
+  border-radius: 4px;
+  outline: none;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #4caf50;
+  border-radius: 50%;
+  cursor: pointer;
 }
 
 select {
   font-size: 16px;
+  padding: 8px 12px;
+  border: none;
+  background-color: #666;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 6"%3e%3cpath fill="%23fff" d="M0 0l5 6 5-6H0z"/%3e%3c/svg%3e');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+}
+
+select:hover {
+  background-color: #888;
+}
+
+select:focus {
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
 }
 
 #dynamic-controls {
-  padding-top: 4rem;
+  padding-top: 2rem;
 }
 
 .control {

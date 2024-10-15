@@ -10,11 +10,13 @@ import { getProgress as getProgress_ } from '../util.mjs'
  */
 export default function (p) {
   const metadata = {
-    name: 'flexor',
+    name: 'flexor2',
     frameRate: 24,
   }
 
   const [w, h] = [500, 500]
+  const amplitude = 20
+  const padding = 20
   let noiseBuffer
 
   const getProgress = (noteDuration) =>
@@ -63,6 +65,16 @@ export default function (p) {
         name: 'animateY',
         value: true,
       }),
+      nearHue: new Range({
+        name: 'nearHue',
+        value: 20,
+        min: 0,
+        max: 100,
+      }),
+      colorShift: new Toggle({
+        name: 'colorShift',
+        value: false,
+      }),
     },
     inputHandler() {
       !p.isLooping() && draw()
@@ -71,9 +83,14 @@ export default function (p) {
 
   function setup() {
     controlPanel.init()
+
     const canvas = p.createCanvas(w, h)
+
     noiseBuffer = p.createGraphics(w, h)
     noiseBackground()
+
+    p.colorMode(p.HSL, 100, 100, 100)
+    noiseBuffer.colorMode(p.HSL, 100, 100, 100)
 
     return {
       canvas,
@@ -88,36 +105,63 @@ export default function (p) {
       animateY,
       delayPerColumn,
       waveTime,
+      colorShift,
+      nearHue,
     } = controlPanel.values()
+    p.noStroke()
     p.background(0)
     p.image(noiseBuffer, 0, 0)
 
-    const amplitude = 20
-    const padding = 20
     const spacing = (p.width - padding * 2) / (grid + 1)
-
-    p.noStroke()
+    const progress = getProgress(waveTime)
+    const nearColor = p.color(nearHue, 100, 50)
+    const farColor = p.color(0, 0, 100)
 
     for (let i = 0; i < grid; i++) {
       for (let j = 0; j < grid; j++) {
         let x = padding + (j + 1) * spacing
         let y = padding + (i + 1) * spacing
 
-        const progress = getProgress(waveTime)
         const phaseOffset =
           (i + j) / (2 * grid * delayPerColumn)
         const adjustedProgress =
           (progress - phaseOffset + 1) % 1
+        let displacementX = 0
+        let displacementY = 0
 
         if (animateX) {
-          x +=
+          displacementX =
             p.sin(adjustedProgress * p.TWO_PI) * amplitude
+          x += displacementX
         }
         if (animateY) {
-          y +=
+          displacementY =
             p.sin(adjustedProgress * p.TWO_PI) * amplitude
+          y += displacementY
         }
 
+        const totalDisplacement = Math.hypot(
+          displacementX,
+          displacementY,
+        )
+        const maxDisplacement = amplitude * Math.SQRT2
+        const depth = totalDisplacement / maxDisplacement
+
+        let circleColor = p.lerpColor(
+          farColor,
+          nearColor,
+          depth,
+        )
+
+        if (colorShift) {
+          circleColor = p.lerpColor(
+            nearColor,
+            farColor,
+            depth,
+          )
+        }
+
+        p.fill(circleColor)
         p.ellipse(x, y, spacing * circleSize)
       }
     }

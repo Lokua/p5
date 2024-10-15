@@ -17,24 +17,19 @@ export default class Select extends Control {
         value="${this.value}"
       >
         ${this.options.map(
-          (value) =>
-            `<option value="${value}">${value}</option>`,
+          (value) => `<option value="${value}">${value}</option>`,
         )}
       </select>
     `)
   }
 
   bind() {
-    document
-      .getElementById(this.id)
-      .addEventListener('change', this.onChange)
+    document.getElementById(this.id).addEventListener('change', this.onChange)
   }
 
   addInputListener(fn) {
     super.addInputListener(fn)
-    document
-      .getElementById(this.id)
-      .addEventListener('change', fn)
+    document.getElementById(this.id).addEventListener('change', fn)
   }
 
   onChange = (e) => {
