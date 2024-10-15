@@ -184,6 +184,21 @@
 ## collatz-v20v.png
 <img src="images/1000x/collatz-v20v.png" alt="collatz-v20v.png" width="500">
 
+## flexor-ti6k7.png
+<img src="images/1000x/flexor-ti6k7.png" alt="flexor-ti6k7.png" width="500">
+
+## flexor2-8dz91.png
+<img src="images/1000x/flexor2-8dz91.png" alt="flexor2-8dz91.png" width="500">
+
+## flexor2-e4987.png
+<img src="images/1000x/flexor2-e4987.png" alt="flexor2-e4987.png" width="500">
+
+## flexor2-slo0.png
+<img src="images/1000x/flexor2-slo0.png" alt="flexor2-slo0.png" width="500">
+
+## flexor2-sui98.png
+<img src="images/1000x/flexor2-sui98.png" alt="flexor2-sui98.png" width="500">
+
 ## flowField-3he77.png
 <img src="images/1000x/flowField-3he77.png" alt="flowField-3he77.png" width="500">
 

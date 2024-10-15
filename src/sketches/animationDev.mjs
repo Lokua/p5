@@ -53,7 +53,7 @@ export default function (p) {
 
     const amplitude = animationHelper.animateProperty({
       from: 1,
-      to: 50,
+      to: h / 4,
       duration: 16,
       playMode: AnimationHelper.PLAY_MODE_PINGPONG,
     })
@@ -115,10 +115,9 @@ export default function (p) {
           break
         }
         case 7: {
-          const amplitude = 100
           const offsetY = animationHelper.triggeredAnimation({
             value: 0,
-            keyframes: [-amplitude, amplitude],
+            keyframes: [-amplitude, amplitude, -amplitude * 2],
             duration: 4,
             every: 12,
             delay: 2,

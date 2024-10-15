@@ -1,6 +1,6 @@
 // @ts-check
 import ControlPanel, { Range, Toggle, Select } from '../ControlPanel/index.mjs'
-import { getProgress as getProgress_ } from '../util.mjs'
+import AnimationHelper from '../AnimationHelper.mjs'
 
 /**
  * @param {import("p5")} p
@@ -12,12 +12,10 @@ export default function (p) {
   }
 
   const [w, h] = [500, 500]
+  const animationHelper = new AnimationHelper(p, metadata.frameRate, 134)
   const amplitude = 20
   const padding = 20
   let noiseBuffer
-
-  const getProgress = (noteDuration) =>
-    getProgress_(metadata.frameRate, p.frameCount, 134, noteDuration)
 
   const controlPanel = new ControlPanel({
     id: metadata.name,
@@ -126,7 +124,7 @@ export default function (p) {
     p.image(noiseBuffer, 0, 0)
 
     const spacing = (p.width - padding * 2) / (grid + 1)
-    const progress = getProgress(waveTime)
+    const progress = animationHelper.getLoopProgress(waveTime)
     const nearColor = p.color(nearHue, 100, 50)
     const farColor = p.color(0, 0, 100)
 
@@ -135,52 +133,13 @@ export default function (p) {
         let x = padding + (j + 1) * spacing
         let y = padding + (i + 1) * spacing
 
-        const phaseOffset = {
-          default: () => (i + j) / (2 * grid * delayPerColumn),
-          distanceFromCenter: () => {
-            const center = (grid - 1) / 2
-            const distance = Math.hypot(i - center, j - center)
-            const maxDistance = Math.hypot(center, center)
-            return distance / maxDistance / delayPerColumn
-          },
-          productOfIndices: () => (i * j) / (grid * grid * delayPerColumn),
-          moduloPattern: () => ((i + j) % 4) / (4 * delayPerColumn),
-          trigonometricFunctions() {
-            const frequency = 0.5 // Adjust for pattern density
-            return (
-              (p.sin(i * frequency) + p.cos(j * frequency)) /
-              (2 * delayPerColumn)
-            )
-          },
-          checkerboardEffect: () => ((i + j) % 2) / (2 * delayPerColumn),
-          absoluteDifference: () => Math.abs(i - j) / (grid * delayPerColumn),
-          randomOffsets: () => p.random() / delayPerColumn,
-          perlinNoise() {
-            const noiseScale = 0.1
-            return p.noise(i * noiseScale, j * noiseScale) / delayPerColumn
-          },
-          exponentialDecay: () => Math.exp(-((i + j) / grid)) / delayPerColumn,
-          spiralPattern() {
-            const center = (grid - 1) / 2
-            const angle = Math.atan2(i - center, j - center)
-            const radius = Math.hypot(i - center, j - center)
-            return (angle + radius) / (p.TWO_PI + grid * delayPerColumn)
-          },
-          distanceFromEdge() {
-            const distance = Math.min(i, j, grid - 1 - i, grid - 1 - j)
-            return distance / grid / delayPerColumn
-          },
-          sumOfSquares: () =>
-            (i * i + j * j) / (2 * grid * grid * delayPerColumn),
-          differenceOfSquares: () =>
-            Math.abs(i * i - j * j) / (grid * grid * delayPerColumn),
-          manhattanDistance() {
-            const center = (grid - 1) / 2
-            const distance = Math.abs(i - center) + Math.abs(j - center)
-            const maxDistance = center * 2
-            return distance / maxDistance / delayPerColumn
-          },
-        }[phaseMode]()
+        const phaseOffset = getPhaseOffset(
+          phaseMode,
+          i,
+          j,
+          grid,
+          delayPerColumn,
+        )
 
         const adjustedProgress = (progress - phaseOffset + 1) % 1
         let displacementX = 0
@@ -230,6 +189,53 @@ export default function (p) {
       }
     }
     noiseBuffer.updatePixels()
+  }
+
+  function getPhaseOffset(phaseMode, i, j, grid, delayPerColumn) {
+    return {
+      default: () => (i + j) / (2 * grid * delayPerColumn),
+      distanceFromCenter: () => {
+        const center = (grid - 1) / 2
+        const distance = Math.hypot(i - center, j - center)
+        const maxDistance = Math.hypot(center, center)
+        return distance / maxDistance / delayPerColumn
+      },
+      productOfIndices: () => (i * j) / (grid * grid * delayPerColumn),
+      moduloPattern: () => ((i + j) % 4) / (4 * delayPerColumn),
+      trigonometricFunctions() {
+        const frequency = 0.5
+        return (
+          (p.sin(i * frequency) + p.cos(j * frequency)) / (2 * delayPerColumn)
+        )
+      },
+      checkerboardEffect: () => ((i + j) % 2) / (2 * delayPerColumn),
+      absoluteDifference: () => Math.abs(i - j) / (grid * delayPerColumn),
+      randomOffsets: () => p.random() / delayPerColumn,
+      perlinNoise() {
+        const noiseScale = 0.1
+        return p.noise(i * noiseScale, j * noiseScale) / delayPerColumn
+      },
+      exponentialDecay: () => Math.exp(-((i + j) / grid)) / delayPerColumn,
+      spiralPattern() {
+        const center = (grid - 1) / 2
+        const angle = Math.atan2(i - center, j - center)
+        const radius = Math.hypot(i - center, j - center)
+        return (angle + radius) / (p.TWO_PI + grid * delayPerColumn)
+      },
+      distanceFromEdge() {
+        const distance = Math.min(i, j, grid - 1 - i, grid - 1 - j)
+        return distance / grid / delayPerColumn
+      },
+      sumOfSquares: () => (i * i + j * j) / (2 * grid * grid * delayPerColumn),
+      differenceOfSquares: () =>
+        Math.abs(i * i - j * j) / (grid * grid * delayPerColumn),
+      manhattanDistance() {
+        const center = (grid - 1) / 2
+        const distance = Math.abs(i - center) + Math.abs(j - center)
+        const maxDistance = center * 2
+        return distance / maxDistance / delayPerColumn
+      },
+    }[phaseMode]()
   }
 
   return {

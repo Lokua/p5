@@ -8,14 +8,6 @@ export const EasingFunctions = {
   easeInOutQuad: (x) => (x < 0.5 ? 2 * x * x : -1 + (4 - 2 * x) * x),
 }
 
-function safeGetEasing(easing) {
-  return typeof easing === 'string'
-    ? EasingFunctions[easing]
-    : typeof easing === 'function'
-    ? easing
-    : EasingFunctions.linear
-}
-
 export default class AnimationHelper {
   static PLAY_MODE_FORWARD = 'forward'
   static PLAY_MODE_BACKWARD = 'backward'
@@ -183,4 +175,12 @@ export default class AnimationHelper {
 
     return value
   }
+}
+
+function safeGetEasing(easing) {
+  return typeof easing === 'string'
+    ? EasingFunctions[easing]
+    : typeof easing === 'function'
+    ? easing
+    : EasingFunctions.linear
 }
