@@ -1,7 +1,11 @@
+// @ts-check
 import ControlPanel, {
   Range,
 } from '../ControlPanel/index.mjs'
 
+/**
+ * @param {import("p5")} p
+ */
 export default function (p) {
   const [w, h] = [500, 500]
 

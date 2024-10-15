@@ -2,7 +2,7 @@ import ControlPanel, {
   Range,
 } from '../ControlPanel/index.mjs'
 
-const scale = 10
+const scale = 20
 let p
 
 export default function (p5Instance) {

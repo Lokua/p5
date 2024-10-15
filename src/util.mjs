@@ -268,3 +268,26 @@ export function erf(x) {
 
   return sign * y
 }
+
+// noteDuration 1 = 1 quarter
+export function getProgress(
+  frameRate,
+  frameCount,
+  bpm = 120,
+  noteDuration = 1,
+) {
+  // Calculate the duration of one beat in seconds
+  const beatDuration = 60 / bpm
+
+  // Calculate the total duration of the note in frames
+  const totalFramesForNote =
+    beatDuration * noteDuration * frameRate
+
+  // Calculate the current frame within the note duration
+  const currentFrame = frameCount % totalFramesForNote
+
+  // Calculate progress through the note (value between 0 and 1)
+  const progress = currentFrame / totalFramesForNote
+
+  return progress
+}

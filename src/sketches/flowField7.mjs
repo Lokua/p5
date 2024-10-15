@@ -16,8 +16,8 @@ export default function () {
 
   const cellSize = 20
   const flowField = []
-  const curve = 16
-  const zoom = 0.8
+  const curve = 100
+  const zoom = 100
 
   const controlPanel = new ControlPanel({
     id: metadata.name,

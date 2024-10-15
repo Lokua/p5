@@ -46,7 +46,8 @@ export default function (p) {
 
   function setup() {
     controlPanel.init()
-    const canvas = p.createCanvas(w, h, p.WEBGL)
+    // const canvas = p.createCanvas(w, h, p.WEBGL)
+    const canvas = p.createCanvas(w, h)
 
     p.colorMode(p.HSB, 100)
     p.noiseSeed(312)
@@ -79,7 +80,7 @@ export default function (p) {
         const x = size * p.cos(a)
         const y = size * p.sin(a)
         const n = p.map(
-          p.noise(x * resolution, y * resolution),
+          p.noise(x, y) + resolution,
           0,
           1,
           -scale,
