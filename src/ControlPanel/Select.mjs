@@ -1,7 +1,7 @@
 import Control from './Control.mjs'
 
 export default class Select extends Control {
-  constructor({ name, value, hasLabelValue, options }) {
+  constructor({ name, value, hasLabelValue = false, options }) {
     super({
       name,
       value,

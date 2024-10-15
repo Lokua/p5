@@ -26,9 +26,7 @@ export function randomInt(minimum, maximum) {
     minimum = 0
   }
 
-  return Math.floor(
-    Math.random() * (maximum - minimum + 1) + minimum,
-  )
+  return Math.floor(Math.random() * (maximum - minimum + 1) + minimum)
 }
 
 export const randomBool = () => randomInt(1) > 0
@@ -58,10 +56,7 @@ export const isOdd = (x) => !isEven(x)
 export const $ = document.querySelector.bind(document)
 
 export function average(values) {
-  return (
-    values.reduce((total, value) => total + value, 0) /
-    values.length
-  )
+  return values.reduce((total, value) => total + value, 0) / values.length
 }
 
 // https://github.com/tmcw-up-for-adoption/simple-linear-scale/blob/master/index.js
@@ -71,14 +66,11 @@ export function linearScale(domain, range, clamp) {
       return range[0]
     }
 
-    const ratio =
-      (range[1] - range[0]) / (domain[1] - domain[0])
+    const ratio = (range[1] - range[0]) / (domain[1] - domain[0])
 
     const result = range[0] + ratio * (value - domain[0])
 
-    return clamp
-      ? Math.min(range[1], Math.max(range[0], result))
-      : result
+    return clamp ? Math.min(range[1], Math.max(range[0], result)) : result
   }
 }
 
@@ -161,10 +153,8 @@ export class P5Helpers {
   }
 
   geographicToCartesian(longitude, latitude, radius) {
-    const x =
-      radius * this.p.sin(longitude) * this.p.cos(latitude)
-    const y =
-      radius * this.p.sin(longitude) * this.p.sin(latitude)
+    const x = radius * this.p.sin(longitude) * this.p.cos(latitude)
+    const y = radius * this.p.sin(longitude) * this.p.sin(latitude)
     const z = radius * this.p.cos(longitude)
 
     return [x, y, z]
@@ -237,8 +227,7 @@ export const get = (url) =>
     },
   }).then((res) => res.json())
 
-export const arrayModLookup = (array, i) =>
-  array[i % array.length]
+export const arrayModLookup = (array, i) => array[i % array.length]
 
 export const sigmoid = (x) => 1 / (1 + Math.exp(-x))
 
@@ -261,33 +250,71 @@ export function erf(x) {
   // A&S formula 7.1.26
   const t = 1.0 / (1.0 + p * x)
   const y =
-    1.0 -
-    ((((a5 * t + a4) * t + a3) * t + a2) * t + a1) *
-      t *
-      Math.exp(-x * x)
+    1.0 - ((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t * Math.exp(-x * x)
 
   return sign * y
 }
 
-// noteDuration 1 = 1 quarter
-export function getProgress(
+// noteDuration 1 = 1 quarter, returns value between 0 and 1
+export function loopProgress(
   frameRate,
   frameCount,
   bpm = 120,
   noteDuration = 1,
 ) {
-  // Calculate the duration of one beat in seconds
   const beatDuration = 60 / bpm
+  const totalFrames = beatDuration * noteDuration * frameRate
+  return (frameCount % totalFrames) / totalFrames
+}
 
-  // Calculate the total duration of the note in frames
-  const totalFramesForNote =
-    beatDuration * noteDuration * frameRate
+export function easeIn(progress) {
+  return progress * progress
+}
 
-  // Calculate the current frame within the note duration
-  const currentFrame = frameCount % totalFramesForNote
+export function easeOut(progress) {
+  return progress * (2 - progress)
+}
 
-  // Calculate progress through the note (value between 0 and 1)
-  const progress = currentFrame / totalFramesForNote
+export function easeInOut(progress) {
+  return progress < 0.5
+    ? 2 * progress * progress
+    : -1 + (4 - 2 * progress) * progress
+}
 
+export function linear(progress) {
   return progress
+}
+
+export function easeInQuad(progress) {
+  return progress * progress
+}
+
+export function easeOutQuad(progress) {
+  return progress * (2 - progress)
+}
+
+export function easeInOutQuad(progress) {
+  return progress < 0.5
+    ? 2 * progress * progress
+    : -1 + (4 - 2 * progress) * progress
+}
+
+export function chainAnimations(progress, stages) {
+  const totalDuration = stages.reduce((sum, stage) => sum + stage.duration, 0)
+  let accumulated = 0
+
+  for (let stage of stages) {
+    const stageStart = accumulated
+    const stageEnd = accumulated + stage.duration / totalDuration
+
+    if (progress >= stageStart && progress < stageEnd) {
+      const stageProgress = (progress - stageStart) / (stageEnd - stageStart)
+      return (stage.easing || linear)(stageProgress)
+    }
+
+    accumulated += stage.duration / totalDuration
+  }
+
+  const lastStage = stages[stages.length - 1]
+  return lastStage.easing(1)
 }

@@ -1,8 +1,5 @@
 // @ts-check
-import ControlPanel, {
-  Range,
-  Toggle,
-} from '../ControlPanel/index.mjs'
+import ControlPanel, { Range, Toggle, Select } from '../ControlPanel/index.mjs'
 import { getProgress as getProgress_ } from '../util.mjs'
 
 /**
@@ -20,12 +17,7 @@ export default function (p) {
   let noiseBuffer
 
   const getProgress = (noteDuration) =>
-    getProgress_(
-      metadata.frameRate,
-      p.frameCount,
-      134,
-      noteDuration,
-    )
+    getProgress_(metadata.frameRate, p.frameCount, 134, noteDuration)
 
   const controlPanel = new ControlPanel({
     id: metadata.name,
@@ -75,6 +67,26 @@ export default function (p) {
         name: 'colorShift',
         value: false,
       }),
+      phaseMode: new Select({
+        name: 'phaseMode',
+        options: [
+          'default',
+          'distanceFromCenter',
+          'productOfIndices',
+          'moduloPattern',
+          'trigonometricFunctions',
+          'checkerboardEffect',
+          'absoluteDifference',
+          'randomOffsets',
+          'perlinNoise',
+          'exponentialDecay',
+          'spiralPattern',
+          'distanceFromEdge',
+          'sumOfSquares',
+          'differenceOfSquares',
+          'manhattanDistance',
+        ],
+      }),
     },
     inputHandler() {
       !p.isLooping() && draw()
@@ -107,6 +119,7 @@ export default function (p) {
       waveTime,
       colorShift,
       nearHue,
+      phaseMode,
     } = controlPanel.values()
     p.noStroke()
     p.background(0)
@@ -122,43 +135,74 @@ export default function (p) {
         let x = padding + (j + 1) * spacing
         let y = padding + (i + 1) * spacing
 
-        const phaseOffset =
-          (i + j) / (2 * grid * delayPerColumn)
-        const adjustedProgress =
-          (progress - phaseOffset + 1) % 1
+        const phaseOffset = {
+          default: () => (i + j) / (2 * grid * delayPerColumn),
+          distanceFromCenter: () => {
+            const center = (grid - 1) / 2
+            const distance = Math.hypot(i - center, j - center)
+            const maxDistance = Math.hypot(center, center)
+            return distance / maxDistance / delayPerColumn
+          },
+          productOfIndices: () => (i * j) / (grid * grid * delayPerColumn),
+          moduloPattern: () => ((i + j) % 4) / (4 * delayPerColumn),
+          trigonometricFunctions() {
+            const frequency = 0.5 // Adjust for pattern density
+            return (
+              (p.sin(i * frequency) + p.cos(j * frequency)) /
+              (2 * delayPerColumn)
+            )
+          },
+          checkerboardEffect: () => ((i + j) % 2) / (2 * delayPerColumn),
+          absoluteDifference: () => Math.abs(i - j) / (grid * delayPerColumn),
+          randomOffsets: () => p.random() / delayPerColumn,
+          perlinNoise() {
+            const noiseScale = 0.1
+            return p.noise(i * noiseScale, j * noiseScale) / delayPerColumn
+          },
+          exponentialDecay: () => Math.exp(-((i + j) / grid)) / delayPerColumn,
+          spiralPattern() {
+            const center = (grid - 1) / 2
+            const angle = Math.atan2(i - center, j - center)
+            const radius = Math.hypot(i - center, j - center)
+            return (angle + radius) / (p.TWO_PI + grid * delayPerColumn)
+          },
+          distanceFromEdge() {
+            const distance = Math.min(i, j, grid - 1 - i, grid - 1 - j)
+            return distance / grid / delayPerColumn
+          },
+          sumOfSquares: () =>
+            (i * i + j * j) / (2 * grid * grid * delayPerColumn),
+          differenceOfSquares: () =>
+            Math.abs(i * i - j * j) / (grid * grid * delayPerColumn),
+          manhattanDistance() {
+            const center = (grid - 1) / 2
+            const distance = Math.abs(i - center) + Math.abs(j - center)
+            const maxDistance = center * 2
+            return distance / maxDistance / delayPerColumn
+          },
+        }[phaseMode]()
+
+        const adjustedProgress = (progress - phaseOffset + 1) % 1
         let displacementX = 0
         let displacementY = 0
 
         if (animateX) {
-          displacementX =
-            p.sin(adjustedProgress * p.TWO_PI) * amplitude
+          displacementX = p.sin(adjustedProgress * p.TWO_PI) * amplitude
           x += displacementX
         }
         if (animateY) {
-          displacementY =
-            p.sin(adjustedProgress * p.TWO_PI) * amplitude
+          displacementY = p.sin(adjustedProgress * p.TWO_PI) * amplitude
           y += displacementY
         }
 
-        const totalDisplacement = Math.hypot(
-          displacementX,
-          displacementY,
-        )
+        const totalDisplacement = Math.hypot(displacementX, displacementY)
         const maxDisplacement = amplitude * Math.SQRT2
         const depth = totalDisplacement / maxDisplacement
 
-        let circleColor = p.lerpColor(
-          farColor,
-          nearColor,
-          depth,
-        )
+        let circleColor = p.lerpColor(farColor, nearColor, depth)
 
         if (colorShift) {
-          circleColor = p.lerpColor(
-            nearColor,
-            farColor,
-            depth,
-          )
+          circleColor = p.lerpColor(nearColor, farColor, depth)
         }
 
         p.fill(circleColor)
@@ -177,9 +221,7 @@ export default function (p) {
     const alpha = 255
     for (let x = 0; x < size; x++) {
       for (let y = 0; y < size; y++) {
-        const noiseValue =
-          p.noise(x * noiseScale, y * noiseScale) *
-          brightness
+        const noiseValue = p.noise(x * noiseScale, y * noiseScale) * brightness
         const index = (x + y * size) * 4
         noiseBuffer.pixels[index] = noiseValue
         noiseBuffer.pixels[index + 1] = noiseValue

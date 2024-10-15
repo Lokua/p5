@@ -146,16 +146,18 @@ function setupPage({ p, metadata, destroy }) {
     setBackground(backgroundColor)
     localStorage.setItem('backgroundColor', backgroundColor)
 
-    const controlsBackgroundColor = [
-      backgroundColors[2],
-      backgroundColors[3],
-    ].includes(backgroundColor)
-      ? '#ddd'
-      : '#444'
+    const isDark = [backgroundColors[2], backgroundColors[3]].includes(
+      backgroundColor,
+    )
+
+    const controlsBackgroundColor = isDark ? '#ddd' : '#444'
 
     setControlsBackground(controlsBackgroundColor)
     localStorage.setItem('controlsBackgroundColor', controlsBackgroundColor)
+
     updateLabelColors(backgroundColorIndex)
+
+    document.documentElement.style.colorScheme = isDark ? 'light' : 'dark'
   }
 
   function setBackground(color) {
