@@ -3,9 +3,10 @@ import { $, uuid, P5Helpers, get } from './util.mjs'
 import bus from './bus.mjs'
 import defaultSketch from './sketches/sketch.mjs'
 
-let canvasElement
 let recording = false
-let recorder = null
+let chunks = []
+let recorder
+let defaultPixelDensity
 
 loadInitialSketch()
 
@@ -43,30 +44,19 @@ function init(sketch) {
     }
 
     p.setup = () => {
-      // turns 500x500 into 3000x3000
-      // note: width and height of 500 renders a 1000x1000 image due to
-      // default pixel density
-      p.pixelDensity(6)
+      defaultPixelDensity = p.pixelDensity()
       const { canvas } = setup()
       p.frameRate(metadata.frameRate || 24)
       canvas.parent('sketch')
-      canvasElement = canvas.elt
 
-      recorder = new CCapture({
-        format: 'webm',
-        timeLimit: 60,
-        verbose: true,
-        framerate: metadata.frameRate || 24,
+      const stream = canvas.elt.captureStream(metadata.frameRate || 24)
+      recorder = new MediaRecorder(stream, {
+        mimeType: 'video/webm; codecs=vp9',
       })
     }
 
     p.draw = () => {
       draw()
-      recorder.capture(canvasElement)
-      // if (recording) {
-      //   requestAnimationFrame(p.draw)
-      //   recorder.capture(canvasElement)
-      // }
     }
 
     setupPage({
@@ -137,7 +127,11 @@ function setupPage({ p, metadata, destroy }) {
 
   async function save() {
     const id = uuid()
+    // density@2 = 500 x 500 = 1000px image
+    // density@6 1500 x 1500 = 3000px image (large size needed for Apple Music)
+    p.pixelDensity(6)
     p.saveCanvas(`${metadata.name}-${id}`, 'png')
+    p.pixelDensity(defaultPixelDensity)
   }
 
   function toggleLoop() {
@@ -212,6 +206,15 @@ function setupPage({ p, metadata, destroy }) {
     console.info('recording started')
     recording = true
     p.frameCount = 0
+    recorder.addEventListener('dataavailable', (event) => {
+      if (event.data.size > 0) {
+        chunks.push(event.data)
+      }
+    })
+    recorder.addEventListener('stop', () => {
+      console.log('stop fired')
+      saveVideo()
+    })
     recorder.start()
     $('#record-button').textContent = 'RECORDING'
   }
@@ -220,8 +223,21 @@ function setupPage({ p, metadata, destroy }) {
     console.info('recording stopped')
     recording = false
     recorder.stop()
-    recorder.save()
     $('#record-button').textContent = 'record'
+  }
+
+  function saveVideo() {
+    const blob = new Blob(chunks, {
+      type: 'video/webm',
+    })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'recording.webm'
+    document.body.appendChild(a)
+    a.click()
+    URL.revokeObjectURL(url)
+    document.body.removeChild(a)
   }
 
   function addEventListeners() {
