@@ -108,18 +108,19 @@ export default function (p) {
     p.background(0)
     p.image(noiseBuffer, 0, 0)
 
+    const spacing = (p.width - padding * 2) / (grid + 1)
+    const progress = animationHelper.getLoopProgress(waveTime)
+
     const transitionWaveTime = animationHelper.repeatValues({
       keyframes: [16, 1],
       duration: 32,
     })
-
-    const spacing = (p.width - padding * 2) / (grid + 1)
-    const progress = animationHelper.getLoopProgress(waveTime)
     const transitionProgress = animationHelper.getPingPongLoopProgress(
       transitionWaveTime,
     )
+
     const nearColor = p.color(nearHue, 100, 50)
-    const farColor = p.color(0, 0, 100)
+    const farColor = p.color(50, 100, 90)
 
     const animateX = animationHelper.repeatValues({
       keyframes: [false, true],
@@ -135,16 +136,15 @@ export default function (p) {
 
     const circleSize = animationHelper.triggeredAnimation({
       value: 0.5,
-      keyframes: [0.3],
+      keyframes: [0.4],
       duration: 1,
       every: 2,
-      easing: 'easeOut',
       delay: 0.5,
     })
 
     const delayPerColumn = animationHelper.oneTimeAnimation({
-      keyframes: [1, 0.5],
-      duration: 16,
+      keyframes: [2, 0.5],
+      duration: 32,
     })
 
     for (let i = 0; i < grid; i++) {
@@ -159,9 +159,9 @@ export default function (p) {
         )
 
         const adjustedProgress = (progress - phaseOffset + 1) % 1
+
         let displacementX = 0
         let displacementY = 0
-
         if (animateX) {
           displacementX = p.sin(adjustedProgress * p.TWO_PI) * amplitude
           x += displacementX
@@ -189,7 +189,6 @@ export default function (p) {
     noiseBuffer.loadPixels()
     const d = p.pixelDensity()
     const size = w * d
-    // smaller values make larger patterns
     const noiseScale = 0.07
     const brightness = 48
     const alpha = 255
