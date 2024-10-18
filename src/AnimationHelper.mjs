@@ -12,6 +12,8 @@ export default class AnimationHelper {
   static PLAY_MODE_FORWARD = 'forward'
   static PLAY_MODE_BACKWARD = 'backward'
   static PLAY_MODE_PINGPONG = 'pingpong'
+  static TRIGGER_MODE_DEFAULT = 'default'
+  static TRIGGER_MODE_ROUND_ROBIN = 'roundRobin'
 
   constructor(p, frameRate, bpm = 120) {
     this.p = p
@@ -120,6 +122,7 @@ export default class AnimationHelper {
    * @param {number} params.every - The interval in beats at which the animation should be triggered.
    * @param {string} [params.easing=EasingFunctions.linear] - The easing function to be used for the animation.
    * @param {number} [params.delay=0] - The delay before the animation starts, in beats.
+   * @param {string} [params.mode=AnimationHelper.TRIGGER_MODE_DEFAULT]
    * @returns {number} - The interpolated value based on the current frame and keyframes.
    */
   triggeredAnimation({
@@ -129,6 +132,7 @@ export default class AnimationHelper {
     every,
     easing = 'linear',
     delay = 0,
+    mode = AnimationHelper.TRIGGER_MODE_DEFAULT,
   }) {
     const beatDuration = 60 / this.bpm
     const totalFramesForEvery = every * beatDuration * this.frameRate
@@ -141,18 +145,24 @@ export default class AnimationHelper {
 
     if (currentFrameInEvery < totalFramesForDuration) {
       let progress = currentFrameInEvery / totalFramesForDuration
-      progress = safeGetEasing(easing)(
-        currentFrameInEvery / totalFramesForDuration,
-      )
+      progress = safeGetEasing(easing)(progress)
       progress = Math.min(progress, 1)
 
       const totalSegments = keyframes.length + 2
-      const segmentProgress = progress * (totalSegments - 1)
-      const segmentIndex = Math.min(
-        Math.floor(segmentProgress),
-        totalSegments - 2,
-      )
-      const segmentFraction = segmentProgress - segmentIndex
+      let segmentIndex, segmentFraction
+
+      if (mode === 'roundRobin') {
+        const totalFramesSinceStart = this.p.frameCount - totalFramesForDelay
+        const triggerCount = Math.floor(
+          totalFramesSinceStart / totalFramesForEvery,
+        )
+        segmentIndex = triggerCount % (totalSegments - 1)
+        segmentFraction = progress
+      } else {
+        const segmentProgress = progress * (totalSegments - 1)
+        segmentIndex = Math.min(Math.floor(segmentProgress), totalSegments - 2)
+        segmentFraction = segmentProgress - segmentIndex
+      }
 
       let startValue, endValue
 
@@ -174,6 +184,51 @@ export default class AnimationHelper {
     }
 
     return value
+  }
+
+  /**
+   * Performs a one-time animation based on the provided keyframes and timing parameters.
+   *
+   * @param {Object} params - The parameters for the animation.
+   * @param {number[]} params.keyframes - An array of keyframe values for the animation.
+   * @param {number} params.duration - The duration of the animation in beats.
+   * @param {string} [params.easing='linear'] - The easing function to be used for the animation.
+   * @returns {number} - The interpolated value based on the current frame and keyframes.
+   */
+  oneTimeAnimation({ keyframes, duration, easing = 'linear' }) {
+    const beatDuration = 60 / this.bpm
+    const totalFramesForDuration = duration * beatDuration * this.frameRate
+
+    // Calculate progress from the start of the animation
+    const currentFrame = this.p.frameCount
+    const progress = Math.min(currentFrame / totalFramesForDuration, 1)
+    const easedProgress = safeGetEasing(easing)(progress)
+
+    const totalSegments = keyframes.length - 1
+    const segmentProgress = easedProgress * totalSegments
+    const segmentIndex = Math.min(
+      Math.floor(segmentProgress),
+      totalSegments - 1,
+    )
+    const segmentFraction = segmentProgress - segmentIndex
+
+    const startValue = keyframes[segmentIndex]
+    const endValue = keyframes[segmentIndex + 1]
+
+    const output = startValue + (endValue - startValue) * segmentFraction
+
+    return progress < 1 ? output : keyframes[keyframes.length - 1]
+  }
+
+  repeatValues({ keyframes, duration }) {
+    const beatDuration = 60 / this.bpm
+    const totalFramesForSegment = duration * beatDuration * this.frameRate
+    const totalFramesForCycle = totalFramesForSegment * keyframes.length
+    const currentFrameInCycle = this.p.frameCount % totalFramesForCycle
+    const currentSegmentIndex = Math.floor(
+      currentFrameInCycle / totalFramesForSegment,
+    )
+    return keyframes[currentSegmentIndex]
   }
 }
 

@@ -63,6 +63,10 @@ function init(sketch) {
     p.draw = () => {
       draw()
       recorder.capture(canvasElement)
+      // if (recording) {
+      //   requestAnimationFrame(p.draw)
+      //   recorder.capture(canvasElement)
+      // }
     }
 
     setupPage({
@@ -200,9 +204,14 @@ function setupPage({ p, metadata, destroy }) {
     }
   }
 
+  function onReset() {
+    p.frameCount = 0
+  }
+
   function startRecording() {
     console.info('recording started')
     recording = true
+    p.frameCount = 0
     recorder.start()
     $('#record-button').textContent = 'RECORDING'
   }
@@ -223,6 +232,7 @@ function setupPage({ p, metadata, destroy }) {
     $('#debug-button').addEventListener('click', debug)
     $('#record-button').addEventListener('click', onClickRecord)
     $('#sketches-select').addEventListener('change', onSelectSketch)
+    $('#reset-button').addEventListener('click', onReset)
     body.addEventListener('keyup', onKeyUp)
   }
 
@@ -234,6 +244,7 @@ function setupPage({ p, metadata, destroy }) {
     $('#debug-button').removeEventListener('click', debug)
     $('#record-button').removeEventListener('click', onClickRecord)
     $('#sketches-select').removeEventListener('change', onSelectSketch)
+    $('#reset-button').addEventListener('click', onReset)
     body.removeEventListener('keyup', onKeyUp)
   }
 }

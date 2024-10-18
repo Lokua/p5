@@ -8,13 +8,30 @@ import AnimationHelper from '../AnimationHelper.mjs'
 export default function (p) {
   const metadata = {
     name: 'flexor2',
-    frameRate: 24,
+    frameRate: 60,
   }
 
   const [w, h] = [500, 500]
   const animationHelper = new AnimationHelper(p, metadata.frameRate, 134)
   const amplitude = 20
   const padding = 20
+  const phaseModes = [
+    'default',
+    'distanceFromCenter',
+    'productOfIndices',
+    'moduloPattern',
+    'trigonometricFunctions',
+    'checkerboardEffect',
+    'absoluteDifference',
+    'randomOffsets',
+    'perlinNoise',
+    'exponentialDecay',
+    'spiralPattern',
+    'distanceFromEdge',
+    'sumOfSquares',
+    'differenceOfSquares',
+    'manhattanDistance',
+  ]
   let noiseBuffer
 
   const controlPanel = new ControlPanel({
@@ -26,30 +43,6 @@ export default function (p) {
         value: 6,
         min: 3,
         max: 128,
-      }),
-      circleSize: new Range({
-        name: 'circleSize',
-        value: 0.05,
-        min: 0.001,
-        max: 1,
-        step: 0.001,
-      }),
-      delayPerColumn: new Range({
-        name: 'delayPerColumn',
-        value: 1,
-        min: 0.001,
-        max: 1,
-        step: 0.001,
-      }),
-      waveTime: new Range({
-        name: 'waveTime',
-        value: 4,
-        min: 1,
-        max: 24,
-      }),
-      animateX: new Toggle({
-        name: 'animateX',
-        value: true,
       }),
       animateY: new Toggle({
         name: 'animateY',
@@ -65,25 +58,19 @@ export default function (p) {
         name: 'colorShift',
         value: false,
       }),
+      waveTime: new Range({
+        name: 'waveTime',
+        value: 4,
+        min: 1,
+        max: 128,
+      }),
       phaseMode: new Select({
         name: 'phaseMode',
-        options: [
-          'default',
-          'distanceFromCenter',
-          'productOfIndices',
-          'moduloPattern',
-          'trigonometricFunctions',
-          'checkerboardEffect',
-          'absoluteDifference',
-          'randomOffsets',
-          'perlinNoise',
-          'exponentialDecay',
-          'spiralPattern',
-          'distanceFromEdge',
-          'sumOfSquares',
-          'differenceOfSquares',
-          'manhattanDistance',
-        ],
+        options: phaseModes,
+      }),
+      transitionPhaseMode: new Select({
+        name: 'transitionPhaseMode',
+        options: phaseModes,
       }),
     },
     inputHandler() {
@@ -110,35 +97,65 @@ export default function (p) {
   function draw() {
     const {
       grid,
-      circleSize,
-      animateX,
       animateY,
-      delayPerColumn,
-      waveTime,
       colorShift,
       nearHue,
+      waveTime,
       phaseMode,
+      transitionPhaseMode,
     } = controlPanel.values()
     p.noStroke()
     p.background(0)
     p.image(noiseBuffer, 0, 0)
 
+    const transitionWaveTime = animationHelper.repeatValues({
+      keyframes: [16, 1],
+      duration: 32,
+    })
+
     const spacing = (p.width - padding * 2) / (grid + 1)
     const progress = animationHelper.getLoopProgress(waveTime)
+    const transitionProgress = animationHelper.getPingPongLoopProgress(
+      transitionWaveTime,
+    )
     const nearColor = p.color(nearHue, 100, 50)
     const farColor = p.color(0, 0, 100)
+
+    const animateX = animationHelper.repeatValues({
+      keyframes: [false, true],
+      duration: 16,
+    })
+
+    const maxDisplacement =
+      animateX && animateY
+        ? amplitude * Math.SQRT2
+        : animateX || animateY
+        ? amplitude
+        : 0
+
+    const circleSize = animationHelper.triggeredAnimation({
+      value: 0.5,
+      keyframes: [0.3],
+      duration: 1,
+      every: 2,
+      easing: 'easeOut',
+      delay: 0.5,
+    })
+
+    const delayPerColumn = animationHelper.oneTimeAnimation({
+      keyframes: [1, 0.5],
+      duration: 16,
+    })
 
     for (let i = 0; i < grid; i++) {
       for (let j = 0; j < grid; j++) {
         let x = padding + (j + 1) * spacing
         let y = padding + (i + 1) * spacing
 
-        const phaseOffset = getPhaseOffset(
-          phaseMode,
-          i,
-          j,
-          grid,
-          delayPerColumn,
+        const phaseOffset = p.lerp(
+          getPhaseOffset(phaseMode, i, j, grid, delayPerColumn),
+          getPhaseOffset(transitionPhaseMode, i, j, grid, delayPerColumn),
+          transitionProgress,
         )
 
         const adjustedProgress = (progress - phaseOffset + 1) % 1
@@ -155,14 +172,12 @@ export default function (p) {
         }
 
         const totalDisplacement = Math.hypot(displacementX, displacementY)
-        const maxDisplacement = amplitude * Math.SQRT2
-        const depth = totalDisplacement / maxDisplacement
+        const depth =
+          maxDisplacement > 0 ? totalDisplacement / maxDisplacement : 0
 
-        let circleColor = p.lerpColor(farColor, nearColor, depth)
-
-        if (colorShift) {
-          circleColor = p.lerpColor(nearColor, farColor, depth)
-        }
+        const circleColor = colorShift
+          ? p.lerpColor(nearColor, farColor, depth)
+          : p.lerpColor(farColor, nearColor, depth)
 
         p.fill(circleColor)
         p.ellipse(x, y, spacing * circleSize)
