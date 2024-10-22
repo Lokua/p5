@@ -122,17 +122,11 @@ export default function (p) {
     const nearColor = p.color(nearHue, 100, 50)
     const farColor = p.color(50, 100, 90)
 
-    const animateX = animationHelper.repeatValues({
-      keyframes: [false, true],
-      duration: 16,
-    })
+    const animateXProgress = animationHelper.getPingPongLoopProgress(16)
 
-    const maxDisplacement =
-      animateX && animateY
-        ? amplitude * Math.SQRT2
-        : animateX || animateY
-        ? amplitude
-        : 0
+    const maxDisplacement = Math.sqrt(
+      (animateXProgress * amplitude) ** 2 + (animateY ? amplitude : 0) ** 2,
+    )
 
     const circleSize = animationHelper.triggeredAnimation({
       value: 0.5,
@@ -160,12 +154,11 @@ export default function (p) {
 
         const adjustedProgress = (progress - phaseOffset + 1) % 1
 
-        let displacementX = 0
+        const displacementX =
+          p.sin(adjustedProgress * p.TWO_PI) * amplitude * animateXProgress
+        x += displacementX
+
         let displacementY = 0
-        if (animateX) {
-          displacementX = p.sin(adjustedProgress * p.TWO_PI) * amplitude
-          x += displacementX
-        }
         if (animateY) {
           displacementY = p.sin(adjustedProgress * p.TWO_PI) * amplitude
           y += displacementY

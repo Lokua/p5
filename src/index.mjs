@@ -7,6 +7,10 @@ let recording = false
 let chunks = []
 let recorder
 let defaultPixelDensity
+const recordingDurationSeconds = 60
+let maxRecordingFrames
+// TODO: find a better way
+let stopRecording_
 
 loadInitialSketch()
 
@@ -44,18 +48,25 @@ function init(sketch) {
     }
 
     p.setup = () => {
+      const frameRate = metadata.frameRate || 24
       defaultPixelDensity = p.pixelDensity()
+      // p.pixelDensity(2)
       const { canvas } = setup()
-      p.frameRate(metadata.frameRate || 24)
+      p.frameRate(frameRate)
       canvas.parent('sketch')
 
-      const stream = canvas.elt.captureStream(metadata.frameRate || 24)
+      maxRecordingFrames = recordingDurationSeconds * frameRate
+
+      const stream = canvas.elt.captureStream(frameRate)
       recorder = new MediaRecorder(stream, {
         mimeType: 'video/webm; codecs=vp9',
       })
     }
 
     p.draw = () => {
+      if (recording && p.frameCount >= maxRecordingFrames) {
+        stopRecording_()
+      }
       draw()
     }
 
@@ -68,6 +79,7 @@ function init(sketch) {
 }
 
 function setupPage({ p, metadata, destroy }) {
+  stopRecording_ = stopRecording
   const body = document.body
   const backgroundColors = [
     'rgb(0, 0, 0)',
@@ -233,7 +245,8 @@ function setupPage({ p, metadata, destroy }) {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'recording.webm'
+    const name = localStorage.getItem('lastSketch') || 'recording'
+    a.download = `${name}.webm`
     document.body.appendChild(a)
     a.click()
     URL.revokeObjectURL(url)
