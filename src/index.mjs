@@ -1,10 +1,9 @@
 // @ts-check
 import { $, uuid, P5Helpers, get } from './util.mjs'
 import bus from './bus.mjs'
-import defaultSketch from './sketches/sketch.mjs'
+import defaultSketch from './sketches/gridTemplate.mjs'
 
 let recording = false
-let defaultPixelDensity
 let maxRecordingFrames
 const recordingDurationSeconds = 60
 let frames = []
@@ -50,8 +49,6 @@ function init(sketch) {
 
     p.setup = () => {
       frameRate = metadata.frameRate || 24
-      defaultPixelDensity = p.pixelDensity()
-      // p.pixelDensity(2)
       const { canvas } = setup()
       p.frameRate(frameRate)
       canvas.parent('sketch')
@@ -74,34 +71,6 @@ function init(sketch) {
       destroy,
     })
   }
-}
-
-function captureFrame(p) {
-  const image = p.createImage(p.width, p.height)
-  image.copy(p, 0, 0, p.width, p.height, 0, 0, p.width, p.height)
-  frames.push(image)
-}
-
-async function sendFramesToBackend() {
-  console.log('Converting frames...')
-  const formData = new FormData()
-
-  formData.append('name', localStorage.getItem('lastSketch') || 'recording')
-  formData.append('frameRate', frameRate)
-
-  // Convert to base64 URL
-  frames.forEach((frame, index) => {
-    const imgDataUrl = frame.canvas.toDataURL()
-    formData.append(`frame-${index}`, imgDataUrl)
-  })
-
-  // Send the data to the backend (implementation depends on your backend)
-  await fetch('/upload-frames', {
-    method: 'POST',
-    body: formData,
-  })
-
-  console.log('Frames sent to the backend. Check backend logs for progress.')
 }
 
 function setupPage({ p, metadata, destroy }) {
@@ -165,7 +134,7 @@ function setupPage({ p, metadata, destroy }) {
 
   async function save() {
     const id = uuid()
-    const defaultDensity = p.pixelDensity() // Save the default pixel density
+    const defaultDensity = p.pixelDensity()
     p.pixelDensity(6)
     setTimeout(() => {
       p.saveCanvas(`${metadata.name}-${id}`, 'png')
@@ -276,11 +245,37 @@ function setupPage({ p, metadata, destroy }) {
     $('#debug-button').removeEventListener('click', debug)
     $('#record-button').removeEventListener('click', onClickRecord)
     $('#sketches-select').removeEventListener('change', onSelectSketch)
-    $('#reset-button').addEventListener('click', onReset)
+    $('#reset-button').removeEventListener('click', onReset)
     body.removeEventListener('keyup', onKeyUp)
   }
 }
 
 function sketchNameToPath(name) {
   return `./sketches/${name}.mjs`
+}
+
+function captureFrame(p) {
+  const image = p.createImage(p.width, p.height)
+  image.copy(p, 0, 0, p.width, p.height, 0, 0, p.width, p.height)
+  frames.push(image)
+}
+
+async function sendFramesToBackend() {
+  console.log('Converting frames...')
+  const formData = new FormData()
+
+  formData.append('name', localStorage.getItem('lastSketch') || 'recording')
+  formData.append('frameRate', frameRate)
+
+  frames.forEach((frame, index) => {
+    const imgDataUrl = frame.canvas.toDataURL()
+    formData.append(`frame-${index}`, imgDataUrl)
+  })
+
+  await fetch('/upload-frames', {
+    method: 'POST',
+    body: formData,
+  })
+
+  console.log('Frames sent to the backend. Check backend logs for progress.')
 }
