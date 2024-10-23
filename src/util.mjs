@@ -254,3 +254,78 @@ export function erf(x) {
 
   return sign * y
 }
+
+export const DistanceAlgorithms = {
+  // Euclidean Distance (Circular Symmetry)
+  euclidean(x, y, centerX, centerY) {
+    return Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2))
+  },
+
+  // Manhattan Distance (Diamond Symmetry)
+  manhattan(x, y, centerX, centerY) {
+    return Math.abs(x - centerX) + Math.abs(y - centerY)
+  },
+
+  // Chebyshev Distance (Square Symmetry)
+  chebyshev(x, y, centerX, centerY) {
+    return Math.max(Math.abs(x - centerX), Math.abs(y - centerY))
+  },
+
+  // Minkowski Distance (Blend of Euclidean and Manhattan)
+  minkowski(x, y, centerX, centerY, p = 2) {
+    return Math.pow(
+      Math.pow(Math.abs(x - centerX), p) + Math.pow(Math.abs(y - centerY), p),
+      1 / p,
+    )
+  },
+
+  // Radial Sinusoidal Distance (Wave-like Patterns)
+  radialSinusoidal(x, y, centerX, centerY) {
+    const distance = Math.sqrt(
+      Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2),
+    )
+    // Adjust scale as needed
+    return Math.abs(Math.sin(distance / 50)) * 100
+  },
+
+  // Polar Distance (Symmetric radial patterns)
+  polar(x, y, centerX, centerY) {
+    return Math.atan2(y - centerY, x - centerX)
+  },
+
+  // Spiral Distance (Creates spiral-like patterns)
+  spiral(x, y, centerX, centerY) {
+    const distance = Math.sqrt(
+      Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2),
+    )
+    const angle = Math.atan2(y - centerY, x - centerX)
+    return distance + angle * 100 // Creates spiral effect
+  },
+
+  // Harmonic Distance (Repeating patterns)
+  harmonic(x, y, centerX, centerY) {
+    const distance = Math.sqrt(
+      Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2),
+    )
+    return Math.sin(distance / 50) * 50 + Math.cos(distance / 75) * 30
+  },
+}
+
+export function lerp(start, end, t) {
+  return start + (end - start) * t
+}
+
+export function multiLerp(values, t) {
+  const numSegments = values.length - 1
+  const scaledT = t * numSegments
+  const index = Math.floor(scaledT)
+  const segmentT = scaledT - index
+
+  // If t is exactly 1, return the last value to prevent out-of-bounds access
+  if (index >= numSegments) {
+    return values[numSegments]
+  }
+
+  // Interpolate between the current and next value
+  return lerp(values[index], values[index + 1], segmentT)
+}

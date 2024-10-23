@@ -165,11 +165,12 @@ function setupPage({ p, metadata, destroy }) {
 
   async function save() {
     const id = uuid()
-    // density@2 = 500 x 500 = 1000px image
-    // density@6 1500 x 1500 = 3000px image (large size needed for Apple Music)
+    const defaultDensity = p.pixelDensity() // Save the default pixel density
     p.pixelDensity(6)
-    p.saveCanvas(`${metadata.name}-${id}`, 'png')
-    p.pixelDensity(defaultPixelDensity)
+    setTimeout(() => {
+      p.saveCanvas(`${metadata.name}-${id}`, 'png')
+      p.pixelDensity(defaultDensity)
+    }, 100)
   }
 
   function toggleLoop() {

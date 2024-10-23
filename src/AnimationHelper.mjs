@@ -107,7 +107,7 @@ export default class AnimationHelper {
     }
 
     const progress = getProgressBasedOnPlayMode(playMode)
-    const easedProgress = easing(progress)
+    const easedProgress = safeGetEasing(easing)(progress)
 
     return from + (to - from) * easedProgress
   }
