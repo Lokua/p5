@@ -4,11 +4,12 @@ import bus from './bus.mjs'
 import defaultSketch from './sketches/sketch.mjs'
 
 let recording = false
-let chunks = []
-let recorder
 let defaultPixelDensity
-const recordingDurationSeconds = 60
 let maxRecordingFrames
+const recordingDurationSeconds = 60
+let frames = []
+let frameRate
+
 // TODO: find a better way
 let stopRecording_
 
@@ -48,24 +49,21 @@ function init(sketch) {
     }
 
     p.setup = () => {
-      const frameRate = metadata.frameRate || 24
+      frameRate = metadata.frameRate || 24
       defaultPixelDensity = p.pixelDensity()
       // p.pixelDensity(2)
       const { canvas } = setup()
       p.frameRate(frameRate)
       canvas.parent('sketch')
-
       maxRecordingFrames = recordingDurationSeconds * frameRate
-
-      const stream = canvas.elt.captureStream(frameRate)
-      recorder = new MediaRecorder(stream, {
-        mimeType: 'video/webm; codecs=vp9',
-      })
     }
 
     p.draw = () => {
-      if (recording && p.frameCount >= maxRecordingFrames) {
-        stopRecording_()
+      if (recording) {
+        captureFrame(p)
+        if (p.frameCount >= maxRecordingFrames) {
+          stopRecording_()
+        }
       }
       draw()
     }
@@ -76,6 +74,34 @@ function init(sketch) {
       destroy,
     })
   }
+}
+
+function captureFrame(p) {
+  const image = p.createImage(p.width, p.height)
+  image.copy(p, 0, 0, p.width, p.height, 0, 0, p.width, p.height)
+  frames.push(image)
+}
+
+async function sendFramesToBackend() {
+  console.log('Converting frames...')
+  const formData = new FormData()
+
+  formData.append('name', localStorage.getItem('lastSketch') || 'recording')
+  formData.append('frameRate', frameRate)
+
+  // Convert to base64 URL
+  frames.forEach((frame, index) => {
+    const imgDataUrl = frame.canvas.toDataURL()
+    formData.append(`frame-${index}`, imgDataUrl)
+  })
+
+  // Send the data to the backend (implementation depends on your backend)
+  await fetch('/upload-frames', {
+    method: 'POST',
+    body: formData,
+  })
+
+  console.log('Frames sent to the backend. Check backend logs for progress.')
 }
 
 function setupPage({ p, metadata, destroy }) {
@@ -218,39 +244,15 @@ function setupPage({ p, metadata, destroy }) {
     console.info('recording started')
     recording = true
     p.frameCount = 0
-    recorder.addEventListener('dataavailable', (event) => {
-      if (event.data.size > 0) {
-        chunks.push(event.data)
-      }
-    })
-    recorder.addEventListener('stop', () => {
-      console.log('stop fired')
-      saveVideo()
-    })
-    recorder.start()
+    frames = []
     $('#record-button').textContent = 'RECORDING'
   }
 
   function stopRecording() {
     console.info('recording stopped')
     recording = false
-    recorder.stop()
     $('#record-button').textContent = 'record'
-  }
-
-  function saveVideo() {
-    const blob = new Blob(chunks, {
-      type: 'video/webm',
-    })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    const name = localStorage.getItem('lastSketch') || 'recording'
-    a.download = `${name}.webm`
-    document.body.appendChild(a)
-    a.click()
-    URL.revokeObjectURL(url)
-    document.body.removeChild(a)
+    sendFramesToBackend()
   }
 
   function addEventListeners() {

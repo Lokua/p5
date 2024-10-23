@@ -8,7 +8,7 @@ import AnimationHelper from '../AnimationHelper.mjs'
 export default function (p) {
   const metadata = {
     name: 'flexor2',
-    frameRate: 60,
+    frameRate: 30,
   }
 
   const [w, h] = [500, 500]
