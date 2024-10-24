@@ -26,6 +26,8 @@ async function loadSketch(name) {
     await sketchManager.loadSketch(name)
     localStorage.setItem('lastSketch', name)
   } catch (error) {
+    console.error(error)
+    console.info('Falling back to default sketch', defaultSketch)
     await sketchManager.loadSketch(defaultSketch)
     localStorage.setItem('lastSketch', defaultSketch)
   }

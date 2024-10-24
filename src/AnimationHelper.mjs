@@ -220,6 +220,14 @@ export default class AnimationHelper {
     return progress < 1 ? output : keyframes[keyframes.length - 1]
   }
 
+  /**
+   * Repeats the values of keyframes based on the duration and the current frame count.
+   *
+   * @param {Object} params - The parameters for the function.
+   * @param {Array} params.keyframes - An array of keyframes to cycle through.
+   * @param {number} params.duration - The duration of each keyframe segment in beats.
+   * @returns {*} The current keyframe based on the current frame in the cycle.
+   */
   repeatValues({ keyframes, duration }) {
     const beatDuration = 60 / this.bpm
     const totalFramesForSegment = duration * beatDuration * this.frameRate
@@ -229,6 +237,16 @@ export default class AnimationHelper {
       currentFrameInCycle / totalFramesForSegment,
     )
     return keyframes[currentSegmentIndex]
+  }
+
+  /**
+   * Returns the total beats elapsed since the sketch started.
+   * @returns {number} - Total beats elapsed.
+   */
+  getTotalBeatsElapsed() {
+    const beatDuration = 60 / this.bpm
+    const totalTimeInSeconds = this.p.frameCount / this.frameRate
+    return totalTimeInSeconds / beatDuration
   }
 }
 
