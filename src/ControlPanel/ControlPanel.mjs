@@ -2,12 +2,14 @@ export default class ControlPanel {
   static defaultSelector = '#dynamic-controls'
 
   constructor({
+    p,
     id,
     controls,
     selector = ControlPanel.defaultSelector,
     inputHandler,
-    attemptReload = false,
+    attemptReload = true,
   }) {
+    this.p = p
     this.id = id
     this.controls = controls
     this.validateControls()
@@ -15,21 +17,29 @@ export default class ControlPanel {
     this.inputHandler = inputHandler
     this.attemptReload = attemptReload
 
+    if (!inputHandler) {
+      this.inputHandler = () => {
+        if (!this.p.isLooping()) {
+          this.p.redraw()
+        }
+      }
+    } else {
+      console.warn('[ControlPanel] custom inputHandler is deprecated.')
+    }
+
     if (this.attemptReload && !this.id) {
       throw new Error('Cannot attemptReload without an id.')
     }
   }
 
   validateControls() {
-    Object.entries(this.controls).forEach(
-      ([key, { name }]) => {
-        if (key !== name) {
-          throw new Error(
-            `Invalid control name "${name}" provided for key "${key}"`,
-          )
-        }
-      },
-    )
+    Object.entries(this.controls).forEach(([key, { name }]) => {
+      if (key !== name) {
+        throw new Error(
+          `Invalid control name "${name}" provided for key "${key}"`,
+        )
+      }
+    })
   }
 
   init() {
@@ -37,17 +47,15 @@ export default class ControlPanel {
     this.#mapControls((control) => control.bind())
     this.inputHandler && this.onInput(this.inputHandler)
     if (this.attemptReload && this.id) {
-      console.info(
-        '[ControlPanel] restoring from localStorage',
-      )
+      console.info('[ControlPanel] restoring from localStorage')
       this.localStorageKey = `ControlPanel-${this.id}`
       this.#reloadControls()
     }
   }
 
   html() {
-    this.#getElement().innerHTML = this.#mapControls(
-      (control) => control.html(),
+    this.#getElement().innerHTML = this.#mapControls((control) =>
+      control.html(),
     ).join('\n')
   }
 
@@ -85,29 +93,21 @@ export default class ControlPanel {
 
   #getElement = () => document.querySelector(this.selector)
 
-  #mapControls = (fn) =>
-    Object.values(this.controls).map(fn)
+  #mapControls = (fn) => Object.values(this.controls).map(fn)
 
   #reloadControls = () => {
     try {
-      const saved = JSON.parse(
-        localStorage.getItem(this.localStorageKey),
-      )
+      const saved = JSON.parse(localStorage.getItem(this.localStorageKey))
       this.#mapControls((control) => {
         const value = saved[control.name]
         if (value !== undefined && value !== null) {
           control.setValue(value)
         } else {
-          console.warn(
-            '[ControlPanel] skipping nil value for',
-            control.name,
-          )
+          console.warn('[ControlPanel] skipping nil value for', control.name)
         }
       })
     } catch (error) {
-      console.warn(
-        '[ControlPanel] failed to restore from localStorage',
-      )
+      console.warn('[ControlPanel] failed to restore from localStorage')
     }
   }
 }

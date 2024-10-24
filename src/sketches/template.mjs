@@ -1,7 +1,5 @@
 // @ts-check
-import ControlPanel, {
-  Range,
-} from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../ControlPanel/index.mjs'
 
 /**
  * @param {import("p5")} p
@@ -15,18 +13,15 @@ export default function (p) {
   }
 
   const controlPanel = new ControlPanel({
+    p,
     id: metadata.name,
-    attemptReload: true,
     controls: {
-      a: new Range({
-        name: 'a',
+      diameter: new Range({
+        name: 'diameter',
         value: 50,
         min: 0,
         max: 1000,
       }),
-    },
-    inputHandler() {
-      !p.isLooping() && draw()
     },
   })
 
@@ -35,6 +30,7 @@ export default function (p) {
     const canvas = p.createCanvas(w, h)
 
     p.colorMode(p.HSB, 100)
+    p.noStroke()
 
     return {
       canvas,
@@ -42,14 +38,10 @@ export default function (p) {
   }
 
   function draw() {
-    const { a } = controlPanel.values()
+    const { diameter } = controlPanel.values()
     p.background(255)
-    p.fill(0, 50, 100)
-    p.stroke(100, 0, 0)
-    p.push()
-    p.translate(w / 2, h / 2)
-    p.circle(0, 0, a)
-    p.pop()
+    p.fill(0, 62, 100)
+    p.circle(w / 2, h / 2, diameter)
   }
 
   return {
