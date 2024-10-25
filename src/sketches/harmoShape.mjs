@@ -1,5 +1,7 @@
 // @ts-check
-import ControlPanel, { Range, Select } from '../ControlPanel/index.mjs'
+import ControlPanel, { Range, Select, Toggle } from '../ControlPanel/index.mjs'
+import AnimationHelper from '../AnimationHelper.mjs'
+import { apply, multiLerp } from '../util.mjs'
 
 /**
  * @param {import("p5")} p
@@ -11,6 +13,8 @@ export default function (p) {
     name: 'harmoShape',
     frameRate: 30,
   }
+
+  const ax = new AnimationHelper(p, metadata.frameRate, 134)
 
   const shapes = {
     diamond({ index, halfLineCount, scale, a = 1 }) {
@@ -36,11 +40,6 @@ export default function (p) {
     p,
     id: metadata.name,
     controls: {
-      shape: new Select({
-        name: 'shape',
-        options: Object.keys(shapes),
-        value: 'hourglass',
-      }),
       lineCount: new Range({
         name: 'lineCount',
         value: 5,
@@ -61,6 +60,19 @@ export default function (p) {
         max: 1,
         step: 0.001,
       }),
+      backgroundAlpha: new Range({
+        name: 'backgroundAlpha',
+        value: 100,
+      }),
+      interpolateShapes: new Toggle({
+        name: 'interpolateShapes',
+        value: true,
+      }),
+      shape: new Select({
+        name: 'shape',
+        options: Object.keys(shapes),
+        value: 'hourglass',
+      }),
       a: new Range({
         name: 'a',
         value: 2,
@@ -75,7 +87,7 @@ export default function (p) {
     controlPanel.init()
     const canvas = p.createCanvas(w, h)
 
-    p.colorMode(p.HSB, 100)
+    p.colorMode(p.HSB, 100, 100, 100, 100)
 
     return {
       canvas,
@@ -83,38 +95,53 @@ export default function (p) {
   }
 
   function draw() {
-    const { lineCount, rectHeight, widthScale, shape, a } =
-      controlPanel.values()
-    const shapeFn = shapes[shape]
+    const {
+      lineCount,
+      rectHeight,
+      widthScale,
+      backgroundAlpha,
+      interpolateShapes,
+      shape,
+      a,
+    } = controlPanel.values()
 
-    p.background(0, 5, 100)
-    p.fill(5, 50, 50)
+    p.background(100, 0, 100, backgroundAlpha)
+    p.fill(0)
     p.noStroke()
 
     const centerY = h / 2
-    let adjustedLineCount = lineCount
-
-    if (lineCount % 2 === 0) {
-      adjustedLineCount = lineCount + 1
-    }
+    const adjustedLineCount = lineCount % 2 === 0 ? lineCount + 1 : lineCount
 
     const halfLineCount = Math.floor(adjustedLineCount / 2)
     const spacing = h / (adjustedLineCount - 1)
+    const rectWidthProgress = ax.getPingPongLoopProgress(16)
 
     for (let i = -halfLineCount; i <= halfLineCount; i++) {
       const yOffset = i * spacing
-      const rectWidth = shapeFn({
+
+      const shapeFnArgs = {
         index: i,
         halfLineCount,
         scale: widthScale,
         a,
-      })
+      }
+      const rectWidth = interpolateShapes
+        ? multiLerp(
+            Object.values(shapes).map(apply(shapeFnArgs)),
+            rectWidthProgress,
+          )
+        : shapes[shape](shapeFnArgs)
+
+      let rectRadius = ax.animateProperty({ from: 0, to: 10, duration: 1 })
+      rectRadius += ax.getPingPongLoopProgress(1) * Math.abs(i) * 2
+      rectRadius = rectRadius % 20
 
       p.rect(
         w / 2 - rectWidth / 2,
         centerY + yOffset - rectHeight / 2,
         rectWidth,
         rectHeight,
+        rectRadius,
       )
     }
   }

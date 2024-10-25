@@ -19,6 +19,11 @@ export function mapTimes(n, fn = (x) => x) {
     .map((_, index) => fn(index))
 }
 
+export const apply =
+  (...args) =>
+  (fn) =>
+    fn(...args)
+
 // https://github.com/sindresorhus/random-int/blob/main/index.js
 export function randomInt(minimum, maximum) {
   if (maximum === undefined) {
