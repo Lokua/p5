@@ -1,9 +1,6 @@
 // https://editor.p5js.org/generative-design/sketches/M_1_5_03
 
-import ControlPanel, {
-  Range,
-  Toggle,
-} from '../ControlPanel/index.mjs'
+import ControlPanel, { Range, Toggle } from '../ControlPanel/index.mjs'
 import Counter from '../Counter.mjs'
 
 let p
@@ -99,10 +96,7 @@ export default function (p5Instance) {
     p.background(0, 0, 50)
 
     for (let i = 0; i < agentCount; i++) {
-      agents[i] = new Agent(
-        noiseZRange,
-        controlPanel.get('stepSize'),
-      )
+      agents[i] = new Agent(noiseZRange, controlPanel.get('stepSize'))
     }
 
     return {
@@ -132,20 +126,12 @@ export default function (p5Instance) {
     p.noStroke()
     p.rect(0, 0, w, h)
 
-    if (
-      randomSeedEverySoOften &&
-      p.frameCount % 200 === 0
-    ) {
+    if (randomSeedEverySoOften && p.frameCount % 200 === 0) {
       p.noiseSeed(p.frameCount)
     }
 
     for (var i = 0; i < count; i++) {
-      p.stroke(
-        0,
-        p.random(77, 120),
-        p.random(120, 222),
-        agentAlpha,
-      )
+      p.stroke(0, p.random(77, 120), p.random(120, 222), agentAlpha)
       agents[i].stepSize = stepSize
       agents[i].update(
         strokeWidth,
@@ -172,22 +158,14 @@ export default function (p5Instance) {
 
 class Agent {
   constructor(noiseZRange, stepSize) {
-    this.vector = p.createVector(
-      p.random(p.width),
-      p.random(p.height),
-    )
+    this.vector = p.createVector(p.random(p.width), p.random(p.height))
     this.vectorOld = this.vector.copy()
     this.stepSize = stepSize
     this.angle
     this.noiseZ = p.random(noiseZRange)
   }
 
-  update(
-    strokeWidth,
-    noiseScale,
-    noiseStrength,
-    noiseZVelocity,
-  ) {
+  update(strokeWidth, noiseScale, noiseStrength, noiseZVelocity) {
     this.angle =
       p.noise(
         this.vector.x / noiseScale,
@@ -202,22 +180,13 @@ class Agent {
     this.vector.x += p.cos(this.angle) * this.stepSize
     this.vector.y += p.sin(this.angle) * this.stepSize
 
-    if (this.vector.x < -10)
-      this.vector.x = this.vectorOld.x = p.width + 10
-    if (this.vector.x > p.width + 10)
-      this.vector.x = this.vectorOld.x = -10
-    if (this.vector.y < -10)
-      this.vector.y = this.vectorOld.y = p.height + 10
-    if (this.vector.y > p.height + 10)
-      this.vector.y = this.vectorOld.y = -10
+    if (this.vector.x < -10) this.vector.x = this.vectorOld.x = p.width + 10
+    if (this.vector.x > p.width + 10) this.vector.x = this.vectorOld.x = -10
+    if (this.vector.y < -10) this.vector.y = this.vectorOld.y = p.height + 10
+    if (this.vector.y > p.height + 10) this.vector.y = this.vectorOld.y = -10
 
     p.strokeWeight(strokeWidth * this.stepSize)
-    p.line(
-      this.vectorOld.x,
-      this.vectorOld.y,
-      this.vector.x,
-      this.vector.y,
-    )
+    p.line(this.vectorOld.x, this.vectorOld.y, this.vector.x, this.vector.y)
 
     this.vectorOld = this.vector.copy()
 

@@ -73,11 +73,8 @@ export default function (p) {
   }
 
   function draw() {
-    const {
-      radiusMultiplier,
-      multiDirection,
-      perNoteDuration,
-    } = controlPanel.values()
+    const { radiusMultiplier, multiDirection, perNoteDuration } =
+      controlPanel.values()
     p.background(255)
     p.stroke(0)
 

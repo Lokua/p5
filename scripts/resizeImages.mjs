@@ -1,9 +1,6 @@
 import fs from 'fs'
 import sharp from 'sharp'
-import {
-  getDirname,
-  isSupportedImageFile,
-} from './util.mjs'
+import { getDirname, isSupportedImageFile } from './util.mjs'
 
 const __dirname = getDirname(import.meta.url)
 const imagesDir = `${__dirname}/../images`

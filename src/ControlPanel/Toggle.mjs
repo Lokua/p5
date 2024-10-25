@@ -1,12 +1,7 @@
 import Control from './Control.mjs'
 
 export default class Toggle extends Control {
-  constructor({
-    name,
-    value = false,
-    onText = 'ON',
-    offText = 'OFF',
-  }) {
+  constructor({ name, value = false, onText = 'ON', offText = 'OFF' }) {
     super({
       name,
       value,
@@ -27,16 +22,12 @@ export default class Toggle extends Control {
   }
 
   bind() {
-    document
-      .getElementById(this.id)
-      .addEventListener('click', this.onClick)
+    document.getElementById(this.id).addEventListener('click', this.onClick)
   }
 
   addInputListener(fn) {
     super.addInputListener(fn)
-    document
-      .getElementById(this.id)
-      .addEventListener('click', fn)
+    document.getElementById(this.id).addEventListener('click', fn)
   }
 
   onClick = () => {
@@ -46,12 +37,8 @@ export default class Toggle extends Control {
   setValue(value) {
     this.value = value
     const element = this.getElement()
-    element.querySelector(
-      'span',
-    ).textContent = this.getText()
-    element.querySelector(
-      'button',
-    ).textContent = this.getText()
+    element.querySelector('span').textContent = this.getText()
+    element.querySelector('button').textContent = this.getText()
   }
 
   getText() {

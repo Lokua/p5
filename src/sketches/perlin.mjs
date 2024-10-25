@@ -76,15 +76,8 @@ export default function (p) {
   }
 
   function draw() {
-    const {
-      blendMode,
-      size,
-      space,
-      thinness,
-      flip,
-      nCircles,
-      noiseFalloff,
-    } = controlPanel.values()
+    const { blendMode, size, space, thinness, flip, nCircles, noiseFalloff } =
+      controlPanel.values()
     p.blendMode(p[blendMode])
     p.noiseDetail(2, noiseFalloff)
     p.background(0)

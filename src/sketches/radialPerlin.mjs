@@ -1,6 +1,4 @@
-import ControlPanel, {
-  Range,
-} from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../ControlPanel/index.mjs'
 
 export default function (p) {
   const [w, h] = [500, 500]
@@ -62,12 +60,7 @@ export default function (p) {
   }
 
   function draw() {
-    const {
-      size,
-      resolution,
-      scale,
-      nPoints,
-    } = controlPanel.values()
+    const { size, resolution, scale, nPoints } = controlPanel.values()
     p.background(0)
     p.stroke(0)
     p.strokeWeight(2)
@@ -79,13 +72,7 @@ export default function (p) {
       for (let a = 0; a < p.TAU; a += p.TAU / nPoints) {
         const x = size * p.cos(a)
         const y = size * p.sin(a)
-        const n = p.map(
-          p.noise(x, y) + resolution,
-          0,
-          1,
-          -scale,
-          scale,
-        )
+        const n = p.map(p.noise(x, y) + resolution, 0, 1, -scale, scale)
         p.curveVertex(x + n, y + n)
       }
       p.endShape(p.CLOSE)

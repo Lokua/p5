@@ -1,6 +1,4 @@
-import ControlPanel, {
-  Range,
-} from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../ControlPanel/index.mjs'
 import Counter from '../Counter.mjs'
 
 export default function sphereOfCubes(p, u) {
@@ -75,11 +73,7 @@ export default function sphereOfCubes(p, u) {
   }
 
   function draw() {
-    const {
-      resolution,
-      radius,
-      boxSize,
-    } = controlPanel.values()
+    const { resolution, radius, boxSize } = controlPanel.values()
 
     setCamera()
     p.background(1)
@@ -91,11 +85,7 @@ export default function sphereOfCubes(p, u) {
         const longitude = u.xToLongitude(resolution, i)
         for (let j = 0; j < resolution; j++) {
           const latitude = u.yToLatitude(resolution, j)
-          const [x, y, z] = u.geographicToCartesian(
-            longitude,
-            latitude,
-            radius,
-          )
+          const [x, y, z] = u.geographicToCartesian(longitude, latitude, radius)
           u.pushPop(() => {
             p.translate(x, y, z)
             p.circle(boxSize, boxSize, boxSize)

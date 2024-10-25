@@ -1,10 +1,5 @@
-import ControlPanel, {
-  Range,
-} from '../ControlPanel/index.mjs'
-import {
-  FRAMERATE_BPM_130,
-  BidirectionalCounter,
-} from '../util.mjs'
+import ControlPanel, { Range } from '../ControlPanel/index.mjs'
+import { FRAMERATE_BPM_130, BidirectionalCounter } from '../util.mjs'
 
 export default function (p) {
   const [w, h] = [500, 500]
@@ -83,16 +78,11 @@ export default function (p) {
       p.translate(w / 2, h / 2)
       p.scale(3 - i * 0.05)
       p.beginShape(p.TRIANGLES)
-      for (
-        let a = 0;
-        a < p.TAU;
-        a += p.TAU / pointsCounter.count
-      ) {
+      for (let a = 0; a < p.TAU; a += p.TAU / pointsCounter.count) {
         const x = (size + counter.count * 0.1) * p.cos(a)
         const y = (size + counter.count * 0.01) * p.sin(a)
 
-        const [xx, yy] =
-          p.frameCount % 2 === 0 ? [y, x] : [x, y]
+        const [xx, yy] = p.frameCount % 2 === 0 ? [y, x] : [x, y]
 
         const n = p.map(
           p.noise(xx * counter.count, yy * counter.count),
@@ -111,8 +101,8 @@ export default function (p) {
     counter.tick()
     scaleCounter.tick()
     sizeCounter.tick()
-    p.frameCount % (Math.floor(FRAMERATE_BPM_130) * 2) ===
-      0 && pointsCounter.tick()
+    p.frameCount % (Math.floor(FRAMERATE_BPM_130) * 2) === 0 &&
+      pointsCounter.tick()
   }
 
   return {

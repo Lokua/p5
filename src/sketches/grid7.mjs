@@ -1,7 +1,5 @@
-import ControlPanel, {
-  Range,
-} from '../ControlPanel/index.mjs'
-import { fromXY, isPrime, isEven } from '../util.mjs'
+import ControlPanel, { Range } from '../ControlPanel/index.mjs'
+import { fromXY } from '../util.mjs'
 
 export default function (p) {
   const [w, h] = [500, 500]

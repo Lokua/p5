@@ -1,6 +1,4 @@
-import ControlPanel, {
-  Range,
-} from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../ControlPanel/index.mjs'
 import Counter from '../Counter.mjs'
 
 export default function (p) {
@@ -114,16 +112,11 @@ export default function (p) {
       p.fill(p.random(200, 255), 0, counter.count, 200)
 
       const randomOffset = () =>
-        p.noise(offset * i) * (counter.count + offset) +
-        offsetCounter.count
+        p.noise(offset * i) * (counter.count + offset) + offsetCounter.count
 
-      const xx = rb()
-        ? x + randomOffset()
-        : x - randomOffset()
+      const xx = rb() ? x + randomOffset() : x - randomOffset()
 
-      const yy = rb()
-        ? y + randomOffset()
-        : y - randomOffset()
+      const yy = rb() ? y + randomOffset() : y - randomOffset()
 
       p.ellipse(
         yy,

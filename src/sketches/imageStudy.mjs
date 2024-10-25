@@ -1,6 +1,4 @@
-import ControlPanel, {
-  Range,
-} from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../ControlPanel/index.mjs'
 
 export default function (p) {
   const [w, h] = [500, 500]

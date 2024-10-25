@@ -1,18 +1,15 @@
 {
   "name": "@lokua/p5",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
   "scripts": {
     "start": "node --max-old-space-size=8192 server.mjs",
-    "lint": "eslint \"src/**/*.mjs\"",
+    "lint": "eslint",
     "test": "uvu src \".*\\.spec\\.mjs\"",
     "resize": "node scripts/resizeImages.mjs",
     "generate-markdown-index": "node scripts/generateMarkdownIndex.mjs",
     "build": "npm run resize && npm run generate-markdown-index"
   },
-  "keywords": [],
-  "author": "",
+  "author": "Joshua Kleckner <dev@lokua.net> (https://lokua.net)",
   "license": "ISC",
   "dependencies": {
     "@lokua/bench": "^1.0.0",
@@ -27,13 +24,12 @@
     "random-int": "2.0.1",
     "rimraf": "^3.0.2",
     "sharp": "^0.32.1",
-    "sharp-cli": "^4.1.1"
+    "sharp-cli": "5.1.0"
   },
   "devDependencies": {
     "@types/p5": "^1.7.6",
-    "eslint": "^7.32.0",
-    "eslint-config-lokua": "^9.1.0",
-    "prettier": "2.2.1",
+    "eslint-config-lokua": "10.0.3-beta.0",
+    "prettier": "3.3.3",
     "uvu": "0.5.6"
   }
 }

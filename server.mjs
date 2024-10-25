@@ -153,7 +153,6 @@ app.post('/download-recording', upload.single('file'), async (req, res) => {
     pathname: webmPathname,
   })
 
-  // eslint-disable-next-line no-unreachable
   await new Promise((resolve, reject) => {
     const childProcess = spawn(
       'ffmpeg',

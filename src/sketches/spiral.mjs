@@ -1,7 +1,5 @@
 // code forked from https://editor.p5js.org/MaximSchoemaker/sketches/hSUoBvPJB
-import ControlPanel, {
-  Range,
-} from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../ControlPanel/index.mjs'
 import { PHI } from '../util.mjs'
 
 export default function spiral(p) {
@@ -54,12 +52,7 @@ export default function spiral(p) {
   }
 
   function draw() {
-    const {
-      count,
-      size,
-      radius: radiusControl,
-      frame,
-    } = controlPanel.values()
+    const { count, size, radius: radiusControl, frame } = controlPanel.values()
 
     p.push()
     p.scale(w, h)

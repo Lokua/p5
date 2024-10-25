@@ -128,10 +128,7 @@ export default function (p) {
       fns: fnsSelector,
     } = controlPanel.values()
     p.blendMode(p[blendMode])
-    p.noiseDetail(
-      2,
-      noiseFalloff + noiseFalloffCounter.count * 0.01,
-    )
+    p.noiseDetail(2, noiseFalloff + noiseFalloffCounter.count * 0.01)
     p.background(0)
     p.fill(1, 0, 1, 0.8)
 
@@ -146,13 +143,7 @@ export default function (p) {
         const xOff = p.map(fnA(i), -1, 1, 0, 3) * phase
         const yOff = p.map(fnB(i), -1, 1, 0, 3) * phase
         const n = p.noise(xOff + phase, yOff + phase)
-        const hh = p.map(
-          n,
-          0,
-          1,
-          flip ? -(height * o) : 0,
-          height * o,
-        )
+        const hh = p.map(n, 0, 1, flip ? -(height * o) : 0, height * o)
         p.rotate(space)
         p.rect(o * size, 0, hh + n * 20, thinness)
       }

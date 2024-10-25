@@ -254,6 +254,6 @@ function safeGetEasing(easing) {
   return typeof easing === 'string'
     ? EasingFunctions[easing]
     : typeof easing === 'function'
-    ? easing
-    : EasingFunctions.linear
+      ? easing
+      : EasingFunctions.linear
 }

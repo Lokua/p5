@@ -158,12 +158,7 @@ export default function (p) {
     p.noiseDetail(1, noiseFalloff)
     p.background(0)
     p.stroke(1, 0, 1)
-    p.fill(
-      hue + hueCounter.count * 0.001,
-      saturation,
-      lightness,
-      alpha,
-    )
+    p.fill(hue + hueCounter.count * 0.001, saturation, lightness, alpha)
 
     const size = sizeControl + sizeCounter.count
 
@@ -177,9 +172,8 @@ export default function (p) {
         const x = rad * p.cos(j)
         const y = rad * p.sin(j)
         const z =
-          p[tanSinZFlip ? 'tan' : 'sin'](
-            p.frameCount * speed + i * zOffset,
-          ) * 50
+          p[tanSinZFlip ? 'tan' : 'sin'](p.frameCount * speed + i * zOffset) *
+          50
         p.vertex(x, y, z)
       }
       p.endShape(p.CLOSE)

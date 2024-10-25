@@ -70,14 +70,8 @@ export default function lines(p) {
   }
 
   function draw() {
-    const {
-      nLines,
-      segmentLength,
-      strokeWeight,
-      blendMode,
-      range,
-      curve,
-    } = controlPanel.values()
+    const { nLines, segmentLength, strokeWeight, blendMode, range, curve } =
+      controlPanel.values()
     p.blendMode(p[blendMode])
     p.background(1, 0.02, 1)
     p.fill(0)

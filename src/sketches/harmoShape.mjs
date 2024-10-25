@@ -83,13 +83,8 @@ export default function (p) {
   }
 
   function draw() {
-    const {
-      lineCount,
-      rectHeight,
-      widthScale,
-      shape,
-      a,
-    } = controlPanel.values()
+    const { lineCount, rectHeight, widthScale, shape, a } =
+      controlPanel.values()
     const shapeFn = shapes[shape]
 
     p.background(0, 5, 100)

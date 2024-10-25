@@ -106,13 +106,7 @@ export default function (p) {
         const xOff = p.map(p.cos(i), -1, 1, 0, 3)
         const yOff = p.map(p.sin(i), -1, 1, 0, 3)
         const n = p.noise(xOff + phase, yOff + phase)
-        const hh = p.map(
-          n,
-          0,
-          1,
-          flip ? -(height * o) : 0,
-          height * o,
-        )
+        const hh = p.map(n, 0, 1, flip ? -(height * o) : 0, height * o)
         p.rotate(space)
         p.rect(o * size, 0, hh + n * 20, thinness)
       }

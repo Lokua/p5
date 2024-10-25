@@ -64,13 +64,8 @@ export default function lines(p) {
   }
 
   function draw() {
-    const {
-      nLines,
-      segmentLength,
-      strokeWeight,
-      blendMode,
-      range,
-    } = controlPanel.values()
+    const { nLines, segmentLength, strokeWeight, blendMode, range } =
+      controlPanel.values()
     p.blendMode(p[blendMode])
     p.background(1, 0.02, 1)
     p.fill(0)
@@ -90,13 +85,7 @@ export default function lines(p) {
     }
   }
 
-  function drawLine({
-    x: lineX,
-    y: lineY,
-    length,
-    segmentLength,
-    range,
-  }) {
+  function drawLine({ x: lineX, y: lineY, length, segmentLength, range }) {
     let prevX = lineX
     let prevY = lineY
     const r = p.map(lineY, 0, h, 0, range)

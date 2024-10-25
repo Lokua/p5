@@ -1,6 +1,4 @@
-import ControlPanel, {
-  Range,
-} from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../ControlPanel/index.mjs'
 import Counter from '../Counter.mjs'
 import { createQuintants, times } from '../util.mjs'
 
@@ -62,19 +60,9 @@ export default function (p) {
   })
 
   const color1 = () =>
-    p.color(
-      0,
-      p.random(100, 127),
-      p.random(255),
-      controlPanel.get('alpha'),
-    )
+    p.color(0, p.random(100, 127), p.random(255), controlPanel.get('alpha'))
   const color2 = () =>
-    p.color(
-      p.random(200, 255),
-      p.random(127),
-      0,
-      controlPanel.get('alpha'),
-    )
+    p.color(p.random(200, 255), p.random(127), 0, controlPanel.get('alpha'))
   const colors = [color1, color2]
 
   function setup() {
@@ -123,12 +111,7 @@ export default function (p) {
   }
 
   function rocket(x, y) {
-    const {
-      count,
-      offset,
-      size,
-      rotations,
-    } = controlPanel.values()
+    const { count, offset, size, rotations } = controlPanel.values()
 
     createQuintants(w, h, x, y).forEach(([x, y]) => {
       p.push()
@@ -169,14 +152,7 @@ export default function (p) {
       p.stroke(colors[i % colors.length]())
       p.fill(255, 100)
       const r = () => p.noise(i) * p.random(1, 10)
-      p.triangle(
-        0,
-        offset + r(),
-        offset,
-        offset + r(),
-        size,
-        size,
-      )
+      p.triangle(0, offset + r(), offset, offset + r(), size, size)
     }
   }
 

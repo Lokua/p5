@@ -1,6 +1,4 @@
-import ControlPanel, {
-  Range,
-} from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../ControlPanel/index.mjs'
 import { randomSign, FRAMERATE_BPM_130 } from '../util.mjs'
 
 export default function (p) {
@@ -54,7 +52,6 @@ export default function (p) {
   }
 
   function draw() {
-    // eslint-disable-next-line no-unused-vars
     const { resolution, offset } = controlPanel.values()
 
     p.background(0)
@@ -73,12 +70,8 @@ export default function (p) {
           p.cos(x) * offset * randomSign(),
           offset * randomSign(),
           offset * randomSign(),
-          p.sin(p.noise(x + p.random())) *
-            offset *
-            randomSign(),
-          p.cos(p.noise(y + p.random())) *
-            offset *
-            randomSign(),
+          p.sin(p.noise(x + p.random())) * offset * randomSign(),
+          p.cos(p.noise(y + p.random())) * offset * randomSign(),
         )
         p.pop()
       }

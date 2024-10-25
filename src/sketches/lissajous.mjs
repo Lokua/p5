@@ -1,8 +1,6 @@
 // https://editor.p5js.org/generative-design/sketches/M_2_5_01
 
-import ControlPanel, {
-  Range,
-} from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../ControlPanel/index.mjs'
 
 export default function (p) {
   const [w, h] = [500, 500]
@@ -60,10 +58,7 @@ export default function (p) {
   }
 
   function draw() {
-    const {
-      connectionRadius,
-      lineAlpha,
-    } = controlPanel.values()
+    const { connectionRadius, lineAlpha } = controlPanel.values()
     p.background(255)
     p.strokeWeight(lineWeight)
 
@@ -71,9 +66,7 @@ export default function (p) {
     p.translate(w / 2, h / 2)
     for (let i1 = 0; i1 < pointCount; i1++) {
       for (let i2 = 0; i2 < i1; i2++) {
-        const d = lissajousPoints[i1].dist(
-          lissajousPoints[i2],
-        )
+        const d = lissajousPoints[i1].dist(lissajousPoints[i2])
         const a = p.pow(1 / (d / connectionRadius + 1), 6)
         if (d <= connectionRadius) {
           p.stroke(lineColor, a * lineAlpha)
@@ -93,9 +86,7 @@ export default function (p) {
     for (let i = 0; i <= pointCount; i++) {
       const angle = p.map(i, 0, pointCount, 0, p.TAU)
 
-      let x =
-        p.sin(angle * freqX + p.radians(phi)) *
-        p.cos(angle * modFreqX)
+      let x = p.sin(angle * freqX + p.radians(phi)) * p.cos(angle * modFreqX)
       let y = p.sin(angle * freqY) * p.cos(angle * modFreqY)
       x *= w / 2 - 30
       y *= h / 2 - 30

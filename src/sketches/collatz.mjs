@@ -1,7 +1,5 @@
 // https://www.youtube.com/watch?v=EYLWxwo1Ed8&list=WL&index=24&t=1120s
-import ControlPanel, {
-  Range,
-} from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../ControlPanel/index.mjs'
 import { isEven } from '../util.mjs'
 
 export default function collatzSketch(p) {
@@ -46,11 +44,7 @@ export default function collatzSketch(p) {
   }
 
   function draw() {
-    const {
-      count,
-      angle: a,
-      length,
-    } = controlPanel.values()
+    const { count, angle: a, length } = controlPanel.values()
 
     p.background(1)
 

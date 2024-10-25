@@ -115,9 +115,8 @@ export default function (p) {
       keyframes: [16, 1],
       duration: 32,
     })
-    const transitionProgress = animationHelper.getPingPongLoopProgress(
-      transitionWaveTime,
-    )
+    const transitionProgress =
+      animationHelper.getPingPongLoopProgress(transitionWaveTime)
 
     const nearColor = p.color(nearHue, 100, 50)
     const farColor = p.color(50, 100, 90)

@@ -1,6 +1,4 @@
-import ControlPanel, {
-  Range,
-} from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../ControlPanel/index.mjs'
 import { fromXY } from '../util.mjs'
 
 export default function sphere(p, u) {
@@ -69,12 +67,7 @@ export default function sphere(p, u) {
   }
 
   function draw() {
-    const {
-      resolution,
-      radius,
-      hue,
-      noise,
-    } = controlPanel.values()
+    const { resolution, radius, hue, noise } = controlPanel.values()
 
     setCamera()
 
@@ -87,11 +80,7 @@ export default function sphere(p, u) {
       for (let x = 0; x < resolution + 1; x++) {
         const longitude = u.xToLongitude(resolution, x)
         globe[y][x] = p.createVector(
-          ...u.geographicToCartesian(
-            longitude,
-            latitude,
-            radius,
-          ),
+          ...u.geographicToCartesian(longitude, latitude, radius),
         )
       }
     }
@@ -99,10 +88,7 @@ export default function sphere(p, u) {
     for (let y = 0; y < resolution; y++) {
       p.beginShape(p.TRIANGLE_STRIP)
       for (let x = 0; x < resolution + 1; x++) {
-        const h =
-          (hue +
-            p.map(fromXY(w, y, x), 0, lastXY, 0, 360)) %
-          360
+        const h = (hue + p.map(fromXY(w, y, x), 0, lastXY, 0, 360)) % 360
         p.fill(h, 75, 100)
 
         const v1 = globe[y][x]
@@ -117,11 +103,7 @@ export default function sphere(p, u) {
   }
 
   function setCamera() {
-    const {
-      cameraX,
-      cameraY,
-      cameraZ,
-    } = controlPanel.values()
+    const { cameraX, cameraY, cameraZ } = controlPanel.values()
 
     p.camera(
       // eye

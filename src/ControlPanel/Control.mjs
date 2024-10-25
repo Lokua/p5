@@ -9,9 +9,7 @@ export default class Control {
   }
 
   html(children) {
-    const labelValue = this.hasLabelValue
-      ? `<span>${this.value}</span>`
-      : ''
+    const labelValue = this.hasLabelValue ? `<span>${this.value}</span>` : ''
     return `
       <div class="control ${this.id}-control">
         <label>${this.name} ${labelValue}</label>
@@ -21,10 +19,7 @@ export default class Control {
   }
 
   bind() {
-    this.getElement().addEventListener(
-      'input',
-      this.#onInput,
-    )
+    this.getElement().addEventListener('input', this.#onInput)
   }
 
   destroy() {
@@ -44,9 +39,7 @@ export default class Control {
   #onInput = (e) => {
     this.value = e.target.valueAsNumber
     if (this.hasLabelValue) {
-      this.getElement().querySelector(
-        'span',
-      ).textContent = this.value
+      this.getElement().querySelector('span').textContent = this.value
     }
   }
 

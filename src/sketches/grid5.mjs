@@ -1,10 +1,5 @@
-import ControlPanel, {
-  Range,
-} from '../ControlPanel/index.mjs'
-import {
-  FRAMERATE_BPM_130,
-  BidirectionalCounter,
-} from '../util.mjs'
+import ControlPanel, { Range } from '../ControlPanel/index.mjs'
+import { FRAMERATE_BPM_130, BidirectionalCounter } from '../util.mjs'
 import Counter from '../Counter.mjs'
 
 export default function grid5(p) {
@@ -86,21 +81,11 @@ export default function grid5(p) {
       for (let x = 0; x < w; x += n) {
         for (let y = 0; y < h; y += n) {
           strokeDeciders[i] < 0.3
-            ? p.stroke(
-                p.random(
-                  strokeMinCounter.count,
-                  strokeMaxCounter.count,
-                ),
-              )
+            ? p.stroke(p.random(strokeMinCounter.count, strokeMaxCounter.count))
             : p.stroke(strokeMinCounter.count)
 
           fillDeciders[i] < 0.1
-            ? p.fill(
-                p.random(
-                  fillMinCounter.count,
-                  fillMaxCounter.count,
-                ),
-              )
+            ? p.fill(p.random(fillMinCounter.count, fillMaxCounter.count))
             : p.fill(fillMaxCounter.count)
 
           const rb = () => Boolean(p.noise(x) > 0.5)
@@ -109,12 +94,7 @@ export default function grid5(p) {
           const hn = n / 2 - 4
           const r = () => p.noise(hn * x * y) * hn
 
-          p.rect(
-            x - r(),
-            y - r(),
-            r() * xCounter.count,
-            r() * yCounter.count,
-          )
+          p.rect(x - r(), y - r(), r() * xCounter.count, r() * yCounter.count)
 
           i++
 

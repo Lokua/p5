@@ -64,12 +64,7 @@ export default function (p) {
   }
 
   function draw() {
-    const {
-      blendMode,
-      strokeWeight,
-      nSegments,
-      noise,
-    } = controlPanel.values()
+    const { blendMode, strokeWeight, nSegments, noise } = controlPanel.values()
     p.blendMode(p[blendMode])
     p.background(1, 0.04, 1)
     p.fill(0)
@@ -133,25 +128,14 @@ export default function (p) {
     })
   }
 
-  function drawLine({
-    nSegments,
-    noise,
-    y,
-    iOffset = 0,
-    up = false,
-  }) {
+  function drawLine({ nSegments, noise, y, iOffset = 0, up = false }) {
     const segmentLength = Math.floor(w / nSegments)
-    for (
-      let x = 0, i = iOffset;
-      x <= w;
-      x += segmentLength, i++
-    ) {
+    for (let x = 0, i = iOffset; x <= w; x += segmentLength, i++) {
       const even = isEven(i)
       p.stroke(even ? 0 : 0.5)
       const ii = even ? i : i - 1
       const r =
-        arrayModLookup(randomInts, ii) +
-        arrayModLookup(noises, ii) * noise
+        arrayModLookup(randomInts, ii) + arrayModLookup(noises, ii) * noise
       const pivot = up ? y - r : y + r
       const [y1, y2] = even ? [y, pivot] : [pivot, y]
       p.line(x, y1, x + segmentLength, y2)

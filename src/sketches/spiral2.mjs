@@ -1,7 +1,5 @@
 // code forked from https://editor.p5js.org/MaximSchoemaker/sketches/hSUoBvPJB
-import ControlPanel, {
-  Range,
-} from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../ControlPanel/index.mjs'
 import { FRAMERATE_BPM_130, PHI } from '../util.mjs'
 
 export default function spiral2(p) {
@@ -59,12 +57,7 @@ export default function spiral2(p) {
   }
 
   function draw() {
-    const {
-      count,
-      size,
-      radius: radiusControl,
-      gap,
-    } = controlPanel.values()
+    const { count, size, radius: radiusControl, gap } = controlPanel.values()
 
     p.push()
     p.scale(w, h)

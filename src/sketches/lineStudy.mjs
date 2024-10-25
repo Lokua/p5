@@ -59,12 +59,7 @@ export default function lines(p) {
   }
 
   function draw() {
-    const {
-      nLines,
-      strokeWeight,
-      blendMode,
-      debug,
-    } = controlPanel.values()
+    const { nLines, strokeWeight, blendMode, debug } = controlPanel.values()
     p.blendMode(p[blendMode])
     p.background(1, 0.02, 1)
     p.fill(0)

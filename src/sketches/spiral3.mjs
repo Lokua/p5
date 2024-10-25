@@ -1,8 +1,5 @@
 // code forked from https://editor.p5js.org/MaximSchoemaker/sketches/hSUoBvPJB
-import ControlPanel, {
-  Range,
-  createBlendMode,
-} from '../ControlPanel/index.mjs'
+import ControlPanel, { Range, createBlendMode } from '../ControlPanel/index.mjs'
 import { PHI } from '../util.mjs'
 import Counter from '../Counter.mjs'
 

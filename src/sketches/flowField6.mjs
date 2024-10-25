@@ -1,8 +1,6 @@
 // https://www.youtube.com/watch?v=sZBfLgfsvSk&list=PLeCiJGCSl7jc5UWvIeyQAvmCNc47IuwkM&index=22
 
-import ControlPanel, {
-  Range,
-} from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../ControlPanel/index.mjs'
 
 export default function (p) {
   const [w, h] = [500, 500]

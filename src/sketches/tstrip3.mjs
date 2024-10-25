@@ -1,10 +1,5 @@
-import ControlPanel, {
-  Range,
-} from '../ControlPanel/index.mjs'
-import {
-  BidirectionalCounter,
-  FRAMERATE_BPM_130,
-} from '../util.mjs'
+import ControlPanel, { Range } from '../ControlPanel/index.mjs'
+import { BidirectionalCounter, FRAMERATE_BPM_130 } from '../util.mjs'
 
 export default function tstrip3(p) {
   const [w, h] = [500, 500]
@@ -88,11 +83,7 @@ export default function tstrip3(p) {
   function draw() {
     const { noise } = controlPanel.values()
     const count = w / scale
-    const terrain = createTerrain(
-      count,
-      noise * 0.01,
-      flying,
-    )
+    const terrain = createTerrain(count, noise * 0.01, flying)
     setCamera()
     p.background(0)
     p.translate(-w / 2, -h / 2, 0)
@@ -103,11 +94,7 @@ export default function tstrip3(p) {
 
       for (let x = 0; x < count; x++) {
         p.vertex(x * scale, y * scale, terrain[x][y])
-        p.vertex(
-          x * scale,
-          (y + 1) * scale,
-          terrain[x][y + 1],
-        )
+        p.vertex(x * scale, (y + 1) * scale, terrain[x][y + 1])
       }
       p.endShape()
     }
@@ -142,9 +129,7 @@ export default function tstrip3(p) {
       let xoff = 0
       for (let x = 0; x < count; x++) {
         terrain[x] = terrain[x] || []
-        terrain[x].push(
-          p.map(p.noise(xoff, yoff), 0, 1, -50, 50),
-        )
+        terrain[x].push(p.map(p.noise(xoff, yoff), 0, 1, -50, 50))
         xoff += offset
       }
       yoff += offset

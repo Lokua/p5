@@ -19,13 +19,9 @@ export default function grid4(p) {
 
     for (let x = 0; x < w; x += n) {
       for (let y = 0; y < h; y += n) {
-        p.random() < 0.3
-          ? p.stroke(p.random(255))
-          : p.stroke(0)
+        p.random() < 0.3 ? p.stroke(p.random(255)) : p.stroke(0)
 
-        p.random() < 0.1
-          ? p.fill(p.random(255))
-          : p.fill(255)
+        p.random() < 0.1 ? p.fill(p.random(255)) : p.fill(255)
 
         const rb = () => Boolean(p.noise(x) > 0.5)
         p.strokeWeight(rb() ? 1 : rb() ? 3 : 4)

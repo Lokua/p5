@@ -1,6 +1,4 @@
-import ControlPanel, {
-  Range,
-} from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../ControlPanel/index.mjs'
 import { FRAMERATE_BPM_130 } from '../util.mjs'
 
 export default function tstrip(p) {
@@ -87,18 +85,9 @@ export default function tstrip(p) {
   }
 
   function draw() {
-    const {
-      saturation,
-      colorOffset,
-      colorRange,
-      noise,
-    } = controlPanel.values()
+    const { saturation, colorOffset, colorRange, noise } = controlPanel.values()
     const count = w / scale
-    const terrain = createTerrain(
-      count,
-      noise * 0.01,
-      flying,
-    )
+    const terrain = createTerrain(count, noise * 0.01, flying)
     const colors = createColors({
       count,
       saturation,
@@ -116,11 +105,7 @@ export default function tstrip(p) {
 
       for (let x = 0; x < count; x++) {
         p.vertex(x * scale, y * scale, terrain[x][y])
-        p.vertex(
-          x * scale,
-          (y + 1) * scale,
-          terrain[x][y + 1],
-        )
+        p.vertex(x * scale, (y + 1) * scale, terrain[x][y + 1])
       }
       p.endShape()
     }
@@ -129,11 +114,7 @@ export default function tstrip(p) {
   }
 
   function setCamera() {
-    const {
-      cameraX,
-      cameraY,
-      cameraZ,
-    } = controlPanel.values()
+    const { cameraX, cameraY, cameraZ } = controlPanel.values()
 
     p.camera(
       // eye
@@ -158,9 +139,7 @@ export default function tstrip(p) {
       let xoff = 0
       for (let x = 0; x < count; x++) {
         terrain[x] = terrain[x] || []
-        terrain[x].push(
-          p.map(p.noise(xoff, yoff), 0, 1, -50, 50),
-        )
+        terrain[x].push(p.map(p.noise(xoff, yoff), 0, 1, -50, 50))
         xoff += offset
       }
       yoff += offset

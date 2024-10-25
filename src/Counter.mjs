@@ -1,11 +1,5 @@
 export default class Counter {
-  constructor({
-    min,
-    max,
-    initialValue = min,
-    step = 1,
-    direction = 1,
-  }) {
+  constructor({ min, max, initialValue = min, step = 1, direction = 1 }) {
     this.min = min
     this.max = max
     this.initialValue = initialValue

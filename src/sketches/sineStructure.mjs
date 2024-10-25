@@ -154,9 +154,8 @@ export default function (p) {
         const x = rad * p.cos(j)
         const y = rad * p.sin(j)
         const z =
-          p[tanSinZFlip ? 'tan' : 'sin'](
-            p.frameCount * speed + i * zOffset,
-          ) * 50
+          p[tanSinZFlip ? 'tan' : 'sin'](p.frameCount * speed + i * zOffset) *
+          50
         p.vertex(x, y, z)
       }
       p.endShape(p.CLOSE)
