@@ -98,13 +98,16 @@ export default class AnimationHelper {
   }) {
     const getProgressBasedOnPlayMode = (mode) => {
       switch (mode) {
-        case AnimationHelper.PLAY_MODE_BACKWARD:
+        case AnimationHelper.PLAY_MODE_BACKWARD: {
           return 1 - this.getLoopProgress(duration)
-        case AnimationHelper.PLAY_MODE_PINGPONG:
+        }
+        case AnimationHelper.PLAY_MODE_PINGPONG: {
           return this.getPingPongLoopProgress(duration)
+        }
         case AnimationHelper.PLAY_MODE_FORWARD:
-        default:
+        default: {
           return this.getLoopProgress(duration)
+        }
       }
     }
 
@@ -257,9 +260,9 @@ export default class AnimationHelper {
    * @param {object} params - Animation parameters.
    * @param {Array} params.keyframes - Array of values or keyframe objects.
    * @param {number} [params.duration=1] - Default duration for unspecified keyframes (in beats).
-   * @param {number} [params.every=duration] - Interval at which the animation is triggered (in beats).
+   * @param {number} [params.every=null] - Interval at which the animation is triggered (in beats).
    * @param {number} [params.delay=0] - Delay before starting the animation within each 'every' interval (in beats).
-   * @param {string} [params.mode='forward'] - Playback mode ('forward', 'backward', 'pingpong', 'pendulum', 'random', 'other').
+   * @param {string} [params.mode='forward'] - Playback mode ('forward', 'backward').
    * @param {boolean} [params.loop=false] - Whether the animation should loop continuously.
    * @param {string|function} [params.easing='linear'] - Default easing function for the animation.
    * @returns {number} - The interpolated value based on the animation progress.
@@ -267,19 +270,35 @@ export default class AnimationHelper {
   animate({
     keyframes,
     duration = 1,
-    every = duration,
+    every = null,
     delay = 0,
     mode = 'forward',
     // eslint-disable-next-line no-unused-vars
     loop = false,
     easing = 'linear',
   }) {
-    const processedKeyframes = keyframes.map((kf) => ({
-      value: kf.value ?? kf,
-      duration: kf.duration ?? duration,
-      durationFrames: this.beatsToFrames(kf.duration ?? duration),
-      easing: kf.easing || easing,
-    }))
+    console.log(`[debug] 1 beat = ${this.beatsToFrames(1)} frames`)
+
+    const keyframeMode = keyframes.every((kf) => typeof kf === 'number')
+      ? 'number'
+      : 'object'
+
+    const processedKeyframes =
+      keyframeMode === 'number'
+        ? keyframes.map((value) => ({
+            value,
+            duration: duration / (keyframes.length - 1),
+            durationFrames: this.beatsToFrames(
+              duration / (keyframes.length - 1),
+            ),
+            easing,
+          }))
+        : keyframes.map((kf) => ({
+            value: kf.value,
+            duration: kf.duration ?? duration,
+            durationFrames: this.beatsToFrames(kf.duration ?? duration),
+            easing: kf.easing || easing,
+          }))
 
     let totalFrames = 0
     let playbackSequence = []
@@ -287,39 +306,20 @@ export default class AnimationHelper {
     const sumDurationFrames = (sum, x) => sum + x.durationFrames
 
     switch (mode) {
-      case 'forward': {
+      case 'forward':
+      case 'forwards': {
         playbackSequence = processedKeyframes.slice()
         totalFrames = processedKeyframes
           .slice(0, -1)
           .reduce(sumDurationFrames, 0)
         break
       }
-      case 'backward': {
-        playbackSequence = [...processedKeyframes].reverse()
+      case 'backward':
+      case 'backwards': {
+        playbackSequence = processedKeyframes.toReversed()
         totalFrames = processedKeyframes
-          .slice(0, 1)
+          .slice(0, -1)
           .reduce(sumDurationFrames, 0)
-        break
-      }
-      case 'pingpong': {
-        const forward = [...processedKeyframes]
-        const backward = [...processedKeyframes.slice(0, -1)].reverse()
-        playbackSequence = [...forward, ...backward]
-        totalFrames = playbackSequence.slice(1).reduce(sumDurationFrames, 0)
-        break
-      }
-      case 'pendulum': {
-        // TODO: fix me this isn't right
-        const forward = [...processedKeyframes]
-        const holdLast = [
-          {
-            ...processedKeyframes[processedKeyframes.length - 1],
-            durationFrames: this.beatsToFrames(1),
-          },
-        ]
-        const backward = processedKeyframes.slice(0, -1).reverse()
-        playbackSequence = [...forward, ...holdLast, ...backward]
-        totalFrames = playbackSequence.slice(1).reduce(sumDurationFrames, 0)
         break
       }
       default: {
@@ -327,7 +327,15 @@ export default class AnimationHelper {
       }
     }
 
-    const totalFramesForEvery = this.beatsToFrames(every)
+    const totalFramesForEvery = this.beatsToFrames(
+      every ?? this.framesToBeats(totalFrames),
+    )
+    if (totalFramesForEvery < totalFrames) {
+      throw new Error(
+        `[AnimationHelper#animate] The "every" duration (${totalFramesForEvery}) is shorter than the playback sequence duration. Adjust "every" to be at least ${totalFrames} frames.`,
+      )
+    }
+
     const totalFramesForDelay = this.beatsToFrames(delay)
 
     // Calculate what frame we're at within a single animation cycle
@@ -376,6 +384,10 @@ export default class AnimationHelper {
 
   beatsToFrames(beats) {
     return beatsToFrames(beats, this.bpm, this.frameRate)
+  }
+
+  framesToBeats(frames) {
+    return frames / ((this.frameRate / this.bpm) * 60)
   }
 }
 

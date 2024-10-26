@@ -4,6 +4,7 @@
   "scripts": {
     "start": "node --max-old-space-size=8192 server.mjs",
     "test": "node --test **/*.spec.mjs",
+    "test:dev": "node --test --watch **/*.spec.mjs",
     "lint": "eslint",
     "_resize": "node scripts/resizeImages.mjs",
     "_generate-markdown-index": "node scripts/generateMarkdownIndex.mjs",
