@@ -58,7 +58,7 @@ export function cross(p, w, h = w, color = [0, 0, 0]) {
 export const isEven = (x) => x % 2 === 0
 export const isOdd = (x) => !isEven(x)
 
-export const $ = document.querySelector.bind(document)
+export const $ = globalThis?.document?.querySelector?.bind(document)
 
 export function average(values) {
   return values.reduce((total, value) => total + value, 0) / values.length
@@ -333,4 +333,10 @@ export function multiLerp(values, t) {
 
   // Interpolate between the current and next value
   return lerp(values[index], values[index + 1], segmentT)
+}
+
+export function beatsToFrames(beats, bpm, frameRate) {
+  const secondsPerBeat = 60 / bpm
+  const totalSeconds = beats * secondsPerBeat
+  return Math.floor(totalSeconds * frameRate)
 }

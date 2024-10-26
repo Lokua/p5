@@ -1,3 +1,5 @@
+import { beatsToFrames, lerp } from './util.mjs'
+
 export const EasingFunctions = {
   easeIn: (x) => x * x,
   easeOut: (x) => x * (2 - x),
@@ -58,7 +60,7 @@ export default class AnimationHelper {
 
     let accumulatedDuration = 0
 
-    for (let [duration, easingArgument] of stages) {
+    for (const [duration, easingArgument] of stages) {
       const easing = safeGetEasing(easingArgument)
 
       const stageStart = accumulatedDuration / totalDuration
@@ -247,6 +249,133 @@ export default class AnimationHelper {
     const beatDuration = 60 / this.bpm
     const totalTimeInSeconds = this.p.frameCount / this.frameRate
     return totalTimeInSeconds / beatDuration
+  }
+
+  /**
+   * Animates a property based on provided keyframes and options.
+   *
+   * @param {object} params - Animation parameters.
+   * @param {Array} params.keyframes - Array of values or keyframe objects.
+   * @param {number} [params.duration=1] - Default duration for unspecified keyframes (in beats).
+   * @param {number} [params.every=duration] - Interval at which the animation is triggered (in beats).
+   * @param {number} [params.delay=0] - Delay before starting the animation within each 'every' interval (in beats).
+   * @param {string} [params.mode='forward'] - Playback mode ('forward', 'backward', 'pingpong', 'pendulum', 'random', 'other').
+   * @param {boolean} [params.loop=false] - Whether the animation should loop continuously.
+   * @param {string|function} [params.easing='linear'] - Default easing function for the animation.
+   * @returns {number} - The interpolated value based on the animation progress.
+   */
+  animate({
+    keyframes,
+    duration = 1,
+    every = duration,
+    delay = 0,
+    mode = 'forward',
+    // eslint-disable-next-line no-unused-vars
+    loop = false,
+    easing = 'linear',
+  }) {
+    const processedKeyframes = keyframes.map((kf) => ({
+      value: kf.value ?? kf,
+      duration: kf.duration ?? duration,
+      durationFrames: this.beatsToFrames(kf.duration ?? duration),
+      easing: kf.easing || easing,
+    }))
+
+    let totalFrames = 0
+    let playbackSequence = []
+
+    const sumDurationFrames = (sum, x) => sum + x.durationFrames
+
+    switch (mode) {
+      case 'forward': {
+        playbackSequence = processedKeyframes.slice()
+        totalFrames = processedKeyframes
+          .slice(0, -1)
+          .reduce(sumDurationFrames, 0)
+        break
+      }
+      case 'backward': {
+        playbackSequence = [...processedKeyframes].reverse()
+        totalFrames = processedKeyframes
+          .slice(0, 1)
+          .reduce(sumDurationFrames, 0)
+        break
+      }
+      case 'pingpong': {
+        const forward = [...processedKeyframes]
+        const backward = [...processedKeyframes.slice(0, -1)].reverse()
+        playbackSequence = [...forward, ...backward]
+        totalFrames = playbackSequence.slice(1).reduce(sumDurationFrames, 0)
+        break
+      }
+      case 'pendulum': {
+        // TODO: fix me this isn't right
+        const forward = [...processedKeyframes]
+        const holdLast = [
+          {
+            ...processedKeyframes[processedKeyframes.length - 1],
+            durationFrames: this.beatsToFrames(1),
+          },
+        ]
+        const backward = processedKeyframes.slice(0, -1).reverse()
+        playbackSequence = [...forward, ...holdLast, ...backward]
+        totalFrames = playbackSequence.slice(1).reduce(sumDurationFrames, 0)
+        break
+      }
+      default: {
+        throw new Error(`[AnimationHelper#animate] unknown mode ${mode}`)
+      }
+    }
+
+    const totalFramesForEvery = this.beatsToFrames(every)
+    const totalFramesForDelay = this.beatsToFrames(delay)
+
+    // Calculate what frame we're at within a single animation cycle
+    const currentFrameInEvery =
+      (this.p.frameCount - totalFramesForDelay) % totalFramesForEvery
+
+    if (this.p.frameCount < totalFramesForDelay) {
+      return playbackSequence[0].value
+    }
+
+    // If we're past the animation duration in this cycle, show final value
+    if (currentFrameInEvery >= totalFrames) {
+      return playbackSequence[playbackSequence.length - 1].value
+    }
+
+    // Determine which segment we're in using a cleaner reduce approach
+    const currentSegmentIndex = playbackSequence
+      .slice(0, -1)
+      .reduce((segmentIndex, _, i) => {
+        const totalDurationToHere = playbackSequence
+          .slice(0, i + 1)
+          .reduce((sum, kf) => sum + kf.durationFrames, 0)
+
+        return currentFrameInEvery < totalDurationToHere ? i : segmentIndex
+      }, 0)
+
+    const currentKeyframe = playbackSequence[currentSegmentIndex]
+    const nextKeyframe = playbackSequence[currentSegmentIndex + 1]
+
+    // Calculate progress within the current segment
+    const segmentStartFrame = playbackSequence
+      .slice(0, currentSegmentIndex)
+      .reduce((sum, kf) => sum + kf.durationFrames, 0)
+
+    const frameInSegment = currentFrameInEvery - segmentStartFrame
+    const segmentDurationFrames = currentKeyframe.durationFrames
+    const segmentProgress = frameInSegment / segmentDurationFrames
+
+    // Interpolate between current and next keyframe values
+    return lerp(
+      currentKeyframe.value,
+      nextKeyframe.value,
+      safeGetEasing(currentKeyframe.easing)(segmentProgress),
+    )
+  }
+
+  beatsToFrames(beats) {
+    return beatsToFrames(beats, this.bpm, this.frameRate)
   }
 }
 

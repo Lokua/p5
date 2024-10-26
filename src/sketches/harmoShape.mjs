@@ -87,7 +87,8 @@ export default function (p) {
     controlPanel.init()
     const canvas = p.createCanvas(w, h)
 
-    p.colorMode(p.HSB, 100, 100, 100, 100)
+    p.colorMode(p.HSB, 100)
+    p.noStroke()
 
     return {
       canvas,
@@ -105,9 +106,8 @@ export default function (p) {
       a,
     } = controlPanel.values()
 
-    p.background(100, 0, 100, backgroundAlpha)
+    p.background(100, 100, 100, backgroundAlpha)
     p.fill(0)
-    p.noStroke()
 
     const centerY = h / 2
     const adjustedLineCount = lineCount % 2 === 0 ? lineCount + 1 : lineCount
@@ -132,7 +132,7 @@ export default function (p) {
           )
         : shapes[shape](shapeFnArgs)
 
-      let rectRadius = ax.animateProperty({ from: 0, to: 10, duration: 1 })
+      let rectRadius = ax.animateProperty({ from: 0, to: 10, duration: 2 })
       rectRadius += ax.getPingPongLoopProgress(1) * Math.abs(i) * 2
       rectRadius = rectRadius % 20
 

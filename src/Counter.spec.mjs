@@ -1,5 +1,5 @@
-import { test } from 'uvu'
-import * as assert from 'uvu/assert'
+import test from 'node:test'
+import assert from 'node:assert'
 import Counter from './Counter.mjs'
 
 test('Counter', () => {
@@ -9,22 +9,22 @@ test('Counter', () => {
     step: 1,
   })
 
-  assert.is(counter.count, 0)
+  assert.equal(counter.count, 0)
 
   counter.tick()
-  assert.is(counter.count, 1)
+  assert.equal(counter.count, 1)
 
   counter.tick()
-  assert.is(counter.count, 2)
+  assert.equal(counter.count, 2)
 
   counter.tick()
-  assert.is(counter.count, 1)
+  assert.equal(counter.count, 1)
 
   counter.tick()
-  assert.is(counter.count, 0)
+  assert.equal(counter.count, 0)
 
   counter.tick()
-  assert.is(counter.count, 1)
+  assert.equal(counter.count, 1)
 })
 
 test('Counter (large, unevenly divisible step)', () => {
@@ -34,28 +34,26 @@ test('Counter (large, unevenly divisible step)', () => {
     step: 3,
   })
 
-  assert.is(counter.count, 0)
+  assert.equal(counter.count, 0)
 
   counter.tick()
-  assert.is(counter.count, 3)
+  assert.equal(counter.count, 3)
 
   counter.tick()
-  assert.is(counter.count, 6)
+  assert.equal(counter.count, 6)
 
   counter.tick()
-  assert.is(counter.count, 9)
+  assert.equal(counter.count, 9)
 
   counter.tick()
-  assert.is(counter.count, 8)
+  assert.equal(counter.count, 8)
 
   counter.tick()
-  assert.is(counter.count, 5)
+  assert.equal(counter.count, 5)
 
   counter.tick()
-  assert.is(counter.count, 2)
+  assert.equal(counter.count, 2)
 
   counter.tick()
-  assert.is(counter.count, 1)
+  assert.equal(counter.count, 1)
 })
-
-test.run()

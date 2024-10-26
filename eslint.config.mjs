@@ -8,5 +8,9 @@ export default [
         p5: 'readonly',
       },
     },
+    rules: {
+      'object-shorthand': 'error',
+      'prefer-const': 'error',
+    },
   },
 ]
