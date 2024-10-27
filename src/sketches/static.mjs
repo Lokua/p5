@@ -15,7 +15,7 @@ export default function lines(p) {
   }
 
   const bpm = 134
-  const ax = new AnimationHelper(p, metadata.frameRate, bpm)
+  const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm })
 
   const controlPanel = new ControlPanel({
     id: metadata.name,
@@ -95,7 +95,7 @@ export default function lines(p) {
     p.stroke(0)
     p.strokeWeight(strokeWeight)
 
-    const globalNoiseOffset = ax.getTotalBeatsElapsed() * speed
+    const globalNoiseOffset = ah.getTotalBeatsElapsed() * speed
 
     const n = Math.floor(h / nLines)
     const pad = 8

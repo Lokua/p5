@@ -26,7 +26,9 @@ button {
   background-color: #666;
   color: #fff;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease;
 }
 
 button:hover {
@@ -52,6 +54,21 @@ li {
 
 #sketch-container {
   margin-right: 2rem;
+}
+
+#controls-container {
+  fieldset {
+    border: none;
+    display: flex;
+  }
+
+  label {
+    font-size: 12px;
+    margin-right: 4px;
+  }
+}
+.main-control {
+  display: flex;
 }
 
 #controls {
@@ -123,7 +140,9 @@ select {
   border-radius: 4px;
   cursor: pointer;
   outline: none;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
   appearance: none;
   background-image: url('data:image/svg+xml;charset=US-ASCII,%3csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 6"%3e%3cpath fill="%23fff" d="M0 0l5 6 5-6H0z"/%3e%3c/svg%3e');

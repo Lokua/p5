@@ -13,7 +13,7 @@ export default function (p) {
 
   const [w, h] = [500, 500]
 
-  const animationHelper = new AnimationHelper(p, metadata.frameRate, 134)
+  const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 134 })
 
   const controlPanel = new ControlPanel({
     id: metadata.name,
@@ -51,7 +51,7 @@ export default function (p) {
     const spacing = w / (count + 1)
     const y = h / 2
 
-    const amplitude = animationHelper.animateProperty({
+    const amplitude = ah.animateProperty({
       from: 1,
       to: h / 4,
       duration: 16,
@@ -63,39 +63,33 @@ export default function (p) {
 
       switch (i) {
         case 1: {
-          const progress = animationHelper.getLoopProgress(4)
+          const progress = ah.getLoopProgress(4)
           p.circle(x, y + amplitude * p.sin(progress * p.TWO_PI), diameter)
           break
         }
         case 2: {
-          const progress = EasingFunctions.easeIn(
-            animationHelper.getLoopProgress(4),
-          )
+          const progress = EasingFunctions.easeIn(ah.getLoopProgress(4))
           p.circle(x, y + amplitude * p.sin(progress * p.TWO_PI), diameter)
           break
         }
         case 3: {
-          const progress = EasingFunctions.easeOut(
-            animationHelper.getLoopProgress(4),
-          )
+          const progress = EasingFunctions.easeOut(ah.getLoopProgress(4))
           p.circle(x, y + amplitude * p.sin(progress * p.TWO_PI), diameter)
           break
         }
         case 4: {
-          const progress = EasingFunctions.easeInOut(
-            animationHelper.getLoopProgress(4),
-          )
+          const progress = EasingFunctions.easeInOut(ah.getLoopProgress(4))
           p.circle(x, y + amplitude * p.sin(progress * p.TWO_PI), diameter)
           break
         }
         case 5: {
-          const progress = animationHelper.chainAnimations([[8], [3]])
+          const progress = ah.chainAnimations([[8], [3]])
           p.circle(x, y + amplitude * p.sin(progress * p.TWO_PI), diameter)
           break
         }
         case 6: {
           // Get normalized progress from 0 to 1 over 16 units of time
-          const progress = animationHelper.animateProperty({
+          const progress = ah.animateProperty({
             from: 0,
             to: 1,
             duration: 16,
@@ -115,7 +109,7 @@ export default function (p) {
           break
         }
         case 7: {
-          const offsetY = animationHelper.triggeredAnimation({
+          const offsetY = ah.triggeredAnimation({
             value: 0,
             keyframes: [-amplitude, amplitude, -amplitude * 2],
             duration: 4,

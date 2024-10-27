@@ -12,7 +12,7 @@ export default function (p) {
   }
 
   const [w, h] = [500, 500]
-  const animationHelper = new AnimationHelper(p, metadata.frameRate, 134)
+  const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 134 })
   const amplitude = 20
   const padding = 20
   let noiseBuffer
@@ -124,7 +124,7 @@ export default function (p) {
     p.image(noiseBuffer, 0, 0)
 
     const spacing = (p.width - padding * 2) / (grid + 1)
-    const progress = animationHelper.getLoopProgress(waveTime)
+    const progress = ah.getLoopProgress(waveTime)
     const nearColor = p.color(nearHue, 100, 50)
     const farColor = p.color(0, 0, 100)
 

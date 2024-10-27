@@ -12,7 +12,7 @@ export default function (p) {
   }
 
   const [w, h] = [500, 500]
-  const animationHelper = new AnimationHelper(p, metadata.frameRate, 134)
+  const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 134 })
   const amplitude = 20
   const padding = 20
   const phaseModes = [
@@ -109,25 +109,24 @@ export default function (p) {
     p.image(noiseBuffer, 0, 0)
 
     const spacing = (p.width - padding * 2) / (grid + 1)
-    const progress = animationHelper.getLoopProgress(waveTime)
+    const progress = ah.getLoopProgress(waveTime)
 
-    const transitionWaveTime = animationHelper.repeatValues({
+    const transitionWaveTime = ah.repeatValues({
       keyframes: [16, 1],
       duration: 32,
     })
-    const transitionProgress =
-      animationHelper.getPingPongLoopProgress(transitionWaveTime)
+    const transitionProgress = ah.getPingPongLoopProgress(transitionWaveTime)
 
     const nearColor = p.color(nearHue, 100, 50)
     const farColor = p.color(50, 100, 90)
 
-    const animateXProgress = animationHelper.getPingPongLoopProgress(16)
+    const animateXProgress = ah.getPingPongLoopProgress(16)
 
     const maxDisplacement = Math.sqrt(
       (animateXProgress * amplitude) ** 2 + (animateY ? amplitude : 0) ** 2,
     )
 
-    const circleSize = animationHelper.triggeredAnimation({
+    const circleSize = ah.triggeredAnimation({
       value: 0.5,
       keyframes: [0.4],
       duration: 1,
@@ -135,7 +134,7 @@ export default function (p) {
       delay: 0.5,
     })
 
-    const delayPerColumn = animationHelper.oneTimeAnimation({
+    const delayPerColumn = ah.oneTimeAnimation({
       keyframes: [2, 0.5],
       duration: 32,
     })

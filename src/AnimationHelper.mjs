@@ -17,18 +17,27 @@ export default class AnimationHelper {
   static TRIGGER_MODE_DEFAULT = 'default'
   static TRIGGER_MODE_ROUND_ROBIN = 'roundRobin'
 
-  constructor(p, frameRate, bpm = 120, frameSystemIsZeroIndexed = false) {
+  constructor({
+    p,
+    frameRate,
+    bpm = 120,
+    frameSystemIsZeroIndexed = false,
+    latencyOffset = 0,
+  }) {
     this.p = p
     this.frameRate = frameRate
     this.bpm = bpm
     this.frameSystemIsZeroIndexed = frameSystemIsZeroIndexed
+    this.latencyOffset = latencyOffset
   }
 
   getFrameCount() {
-    // p5 frame system is 1-indexed, a real FNPITA
-    return this.frameSystemIsZeroIndexed
+    // p5 frame system is effectively 1-indexed
+    const frameCount = this.frameSystemIsZeroIndexed
       ? this.p.frameCount
       : this.p.frameCount - 1
+
+    return frameCount + this.latencyOffset
   }
 
   /**

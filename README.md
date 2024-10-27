@@ -21,7 +21,8 @@ Then navigate to http://localhost:3000 in browser
 
 > IMPORTANT! This project uses Git LFS
 
-A copy of ffmpeg must be available on your PATH.
+A copy of ffmpeg must be available on your PATH if you plan on recording
+animations.
 
 To get OSX to STFU about ffmpeg permissions run:
 

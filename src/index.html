@@ -18,6 +18,10 @@
             <select id="sketches-select"></select>
           </section>
           <section id="controls-container">
+            <fieldset>
+              <label for="sync-midi">sync midi</label>
+              <input id="sync-midi" type="checkbox" />
+            </fieldset>
             <button id="redraw-button">draw [r]</button>
             <button id="reset-button">reset</button>
             <button id="loop-button">loop [l]</button>
@@ -34,6 +38,7 @@
       {
         "imports": {
           "chroma": "/modules/chroma-js/index.js",
+          "@lokua/midi-util": "/modules/@lokua/midi-util/src/index.mjs",
           "p5": "/modules/p5/lib/p5.js"
         }
       }

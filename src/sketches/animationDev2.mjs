@@ -14,7 +14,7 @@ export default function (p) {
 
   const [w, h] = [500, 500]
 
-  const ah = new AnimationHelper(p, metadata.frameRate, 134)
+  const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 134 })
   const colorScale = chroma.scale(['red', 'teal'])
 
   const controlPanel = new ControlPanel({

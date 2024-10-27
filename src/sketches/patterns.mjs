@@ -14,7 +14,7 @@ export default function (p) {
     frameRate: 30,
   }
 
-  const animationHelper = new AnimationHelper(p, metadata.frameRate, 134)
+  const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 134 })
 
   const controlPanel = new ControlPanel({
     id: metadata.name,
@@ -128,7 +128,7 @@ export default function (p) {
         DistanceAlgorithms.polar(x, y, cx, cy),
         DistanceAlgorithms.radialSinusoidal(x, y, cx, cy),
       ],
-      animationHelper.getPingPongLoopProgress(64),
+      ah.getPingPongLoopProgress(64),
     )
 
     // Use sine or cosine waves to create smooth variations in radius
@@ -156,7 +156,7 @@ export default function (p) {
         DistanceAlgorithms.polar(x, y, cx, cy),
         DistanceAlgorithms.radialSinusoidal(x, y, cx, cy),
       ],
-      animationHelper.getPingPongLoopProgress(64),
+      ah.getPingPongLoopProgress(64),
     )
     // Combine angle and distance for phase offset
     return angle + (Math.sin(distanceFromCenter / phaseOffset) * p.TWO_PI) / 4
@@ -168,7 +168,7 @@ export default function (p) {
         const pt = gridPoints[row][col]
 
         // Get the loop progress based on musical time, using the noteDuration for each point
-        const progress = animationHelper.getLoopProgress(
+        const progress = ah.getLoopProgress(
           perNoteDuration ? pt.noteDuration : 64,
         )
 

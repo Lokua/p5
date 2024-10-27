@@ -1,21 +1,20 @@
 import 'p5'
-import { $, get, uuid } from './util.mjs'
+import { findPortByName, getPorts, isStart } from '@lokua/midi-util'
+import { $, get, logInfo, uuid } from './util.mjs'
 import SketchManager from './SketchManager.mjs'
 
 const sketchManager = new SketchManager('sketch')
 const defaultSketch = 'gridTemplate'
-let recording = false
-const backgroundColors = [
-  'rgb(0, 0, 0)',
-  'rgb(127, 127, 127)',
-  'rgb(200, 200, 200)',
-  'rgb(255, 255, 255)',
-]
+const backgroundColors = ['#000000', '#7F7F7F', '#C8C8C8', '#FFFFFF']
+
 let backgroundColorIndex = 0
+let recording = false
+let midiPort
 
 initialize()
 
 async function initialize() {
+  await initMidi()
   setupEventListeners()
   initBackground()
   await loadSketch(localStorage.getItem('lastSketch'))
@@ -28,10 +27,15 @@ async function loadSketch(name) {
     localStorage.setItem('lastSketch', name)
   } catch (error) {
     console.error(error)
-    console.info('Falling back to default sketch', defaultSketch)
+    logInfo('Falling back to default sketch', defaultSketch)
     await sketchManager.loadSketch(defaultSketch)
     localStorage.setItem('lastSketch', defaultSketch)
   }
+}
+
+async function initMidi() {
+  const { inputs } = await getPorts()
+  midiPort = findPortByName('IAC Driver p5', inputs)
 }
 
 function setupEventListeners() {
@@ -47,7 +51,31 @@ function setupEventListeners() {
     loadSketch(e.target.value)
   })
   $('#reset-button').addEventListener('click', resetSketch)
+  $('#sync-midi').addEventListener('change', onSyncMidi)
   document.body.addEventListener('keyup', onKeyUp)
+}
+
+function onSyncMidi(e) {
+  if (midiPort) {
+    const sync = e.target.checked
+    if (sync) {
+      midiPort.addEventListener('midimessage', onMidiMessage)
+      logInfo('Received midi START message. Resetting frameCount.')
+    } else {
+      midiPort.removeEventListener('midimessage', onMidiMessage)
+    }
+  } else {
+    alert('Unable to find "IAC Driver p5" MIDI port')
+  }
+}
+
+function onMidiMessage(e) {
+  const [status] = e.data
+
+  if (isStart(status)) {
+    logInfo('Received midi start message. Resetting frameCount.')
+    resetSketch()
+  }
 }
 
 function toggleLoop() {
@@ -98,7 +126,7 @@ async function stopRecording() {
 }
 
 async function sendFramesToBackend(frames) {
-  console.log('Converting frames...')
+  logInfo('Converting frames...')
   const formData = new FormData()
   const sketchName = sketchManager.getSketchName() || 'recording'
   formData.append('name', sketchName)
@@ -111,7 +139,7 @@ async function sendFramesToBackend(frames) {
     method: 'POST',
     body: formData,
   })
-  console.log('Frames sent to the backend.')
+  logInfo('Frames sent to the backend.')
 }
 
 function saveCanvas() {

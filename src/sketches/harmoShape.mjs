@@ -14,7 +14,7 @@ export default function (p) {
     frameRate: 30,
   }
 
-  const ax = new AnimationHelper(p, metadata.frameRate, 134)
+  const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 134 })
 
   const shapes = {
     diamond({ index, halfLineCount, scale, a = 1 }) {
@@ -114,7 +114,7 @@ export default function (p) {
 
     const halfLineCount = Math.floor(adjustedLineCount / 2)
     const spacing = h / (adjustedLineCount - 1)
-    const rectWidthProgress = ax.getPingPongLoopProgress(16)
+    const rectWidthProgress = ah.getPingPongLoopProgress(16)
 
     for (let i = -halfLineCount; i <= halfLineCount; i++) {
       const yOffset = i * spacing
@@ -132,8 +132,8 @@ export default function (p) {
           )
         : shapes[shape](shapeFnArgs)
 
-      let rectRadius = ax.animateProperty({ from: 0, to: 10, duration: 2 })
-      rectRadius += ax.getPingPongLoopProgress(1) * Math.abs(i) * 2
+      let rectRadius = ah.animateProperty({ from: 0, to: 10, duration: 2 })
+      rectRadius += ah.getPingPongLoopProgress(1) * Math.abs(i) * 2
       rectRadius = rectRadius % 20
 
       p.rect(

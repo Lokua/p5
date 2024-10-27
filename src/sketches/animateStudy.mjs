@@ -14,7 +14,7 @@ export default function (p) {
 
   const [w, h] = [500, 500]
 
-  const ah = new AnimationHelper(p, metadata.frameRate, 134)
+  const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 134 })
   const colorScale = chroma.scale(['teal', 'red'])
 
   const controlPanel = new ControlPanel({
@@ -89,7 +89,31 @@ export default function (p) {
 
   function drawCircle({ x, amplitude, color, animation }) {
     p.fill(color)
-    p.circle(x, h / 2 + amplitude * p.sin(animation * p.TWO_PI), diameter)
+
+    // Start the sine wave at the bottom by adding a positive phase offset
+    const phaseOffset = p.HALF_PI
+
+    // Sine wave key points for reference:
+    // - At 0: starts at 0 ("0r"), rising up
+    // - At π/2: reaches peak at 1
+    // - At π: crosses 0 again ("0f"), falling down
+    // - At 3π/2: reaches bottom at -1
+    //
+    // With no phase offset (as explained above):
+    // (0r, 1, 0f, -1)
+    //
+    // Positive phase offset explanation (like rotating an array):
+    // Adding +π/2 shifts the sine wave to start from -1:
+    // (-1, 0r, 1, 0f)
+    //
+    // A negative phase offset would shift it backwards:
+    // (1, 0f, -1, 0r)
+
+    p.circle(
+      x,
+      h / 2 + amplitude * p.sin(animation * p.TWO_PI + phaseOffset),
+      diameter,
+    )
   }
 
   return {
