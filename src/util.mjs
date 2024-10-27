@@ -338,5 +338,5 @@ export function multiLerp(values, t) {
 export function beatsToFrames(beats, bpm, frameRate) {
   const secondsPerBeat = 60 / bpm
   const totalSeconds = beats * secondsPerBeat
-  return Math.floor(totalSeconds * frameRate)
+  return totalSeconds * frameRate
 }

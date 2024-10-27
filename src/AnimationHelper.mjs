@@ -17,10 +17,18 @@ export default class AnimationHelper {
   static TRIGGER_MODE_DEFAULT = 'default'
   static TRIGGER_MODE_ROUND_ROBIN = 'roundRobin'
 
-  constructor(p, frameRate, bpm = 120) {
+  constructor(p, frameRate, bpm = 120, frameSystemIsZeroIndexed = false) {
     this.p = p
     this.frameRate = frameRate
     this.bpm = bpm
+    this.frameSystemIsZeroIndexed = frameSystemIsZeroIndexed
+  }
+
+  getFrameCount() {
+    // p5 frame system is 1-indexed, a real FNPITA
+    return this.frameSystemIsZeroIndexed
+      ? this.p.frameCount
+      : this.p.frameCount - 1
   }
 
   /**
@@ -32,7 +40,7 @@ export default class AnimationHelper {
   getLoopProgress(noteDuration = 1) {
     const beatDuration = 60 / this.bpm
     const totalFramesForNote = beatDuration * noteDuration * this.frameRate
-    const currentFrame = this.p.frameCount % totalFramesForNote
+    const currentFrame = this.getFrameCount() % totalFramesForNote
     const progress = currentFrame / totalFramesForNote
     return progress
   }
@@ -139,13 +147,16 @@ export default class AnimationHelper {
     delay = 0,
     mode = AnimationHelper.TRIGGER_MODE_DEFAULT,
   }) {
+    console.warn(
+      '[AnimationHelper] #triggeredAnimation is deprecated. Use #animate instead.',
+    )
     const beatDuration = 60 / this.bpm
     const totalFramesForEvery = every * beatDuration * this.frameRate
     const totalFramesForDuration = duration * beatDuration * this.frameRate
     const totalFramesForDelay = delay * beatDuration * this.frameRate
 
     const currentFrameInEvery =
-      (this.p.frameCount - totalFramesForDelay + totalFramesForEvery) %
+      (this.getFrameCount() - totalFramesForDelay + totalFramesForEvery) %
       totalFramesForEvery
 
     if (currentFrameInEvery < totalFramesForDuration) {
@@ -157,7 +168,7 @@ export default class AnimationHelper {
       let segmentIndex, segmentFraction
 
       if (mode === 'roundRobin') {
-        const totalFramesSinceStart = this.p.frameCount - totalFramesForDelay
+        const totalFramesSinceStart = this.getFrameCount() - totalFramesForDelay
         const triggerCount = Math.floor(
           totalFramesSinceStart / totalFramesForEvery,
         )
@@ -205,7 +216,7 @@ export default class AnimationHelper {
     const totalFramesForDuration = duration * beatDuration * this.frameRate
 
     // Calculate progress from the start of the animation
-    const currentFrame = this.p.frameCount
+    const currentFrame = this.getFrameCount()
     const progress = Math.min(currentFrame / totalFramesForDuration, 1)
     const easedProgress = safeGetEasing(easing)(progress)
 
@@ -237,7 +248,7 @@ export default class AnimationHelper {
     const beatDuration = 60 / this.bpm
     const totalFramesForSegment = duration * beatDuration * this.frameRate
     const totalFramesForCycle = totalFramesForSegment * keyframes.length
-    const currentFrameInCycle = this.p.frameCount % totalFramesForCycle
+    const currentFrameInCycle = this.getFrameCount() % totalFramesForCycle
     const currentSegmentIndex = Math.floor(
       currentFrameInCycle / totalFramesForSegment,
     )
@@ -250,7 +261,7 @@ export default class AnimationHelper {
    */
   getTotalBeatsElapsed() {
     const beatDuration = 60 / this.bpm
-    const totalTimeInSeconds = this.p.frameCount / this.frameRate
+    const totalTimeInSeconds = this.getFrameCount() / this.frameRate
     return totalTimeInSeconds / beatDuration
   }
 
@@ -262,7 +273,6 @@ export default class AnimationHelper {
    * @param {number} [params.duration=1] - Default duration for unspecified keyframes (in beats).
    * @param {number} [params.every=null] - Interval at which the animation is triggered (in beats).
    * @param {number} [params.delay=0] - Delay before starting the animation within each 'every' interval (in beats).
-   * @param {string} [params.mode='forward'] - Playback mode ('forward', 'backward').
    * @param {boolean} [params.loop=false] - Whether the animation should loop continuously.
    * @param {string|function} [params.easing='linear'] - Default easing function for the animation.
    * @returns {number} - The interpolated value based on the animation progress.
@@ -272,60 +282,35 @@ export default class AnimationHelper {
     duration = 1,
     every = null,
     delay = 0,
-    mode = 'forward',
-    // eslint-disable-next-line no-unused-vars
-    loop = false,
     easing = 'linear',
+    debugLabel = '',
   }) {
-    console.log(`[debug] 1 beat = ${this.beatsToFrames(1)} frames`)
+    if (debugLabel) {
+      console.group(debugLabel)
+      console.log('[debug] FRAME COUNT', this.getFrameCount())
+      console.log(`[debug] 1 beat = ${this.beatsToFrames(1)} frames`)
+    }
 
-    const keyframeMode = keyframes.every((kf) => typeof kf === 'number')
-      ? 'number'
-      : 'object'
-
-    const processedKeyframes =
-      keyframeMode === 'number'
-        ? keyframes.map((value) => ({
-            value,
-            duration: duration / (keyframes.length - 1),
-            durationFrames: this.beatsToFrames(
-              duration / (keyframes.length - 1),
-            ),
-            easing,
-          }))
-        : keyframes.map((kf) => ({
-            value: kf.value,
-            duration: kf.duration ?? duration,
-            durationFrames: this.beatsToFrames(kf.duration ?? duration),
-            easing: kf.easing || easing,
-          }))
-
-    let totalFrames = 0
-    let playbackSequence = []
+    const processedKeyframes = keyframes.every((kf) => typeof kf === 'number')
+      ? keyframes.map((value) => ({
+          value,
+          duration: duration / (keyframes.length - 1),
+          durationFrames: this.beatsToFrames(duration / (keyframes.length - 1)),
+          easing,
+        }))
+      : keyframes.map((kf) => ({
+          value: kf.value,
+          duration: kf.duration ?? duration,
+          durationFrames: this.beatsToFrames(kf.duration ?? duration),
+          easing: kf.easing || easing,
+        }))
 
     const sumDurationFrames = (sum, x) => sum + x.durationFrames
 
-    switch (mode) {
-      case 'forward':
-      case 'forwards': {
-        playbackSequence = processedKeyframes.slice()
-        totalFrames = processedKeyframes
-          .slice(0, -1)
-          .reduce(sumDurationFrames, 0)
-        break
-      }
-      case 'backward':
-      case 'backwards': {
-        playbackSequence = processedKeyframes.toReversed()
-        totalFrames = processedKeyframes
-          .slice(0, -1)
-          .reduce(sumDurationFrames, 0)
-        break
-      }
-      default: {
-        throw new Error(`[AnimationHelper#animate] unknown mode ${mode}`)
-      }
-    }
+    const playbackSequence = processedKeyframes.slice()
+    const totalFrames = processedKeyframes
+      .slice(0, -1)
+      .reduce(sumDurationFrames, 0)
 
     const totalFramesForEvery = this.beatsToFrames(
       every ?? this.framesToBeats(totalFrames),
@@ -338,29 +323,28 @@ export default class AnimationHelper {
 
     const totalFramesForDelay = this.beatsToFrames(delay)
 
-    // Calculate what frame we're at within a single animation cycle
     const currentFrameInEvery =
-      (this.p.frameCount - totalFramesForDelay) % totalFramesForEvery
+      (this.getFrameCount() - totalFramesForDelay) % totalFramesForEvery
 
-    if (this.p.frameCount < totalFramesForDelay) {
+    if (this.getFrameCount() < totalFramesForDelay) {
       return playbackSequence[0].value
     }
 
-    // If we're past the animation duration in this cycle, show final value
     if (currentFrameInEvery >= totalFrames) {
       return playbackSequence[playbackSequence.length - 1].value
     }
 
-    // Determine which segment we're in using a cleaner reduce approach
-    const currentSegmentIndex = playbackSequence
-      .slice(0, -1)
-      .reduce((segmentIndex, _, i) => {
-        const totalDurationToHere = playbackSequence
-          .slice(0, i + 1)
-          .reduce((sum, kf) => sum + kf.durationFrames, 0)
+    let currentSegmentIndex = 0
+    for (let i = 0; i < playbackSequence.length; i++) {
+      const totalDurationToHere = playbackSequence
+        .slice(0, i + 1)
+        .reduce(sumDurationFrames, 0)
 
-        return currentFrameInEvery < totalDurationToHere ? i : segmentIndex
-      }, 0)
+      if (currentFrameInEvery < totalDurationToHere) {
+        currentSegmentIndex = i
+        break
+      }
+    }
 
     const currentKeyframe = playbackSequence[currentSegmentIndex]
     const nextKeyframe = playbackSequence[currentSegmentIndex + 1]
@@ -368,18 +352,32 @@ export default class AnimationHelper {
     // Calculate progress within the current segment
     const segmentStartFrame = playbackSequence
       .slice(0, currentSegmentIndex)
-      .reduce((sum, kf) => sum + kf.durationFrames, 0)
+      .reduce(sumDurationFrames, 0)
 
     const frameInSegment = currentFrameInEvery - segmentStartFrame
-    const segmentDurationFrames = currentKeyframe.durationFrames
-    const segmentProgress = frameInSegment / segmentDurationFrames
+    const segmentProgress = frameInSegment / currentKeyframe.durationFrames
 
     // Interpolate between current and next keyframe values
-    return lerp(
+    const value = lerp(
       currentKeyframe.value,
       nextKeyframe.value,
       safeGetEasing(currentKeyframe.easing)(segmentProgress),
     )
+
+    if (debugLabel) {
+      console.log('[debug] currentKeyframe:', currentKeyframe)
+      console.log('[debug] currentKeyframe.value:', currentKeyframe.value)
+      console.log('[debug] nextKeyframe.value:', nextKeyframe.value)
+      console.log('[debug] segmentStartFrame:', segmentStartFrame)
+      console.log('[debug] frameInSegment:', frameInSegment)
+      console.log('[debug] currentFrameInEvery:', currentFrameInEvery)
+      console.log('[debug] currentSegmentIndex:', currentSegmentIndex)
+      console.log('[debug] segmentProgress:', segmentProgress)
+      console.log('[debug] value:', value)
+      console.groupEnd(debugLabel)
+    }
+
+    return value
   }
 
   beatsToFrames(beats) {

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -30,9 +30,14 @@
         <main id="dynamic-controls"></main>
       </section>
     </main>
-    <script src="p5/lib/p5.js"></script>
-    <script src="ccapture.js/build/CCapture.all.min.js"></script>
-    <script src="jszip/dist/jszip.min.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "chroma": "/modules/chroma-js/index.js",
+          "p5": "/modules/p5/lib/p5.js"
+        }
+      }
+    </script>
     <script src="index.mjs" type="module"></script>
   </body>
 </html>

@@ -7,7 +7,7 @@ import AnimationHelper, { EasingFunctions } from '../AnimationHelper.mjs'
  */
 export default function (p) {
   const metadata = {
-    name: 'template',
+    name: 'animationDev',
     frameRate: 24,
   }
 

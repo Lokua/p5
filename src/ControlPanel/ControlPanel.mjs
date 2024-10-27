@@ -36,7 +36,7 @@ export default class ControlPanel {
     Object.entries(this.controls).forEach(([key, { name }]) => {
       if (key !== name) {
         throw new Error(
-          `Invalid control name "${name}" provided for key "${key}"`,
+          `Invalid control name "${name}" provided for key "${key}". Please make sure key and name match.`,
         )
       }
     })

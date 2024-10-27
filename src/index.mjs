@@ -1,3 +1,4 @@
+import 'p5'
 import { $, get, uuid } from './util.mjs'
 import SketchManager from './SketchManager.mjs'
 
