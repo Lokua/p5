@@ -1,4 +1,5 @@
 // @ts-check
+import chroma from 'chroma'
 import ControlPanel, { Range } from '../ControlPanel/index.mjs'
 
 /**
@@ -29,7 +30,7 @@ export default function (p) {
     controlPanel.init()
     const canvas = p.createCanvas(w, h)
 
-    p.colorMode(p.HSB, 100)
+    p.colorMode(p.RGB, 255, 255, 255, 1)
     p.noStroke()
 
     return {
@@ -40,7 +41,7 @@ export default function (p) {
   function draw() {
     const { diameter } = controlPanel.values()
     p.background(255)
-    p.fill(0, 62, 100)
+    p.fill(chroma('rebeccapurple').rgba())
     p.circle(w / 2, h / 2, diameter)
   }
 

@@ -26,12 +26,14 @@ export default function (p, getMidiInputPort) {
   const diameter = w / 8
   const space = w / count
   const colorScale = chroma.scale(['red', 'teal'])
+  const ordered = []
 
   const midiData = Array(count)
     .fill(null)
     .map(() => [])
 
   const CC_MUTED = 1
+  const CC_ALPHA = 2
 
   const controlPanel = new ControlPanel({
     p,
@@ -70,10 +72,16 @@ export default function (p, getMidiInputPort) {
     const canvas = p.createCanvas(w, h)
 
     p.colorMode(p.RGB, 255, 255, 255, 1)
+    p.rectMode(p.CENTER)
+    p.background(230, 0)
     p.textAlign(p.CENTER, p.CENTER)
     p.textSize(16)
 
     getMidiInputPort()?.addEventListener('midimessage', onMidiMessage)
+
+    for (let i = 0; i < count; i++) {
+      ordered.push()
+    }
 
     return {
       canvas,
@@ -81,16 +89,18 @@ export default function (p, getMidiInputPort) {
   }
 
   function draw() {
-    const { amplitude, animateAmplitude, backgroundAlpha, mixWeight } =
-      controlPanel.values()
+    const { amplitude, animateAmplitude, mixWeight } = controlPanel.values()
 
-    p.background(230, 230, 230, backgroundAlpha)
     p.noStroke()
 
     for (let i = 0, duration = 0.25; i < count; i++, duration += 0.25) {
       const x = space / 2 + i * space
       const controllers = midiData[i]
       const isMuted = controllers[CC_MUTED]
+      const alpha = controllers[CC_ALPHA]
+
+      p.fill(230, isMuted || alpha === undefined ? 1 : alpha / 127)
+      p.rect(x, h / 2, space, h)
 
       drawCircle({
         x,
@@ -187,9 +197,7 @@ export default function (p, getMidiInputPort) {
     draw,
     destroy() {
       controlPanel.destroy()
-      if (getMidiInputPort()) {
-        getMidiInputPort().removeEventListener(onMidiMessage)
-      }
+      getMidiInputPort()?.removeEventListener('midimessage', onMidiMessage)
     },
     metadata,
   }
