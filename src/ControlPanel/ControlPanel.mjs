@@ -1,3 +1,5 @@
+import { formatLog } from '../util.mjs'
+
 export default class ControlPanel {
   static defaultSelector = '#dynamic-controls'
 
@@ -24,7 +26,12 @@ export default class ControlPanel {
         }
       }
     } else {
-      console.warn('[ControlPanel] custom inputHandler is deprecated.')
+      console.warn(
+        formatLog(`
+          [ControlPanel] custom inputHandler is deprecated.
+          remove it and also add \`p\` argument to the constructor.
+        `),
+      )
     }
 
     if (this.attemptReload && !this.id) {
@@ -36,7 +43,10 @@ export default class ControlPanel {
     Object.entries(this.controls).forEach(([key, { name }]) => {
       if (key !== name) {
         throw new Error(
-          `Invalid control name "${name}" provided for key "${key}". Please make sure key and name match.`,
+          formatLog(`
+            Invalid control name "${name}" provided for key "${key}". 
+            Please make sure key and name match.
+          `),
         )
       }
     })

@@ -18,22 +18,35 @@
             <select id="sketches-select"></select>
           </section>
           <section id="controls-container">
-            <!-- <fieldset>
-              <label for="sync-midi">midi sync</label>
-              <input id="sync-midi" type="checkbox" />
-            </fieldset> -->
-            <button id="redraw-button">draw [r]</button>
-            <button id="reset-button">reset</button>
+            <button id="redraw-button">draw [d]</button>
             <button id="loop-button">loop [l]</button>
-            <button id="bg-button">bg [b]</button>
             <button id="save-button">save [s]</button>
-            <button id="debug-button">debug [d]</button>
+            <button id="reset-button">reset [r]</button>
+            <button id="bg-button">bg [b]</button>
+            <button id="midi-start">start [p]</button>
             <button id="record-button">record</button>
           </section>
         </header>
         <main id="dynamic-controls"></main>
       </section>
     </main>
+    <dialog id="midi-mappings">
+      <section>
+        <p>
+          In Ableton Live, enter MIDI Mapping mode, select the Start button
+          there, then press the Start button here. Repeat for the Stop button
+          and you should be all set to use the `play [p]` button in this app to
+          start Live remotely. Note that we have to map Start and Stop and send
+          them both to truly restart Live such that it sends its own Start
+          message back to our app to properly sync things.
+        </p>
+      </section>
+      <section>
+        <button id="midi-mappings-start">Start</button>
+        <button id="midi-mappings-stop">Stop</button>
+        <button id="midi-mappings-exit">(Exit)</button>
+      </section>
+    </dialog>
     <script type="importmap">
       {
         "imports": {

@@ -4,6 +4,14 @@ export const FRAMERATE_BPM_130 = Math.round(34.67)
 export const logInfo = (...args) =>
   console.info('%c[info]%c', 'color: teal;', '', ...args)
 
+// Good for using template strings for multiline log comments;
+// avoids long strings and ugly concatenation
+export const formatLog = (str) =>
+  str
+    .replace(/\\n/g, '__NEWLINE__')
+    .replace(/\s*\n\s*/g, ' ')
+    .replace(/__NEWLINE__/g, '\n')
+
 export function isNumeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n)
 }

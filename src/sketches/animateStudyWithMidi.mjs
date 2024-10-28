@@ -7,7 +7,7 @@ import AnimationHelper from '../AnimationHelper.mjs'
 /**
  * @param {import("p5")} p
  */
-export default function (p, getMidiPort) {
+export default function (p, getMidiInputPort) {
   const metadata = {
     name: 'animateStudyWithMidi',
     frameRate: 60,
@@ -26,7 +26,6 @@ export default function (p, getMidiPort) {
   const diameter = w / 8
   const space = w / count
   const colorScale = chroma.scale(['red', 'teal'])
-  // const colorScale = chroma.scale(['teal', 'red'])
 
   const midiData = Array(count)
     .fill(null)
@@ -35,14 +34,15 @@ export default function (p, getMidiPort) {
   const CC_MUTED = 1
 
   const controlPanel = new ControlPanel({
+    p,
     id: metadata.name,
     attemptReload: true,
     controls: {
       amplitude: new Range({
         name: 'amplitude',
-        value: 20,
+        value: 48,
         min: 0,
-        max: 1000,
+        max: 250,
       }),
       animateAmplitude: new Toggle({
         name: 'animateAmplitude',
@@ -63,9 +63,6 @@ export default function (p, getMidiPort) {
         step: 0.001,
       }),
     },
-    inputHandler() {
-      !p.isLooping() && draw()
-    },
   })
 
   function setup() {
@@ -76,7 +73,7 @@ export default function (p, getMidiPort) {
     p.textAlign(p.CENTER, p.CENTER)
     p.textSize(16)
 
-    getMidiPort().addEventListener('midimessage', onMidiMessage)
+    getMidiInputPort()?.addEventListener('midimessage', onMidiMessage)
 
     return {
       canvas,
@@ -165,7 +162,7 @@ export default function (p, getMidiPort) {
     if (isControlChange(status)) {
       // live sends 123 whenever you press stop three times
       // and since >=120 are forbidden...
-      if (controller > 120) {
+      if (controller >= 120) {
         return
       }
 
@@ -190,8 +187,8 @@ export default function (p, getMidiPort) {
     draw,
     destroy() {
       controlPanel.destroy()
-      if (getMidiPort()) {
-        getMidiPort().removeEventListener(onMidiMessage)
+      if (getMidiInputPort()) {
+        getMidiInputPort().removeEventListener(onMidiMessage)
       }
     },
     metadata,
