@@ -64,7 +64,7 @@ app.post('/upload-frames', upload.none(), async (req, res) => {
       path: dirPath,
     })
 
-    console.log('writing files')
+    log('writing files')
 
     // Save each frame with zero-padded index
     await Promise.all(
@@ -76,8 +76,8 @@ app.post('/upload-frames', upload.none(), async (req, res) => {
       }),
     )
 
-    console.log('files written')
-    console.log('converting to mp4')
+    log('Files written')
+    log('Converting to mp4')
 
     await convertImagesToMP4({
       imagesPath: dirPath,
@@ -136,53 +136,6 @@ async function convertImagesToMP4({ imagesPath, totalFrames, frameRate }) {
     })
   })
 }
-
-app.post('/download-recording', upload.single('file'), async (req, res) => {
-  const { name } = req.body
-
-  log(`Received ${c.green(name)}; converting to mp4`)
-
-  const prefix = `./captures/${name}-${prettyDate(new Date())}`
-  const webmPathname = `${prefix}.webm`
-  const mp4Pathname = `${prefix}.mp4`
-
-  await fs.writeFile(webmPathname, req.file.buffer)
-
-  log(`webm file written to ${webmPathname}`)
-  res.send({
-    pathname: webmPathname,
-  })
-
-  await new Promise((resolve, reject) => {
-    const childProcess = spawn(
-      'ffmpeg',
-      [
-        '-i',
-        webmPathname,
-        '-vf',
-        'scale=1080x1080',
-        '-vcodec',
-        'libx264',
-        mp4Pathname,
-      ],
-      {
-        stdio: 'inherit',
-        shell: true,
-      },
-    )
-
-    childProcess.on('close', (code) => {
-      if (code === 0) {
-        log('Done. File available at', mp4Pathname)
-        resolve()
-      } else {
-        reject(
-          new Error(`Spawned process closed with a non-zero exit code ${code}`),
-        )
-      }
-    })
-  })
-})
 
 app.listen(port, () => {
   log(`app listening at http://localhost:${port}`)

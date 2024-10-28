@@ -11,6 +11,12 @@ export default [
     rules: {
       'object-shorthand': 'error',
       'prefer-const': 'error',
+      'no-use-before-define': [
+        'error',
+        {
+          functions: false,
+        },
+      ],
     },
   },
 ]

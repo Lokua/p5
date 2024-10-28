@@ -1,14 +1,15 @@
 // @ts-check
 import chroma from 'chroma'
+import { isControlChange, getChannel, getType } from '@lokua/midi-util'
 import ControlPanel, { Range, Toggle } from '../ControlPanel/index.mjs'
 import AnimationHelper from '../AnimationHelper.mjs'
 
 /**
  * @param {import("p5")} p
  */
-export default function (p) {
+export default function (p, getMidiPort) {
   const metadata = {
-    name: 'animateStudy',
+    name: 'animateStudyWithMidi',
     frameRate: 60,
   }
 
@@ -20,7 +21,18 @@ export default function (p) {
     bpm: 134,
     latencyOffset: -24,
   })
+
+  const count = 7
+  const diameter = w / 8
+  const space = w / count
   const colorScale = chroma.scale(['red', 'teal'])
+  // const colorScale = chroma.scale(['teal', 'red'])
+
+  const midiData = Array(count)
+    .fill(null)
+    .map(() => [])
+
+  const CC_MUTED = 1
 
   const controlPanel = new ControlPanel({
     id: metadata.name,
@@ -64,14 +76,12 @@ export default function (p) {
     p.textAlign(p.CENTER, p.CENTER)
     p.textSize(16)
 
+    getMidiPort().addEventListener('midimessage', onMidiMessage)
+
     return {
       canvas,
     }
   }
-
-  const diameter = w / 8
-  const count = 7
-  const space = w / count
 
   function draw() {
     const { amplitude, animateAmplitude, backgroundAlpha, mixWeight } =
@@ -82,6 +92,8 @@ export default function (p) {
 
     for (let i = 0, duration = 0.25; i < count; i++, duration += 0.25) {
       const x = space / 2 + i * space
+      const controllers = midiData[i]
+      const isMuted = controllers[CC_MUTED]
 
       drawCircle({
         x,
@@ -91,15 +103,17 @@ export default function (p) {
               duration: 8,
             })
           : amplitude,
-        chromaColor: colorScale(i / (count - 1)),
+        chromaColor: isMuted ? chroma('black') : colorScale(i / (count - 1)),
         mixWeight,
-        animation: ah.animate({
-          keyframes: [0, 1],
+        animation: isMuted
+          ? 0
+          : ah.animate({
+              keyframes: [0, 1],
 
-          // multiplying by 2 so it hits the tick on the up and down
-          // instead of just the down or up (depending on phaseOffset)
-          duration: duration * 2,
-        }),
+              // multiplying by 2 so it hits the tick on the up and down
+              // instead of just the down or up (depending on phaseOffset)
+              duration: duration * 2,
+            }),
       })
 
       p.fill(255)
@@ -145,11 +159,40 @@ export default function (p) {
     )
   }
 
+  function onMidiMessage(e) {
+    const [status, controller, value] = e.data
+
+    if (isControlChange(status)) {
+      // live sends 123 whenever you press stop three times
+      // and since >=120 are forbidden...
+      if (controller > 120) {
+        return
+      }
+
+      try {
+        const channelIndex = getChannel(status)
+        midiData[channelIndex][controller] = value
+      } catch (error) {
+        console.error(error, {
+          status,
+          controller,
+          value,
+          midiData,
+          channelIndex: getChannel(status),
+          type: getType(status),
+        })
+      }
+    }
+  }
+
   return {
     setup,
     draw,
     destroy() {
       controlPanel.destroy()
+      if (getMidiPort()) {
+        getMidiPort().removeEventListener(onMidiMessage)
+      }
     },
     metadata,
   }

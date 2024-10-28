@@ -2,7 +2,7 @@ export const PHI = (1 + Math.sqrt(5)) / 2
 export const FRAMERATE_BPM_130 = Math.round(34.67)
 
 export const logInfo = (...args) =>
-  console.info('%c[info]%c', 'color: blue;', '', ...args)
+  console.info('%c[info]%c', 'color: teal;', '', ...args)
 
 export function isNumeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n)
@@ -141,6 +141,7 @@ export function fromXY(x, y, nColumns) {
   return nColumns * x + y
 }
 
+// Deprecated?
 export class P5Helpers {
   constructor(p) {
     this.p = p

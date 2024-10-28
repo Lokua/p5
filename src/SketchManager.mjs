@@ -1,7 +1,5 @@
-import { P5Helpers } from './util.mjs'
-
 export default class SketchManager {
-  constructor(containerId) {
+  constructor(containerId, ...additionalSketchArgs) {
     this.containerId = containerId
     this.currentP5 = null
     this.currentSketch = null
@@ -12,6 +10,7 @@ export default class SketchManager {
     this.frameRate = 30
     this.recordingDurationSeconds = 60
     this.maxRecordingFrames = this.recordingDurationSeconds * this.frameRate
+    this.additionalSketchArgs = additionalSketchArgs
   }
 
   async loadSketch(sketchName) {
@@ -28,7 +27,7 @@ export default class SketchManager {
   initSketch(p, sketchFunction) {
     const { draw, setup, metadata, destroy, preload } = sketchFunction(
       p,
-      new P5Helpers(p),
+      ...this.additionalSketchArgs,
     )
 
     if (preload) {

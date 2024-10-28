@@ -37,7 +37,12 @@ export default class AnimationHelper {
       ? this.p.frameCount
       : this.p.frameCount - 1
 
-    return frameCount + this.latencyOffset
+    // Stall at 0 until latencyOffset is met
+    if (frameCount < Math.abs(this.latencyOffset)) {
+      return 0
+    }
+
+    return frameCount
   }
 
   /**

@@ -3,13 +3,13 @@ import { findPortByName, getPorts, isStart } from '@lokua/midi-util'
 import { $, get, logInfo, uuid } from './util.mjs'
 import SketchManager from './SketchManager.mjs'
 
-const sketchManager = new SketchManager('sketch')
 const defaultSketch = 'gridTemplate'
 const backgroundColors = ['#000000', '#7F7F7F', '#C8C8C8', '#FFFFFF']
-
 let backgroundColorIndex = 0
 let recording = false
 let midiPort
+
+const sketchManager = new SketchManager('sketch', () => midiPort)
 
 initialize()
 
@@ -36,6 +36,7 @@ async function loadSketch(name) {
 async function initMidi() {
   const { inputs } = await getPorts()
   midiPort = findPortByName('IAC Driver p5', inputs)
+  midiPort.addEventListener('midimessage', onMidiMessage)
 }
 
 function setupEventListeners() {
@@ -51,23 +52,22 @@ function setupEventListeners() {
     loadSketch(e.target.value)
   })
   $('#reset-button').addEventListener('click', resetSketch)
-  $('#sync-midi').addEventListener('change', onSyncMidi)
+  // $('#sync-midi').addEventListener('change', onSyncMidi)
   document.body.addEventListener('keyup', onKeyUp)
 }
 
-function onSyncMidi(e) {
-  if (midiPort) {
-    const sync = e.target.checked
-    if (sync) {
-      midiPort.addEventListener('midimessage', onMidiMessage)
-      logInfo('Received midi START message. Resetting frameCount.')
-    } else {
-      midiPort.removeEventListener('midimessage', onMidiMessage)
-    }
-  } else {
-    alert('Unable to find "IAC Driver p5" MIDI port')
-  }
-}
+// function onSyncMidi(e) {
+//   if (midiPort) {
+//     const sync = e.target.checked
+//     if (sync) {
+//       midiPort.addEventListener('midimessage', onMidiMessage)
+//     } else {
+//       midiPort.removeEventListener('midimessage', onMidiMessage)
+//     }
+//   } else {
+//     alert('Unable to find "IAC Driver p5" MIDI port')
+//   }
+// }
 
 function onMidiMessage(e) {
   const [status] = e.data

@@ -30,8 +30,6 @@ describe('animate', () => {
 
     p.frameCount = ax.beatsToFrames(0.5)
 
-    console.log(p.frameCount)
-
     assertEqual(
       ax.animate({
         keyframes: [0, 10],
