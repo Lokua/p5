@@ -11,7 +11,7 @@ export default function (p) {
 
   const metadata = {
     name: 'sonar',
-    frameRate: 30,
+    frameRate: 120,
   }
 
   const ah = new AnimationHelper({
@@ -52,7 +52,7 @@ export default function (p) {
     }
   }
 
-  const scale = chroma.scale(['rebeccapurple', 'azure'])
+  const scale = chroma.scale(['#222', chroma('azure').saturate(0.25)])
 
   function draw() {
     const { diameter, backgroundAlpha } = controlPanel.values()
@@ -115,7 +115,7 @@ export default function (p) {
       ah.animate({
         keyframes: [diameter / 2, w * 2],
         duration,
-        delay: 1,
+        delay: 1.5,
       }),
     )
   }
