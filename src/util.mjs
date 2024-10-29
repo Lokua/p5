@@ -173,7 +173,6 @@ export class P5Helpers {
     const x = radius * this.p.sin(longitude) * this.p.cos(latitude)
     const y = radius * this.p.sin(longitude) * this.p.sin(latitude)
     const z = radius * this.p.cos(longitude)
-
     return [x, y, z]
   }
 }

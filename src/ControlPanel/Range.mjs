@@ -1,10 +1,11 @@
 import Control from './Control.mjs'
 
 export default class Range extends Control {
-  constructor({ name, value = 0, min = 0, max = 100, step = 1 }) {
+  constructor({ name, value = 0, min = 0, max = 100, step = 1, ...rest }) {
     super({
       name,
       value,
+      ...rest,
     })
     this.min = min
     this.max = max

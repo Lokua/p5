@@ -1,12 +1,19 @@
 import ControlPanel, { Range } from '../ControlPanel/index.mjs'
 import { fromXY } from '../util.mjs'
 
-export default function sphere(p, u) {
+export default function sphere(p) {
+  const metadata = {
+    name: 'sphere',
+    frameRate: 30,
+  }
+
   const [w, h] = [500, 500]
   const lastXY = fromXY(w, w, h)
   const globe = []
 
   const controlPanel = new ControlPanel({
+    p,
+    id: 'sphere',
     controls: {
       cameraX: new Range({
         name: 'cameraX',
@@ -44,15 +51,12 @@ export default function sphere(p, u) {
         min: 0,
         max: 360,
       }),
-      noise: new Range({
-        name: 'noise',
+      backgroundHue: new Range({
+        name: 'backgroundHue',
         value: 0,
         min: 0,
-        max: 1000,
+        max: 100,
       }),
-    },
-    inputHandler() {
-      !p.isLooping() && draw()
     },
   })
 
@@ -67,20 +71,20 @@ export default function sphere(p, u) {
   }
 
   function draw() {
-    const { resolution, radius, hue, noise } = controlPanel.values()
+    const { resolution, radius, hue, backgroundHue } = controlPanel.values()
 
     setCamera()
 
-    p.background(0)
+    p.background(0, 0, backgroundHue)
     p.stroke(255)
 
     for (let y = 0; y < resolution + 1; y++) {
-      const latitude = u.yToLatitude(resolution, y)
+      const latitude = yToLatitude(resolution, y)
       globe[y] = []
       for (let x = 0; x < resolution + 1; x++) {
-        const longitude = u.xToLongitude(resolution, x)
+        const longitude = xToLongitude(resolution, x)
         globe[y][x] = p.createVector(
-          ...u.geographicToCartesian(longitude, latitude, radius),
+          ...geographicToCartesian(longitude, latitude, radius),
         )
       }
     }
@@ -89,14 +93,13 @@ export default function sphere(p, u) {
       p.beginShape(p.TRIANGLE_STRIP)
       for (let x = 0; x < resolution + 1; x++) {
         const h = (hue + p.map(fromXY(w, y, x), 0, lastXY, 0, 360)) % 360
-        p.fill(h, 75, 100)
+        p.fill(h, 100, 100)
 
         const v1 = globe[y][x]
         const v2 = globe[y + 1][x]
 
-        const get = (c) => c + p.noise(c) * noise
-        p.vertex(get(v1.x), get(v1.y), get(v1.z))
-        p.vertex(get(v2.x), get(v2.y), get(v2.z))
+        p.vertex(v1.x, v1.y, v1.z)
+        p.vertex(v2.x, v2.y, v2.z)
       }
       p.endShape()
     }
@@ -121,14 +124,27 @@ export default function sphere(p, u) {
     )
   }
 
+  function xToLongitude(resolution, x) {
+    return p.map(x, 0, resolution, 0, p.PI)
+  }
+
+  function yToLatitude(resolution, y) {
+    return p.map(y, 0, resolution, 0, p.TWO_PI)
+  }
+
+  function geographicToCartesian(longitude, latitude, radius) {
+    const x = radius * p.sin(longitude) * p.cos(latitude)
+    const y = radius * p.sin(longitude) * p.sin(latitude)
+    const z = radius * p.cos(longitude)
+    return [x, y, z]
+  }
+
   return {
     setup,
     draw,
     destroy() {
       controlPanel.destroy()
     },
-    metadata: {
-      name: 'sphere',
-    },
+    metadata,
   }
 }

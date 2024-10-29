@@ -1,12 +1,19 @@
 export default class Control {
   #inputListeners = []
 
-  constructor({ name, value, hasLabelValue = true, type = 'default' }) {
+  constructor({
+    name,
+    value,
+    hasLabelValue = true,
+    type = 'default',
+    disabled = false,
+  }) {
     this.id = `${name}--${Date.now()}`
     this.name = name
     this.value = value
     this.hasLabelValue = hasLabelValue
     this.type = type
+    this.disabled = disabled
   }
 
   html(children, containerAttributes = '') {

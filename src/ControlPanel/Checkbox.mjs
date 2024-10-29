@@ -1,12 +1,13 @@
 import Control from './Control.mjs'
 
 export default class Checkbox extends Control {
-  constructor({ name, value = false }) {
+  constructor({ name, value = false, ...rest }) {
     super({
       name,
       value,
       hasLabelValue: false,
       type: 'checkbox',
+      ...rest,
     })
   }
 

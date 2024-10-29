@@ -4,7 +4,9 @@ Exploratory sketches made with p5.js
 
 Stuff like this:
 
-<img src="images/1000x/grid4-u2m4.png" alt="images/1000x/grid4-u2m4.png" width="400">
+<img src="images/1000x/static-hhqh.png" alt="images/1000x/grid4-u2m4.png" width="400">
+<img src="images/1000x/flexor2-slo0.png" alt="images/1000x/grid4-u2m4.png" width="400">
+<img src="images/1000x/tstrip-wh953.png" alt="images/1000x/grid4-u2m4.png" width="400">
 
 You can see more here on github by looking at the auto generated
 [markdown index](index.md)
@@ -31,9 +33,9 @@ xattr -dr com.apple.quarantine /usr/local/bin/ffmpeg
 ```
 
 To create a new sketch, copy one of the existing ones from the
-[sketches](src/sketches) folder or start from scratch with
-[sketches](src/sketches/template.mjs). All sketches in this folder are available
-to load in the UI
+[src/sketches](src/sketches) folder or start from scratch with
+[src/sketches/template.mjs](src/sketches/template.mjs). All sketches in this
+folder are available to load in the UI
 
 ## Learning Resources
 

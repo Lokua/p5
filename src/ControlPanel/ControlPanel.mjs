@@ -13,7 +13,9 @@ export default class ControlPanel {
   }) {
     this.p = p
     this.id = id
-    this.controls = controls
+    this.controls = Object.fromEntries(
+      Object.entries(controls).filter(([, control]) => !control.disabled),
+    )
     this.validateControls()
     this.selector = selector
     this.inputHandler = inputHandler

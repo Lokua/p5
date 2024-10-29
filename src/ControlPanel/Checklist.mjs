@@ -1,12 +1,13 @@
 import Control from './Control.mjs'
 
 export default class Checklist extends Control {
-  constructor({ name, options }) {
+  constructor({ name, options, ...rest }) {
     super({
       name,
       value: options,
       type: 'checklist',
       hasLabelValue: false,
+      ...rest,
     })
   }
 

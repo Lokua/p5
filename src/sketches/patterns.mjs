@@ -17,8 +17,8 @@ export default function (p) {
   const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 134 })
 
   const controlPanel = new ControlPanel({
+    p,
     id: metadata.name,
-    attemptReload: true,
     controls: {
       grid: new Range({
         name: 'grid',
@@ -53,9 +53,6 @@ export default function (p) {
         name: 'perNoteDuration',
         value: false,
       }),
-    },
-    inputHandler() {
-      !p.isLooping() && draw()
     },
   })
 

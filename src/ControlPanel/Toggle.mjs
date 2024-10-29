@@ -1,10 +1,17 @@
 import Control from './Control.mjs'
 
 export default class Toggle extends Control {
-  constructor({ name, value = false, onText = 'ON', offText = 'OFF' }) {
+  constructor({
+    name,
+    value = false,
+    onText = 'ON',
+    offText = 'OFF',
+    ...rest
+  }) {
     super({
       name,
       value,
+      ...rest,
     })
     this.onText = onText
     this.offText = offText

@@ -23,6 +23,7 @@ export default function (p) {
   const colorScale = chroma.scale(['red', 'teal'])
 
   const controlPanel = new ControlPanel({
+    p,
     id: metadata.name,
     attemptReload: true,
     controls: {
@@ -50,9 +51,6 @@ export default function (p) {
         max: 1,
         step: 0.001,
       }),
-    },
-    inputHandler() {
-      !p.isLooping() && draw()
     },
   })
 
