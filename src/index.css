@@ -82,6 +82,10 @@ li {
   flex-direction: column;
   overflow: auto;
   height: 100%;
+  width: 100%;
+
+  /* hardcoded for my 1/2 width of screen needs */
+  max-width: 332px;
   min-height: 500px;
   max-height: 100vh;
   padding: 1rem;

@@ -1,7 +1,12 @@
 // @ts-check
-import ControlPanel, { Range, Select, Toggle } from '../ControlPanel/index.mjs'
+import chroma from 'chroma'
+import ControlPanel, {
+  Checkbox,
+  Range,
+  Select,
+} from '../ControlPanel/index.mjs'
 import AnimationHelper from '../AnimationHelper.mjs'
-import { apply, multiLerp } from '../util.mjs'
+import { apply, erf, multiLerp } from '../util.mjs'
 
 /**
  * @param {import("p5")} p
@@ -15,6 +20,7 @@ export default function (p) {
   }
 
   const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 134 })
+  const colorScale = chroma.scale(['red', 'black'])
 
   const shapes = {
     diamond({ index, halfLineCount, scale, a = 1 }) {
@@ -64,7 +70,7 @@ export default function (p) {
         name: 'backgroundAlpha',
         value: 100,
       }),
-      interpolateShapes: new Toggle({
+      interpolateShapes: new Checkbox({
         name: 'interpolateShapes',
         value: true,
       }),
@@ -74,6 +80,7 @@ export default function (p) {
         value: 'hourglass',
       }),
       a: new Range({
+        disabled: true,
         name: 'a',
         value: 2,
         min: 0.1,
@@ -87,7 +94,7 @@ export default function (p) {
     controlPanel.init()
     const canvas = p.createCanvas(w, h)
 
-    p.colorMode(p.HSB, 100)
+    p.colorMode(p.RGB, 255, 255, 255, 1)
     p.noStroke()
 
     return {
@@ -103,11 +110,14 @@ export default function (p) {
       backgroundAlpha,
       interpolateShapes,
       shape,
-      a,
     } = controlPanel.values()
 
-    p.background(100, 100, 100, backgroundAlpha)
-    p.fill(0)
+    const a = ah.animate({
+      keyframes: [0.1, 10, 0.1],
+      duration: 128,
+    })
+
+    p.background(0, backgroundAlpha)
 
     const centerY = h / 2
     const adjustedLineCount = lineCount % 2 === 0 ? lineCount + 1 : lineCount
@@ -117,6 +127,22 @@ export default function (p) {
     const rectWidthProgress = ah.getPingPongLoopProgress(16)
 
     for (let i = -halfLineCount; i <= halfLineCount; i++) {
+      const phaseOffset =
+        Math.abs(i) *
+        ah.animate({
+          keyframes: [0, 1],
+          duration: 64,
+        })
+      p.fill(
+        colorScale(
+          (ah.animate({
+            keyframes: [0, 1, 0],
+            duration: 8,
+          }) +
+            phaseOffset) %
+            1,
+        ).rgba(),
+      )
       const yOffset = i * spacing
 
       const shapeFnArgs = {
@@ -136,11 +162,40 @@ export default function (p) {
       rectRadius += ah.getPingPongLoopProgress(1) * Math.abs(i) * 2
       rectRadius = rectRadius % 20
 
+      // center
       p.rect(
         w / 2 - rectWidth / 2,
         centerY + yOffset - rectHeight / 2,
         rectWidth,
         rectHeight,
+        rectRadius,
+      )
+
+      const edgeWidth = rectWidth * 2
+      p.fill(
+        colorScale(
+          (ah.animate({
+            keyframes: [0, 1, 0],
+            duration: 8,
+          }) +
+            (1 - phaseOffset)) %
+            1,
+        ).rgba(),
+      )
+      // left
+      p.rect(
+        0,
+        centerY + yOffset - rectHeight / 2,
+        edgeWidth,
+        rectHeight / 4,
+        rectRadius,
+      )
+      // right
+      p.rect(
+        w - edgeWidth,
+        centerY + yOffset - rectHeight / 2,
+        edgeWidth,
+        rectHeight / 4,
         rectRadius,
       )
     }

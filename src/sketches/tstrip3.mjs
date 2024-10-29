@@ -1,21 +1,21 @@
 import ControlPanel, { Range } from '../ControlPanel/index.mjs'
-import { BidirectionalCounter, FRAMERATE_BPM_130 } from '../util.mjs'
+import { BidirectionalCounter } from '../util.mjs'
 
 export default function tstrip3(p) {
   const [w, h] = [500, 500]
   const randomInts = []
   const scale = 2
-  const frameRate = FRAMERATE_BPM_130
   const zCounter = new BidirectionalCounter(70, 350)
   let flying = 0
   let index = 0
 
   const metadata = {
     name: 'tstrip3',
-    frameRate,
+    frameRate: 30,
   }
 
   const controlPanel = new ControlPanel({
+    p,
     id: metadata.name,
     attemptReload: true,
     controls: {
@@ -38,12 +38,14 @@ export default function tstrip3(p) {
         max: 2000,
       }),
       saturation: new Range({
+        disabled: true,
         name: 'saturation',
         value: 100,
         min: 0,
         max: 100,
       }),
       brightness: new Range({
+        disabled: true,
         name: 'brightness',
         value: 100,
         min: 0,
@@ -55,9 +57,6 @@ export default function tstrip3(p) {
         min: 0,
         max: 1000,
       }),
-    },
-    inputHandler() {
-      !p.isLooping() && draw()
     },
   })
 
