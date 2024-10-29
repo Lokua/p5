@@ -55,7 +55,9 @@ export default class ControlPanel {
   init() {
     this.html()
     this.#mapControls((control) => control.bind())
-    this.inputHandler && this.onInput(this.inputHandler)
+    if (this.inputHandler) {
+      this.onInput(this.inputHandler)
+    }
     if (this.attemptReload && this.id) {
       console.info('[ControlPanel] restoring from localStorage')
       this.localStorageKey = `ControlPanel-${this.id}`

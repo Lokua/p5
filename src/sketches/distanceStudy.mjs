@@ -1,6 +1,10 @@
 // @ts-check
 import chroma from 'chroma'
-import ControlPanel, { Range, Toggle } from '../ControlPanel/index.mjs'
+import ControlPanel, {
+  Checklist,
+  Range,
+  Toggle,
+} from '../ControlPanel/index.mjs'
 import { DistanceAlgorithms } from '../util.mjs' // Ensure this path is correct
 
 /**
@@ -32,28 +36,21 @@ export default function (p) {
         max: 100,
         step: 1,
       }),
+      algorithm: new Checklist({
+        name: 'algorithm',
+        options: {
+          euclidean: true,
+          manhattan: true,
+          chebyshev: true,
+          minkowski: true,
+        },
+      }),
       minkowskiPValue: new Range({
         name: 'minkowskiPValue',
         value: 1.5,
         min: 0.5,
         max: 4,
         step: 0.01,
-      }),
-      euclidean: new Toggle({
-        name: 'euclidean',
-        value: true,
-      }),
-      manhattan: new Toggle({
-        name: 'manhattan',
-        value: true,
-      }),
-      chebyshev: new Toggle({
-        name: 'chebyshev',
-        value: true,
-      }),
-      minkowski: new Toggle({
-        name: 'minkowski',
-        value: true,
       }),
     },
   })
@@ -75,6 +72,7 @@ export default function (p) {
     const canvas = p.createCanvas(w, h)
 
     p.colorMode(p.RGB, 255, 255, 255, 1)
+    p.noLoop()
 
     return {
       canvas,
@@ -82,15 +80,8 @@ export default function (p) {
   }
 
   function draw() {
-    const {
-      layers,
-      spacing,
-      minkowskiPValue,
-      euclidean,
-      manhattan,
-      chebyshev,
-      minkowski,
-    } = controlPanel.values()
+    const { layers, spacing, minkowskiPValue, algorithm } =
+      controlPanel.values()
 
     p.background(255)
     p.noFill()
@@ -111,14 +102,14 @@ export default function (p) {
 
         switch (alg) {
           case 'euclidean': {
-            if (!euclidean) {
+            if (!algorithm.euclidean) {
               break
             }
             p.circle(0, 0, size * 2)
             break
           }
           case 'manhattan': {
-            if (!manhattan) {
+            if (!algorithm.manhattan) {
               break
             }
             p.push()
@@ -129,7 +120,7 @@ export default function (p) {
             break
           }
           case 'chebyshev': {
-            if (!chebyshev) {
+            if (!algorithm.chebyshev) {
               break
             }
             p.rectMode(p.CENTER)
@@ -137,7 +128,7 @@ export default function (p) {
             break
           }
           case 'minkowski': {
-            if (!minkowski) {
+            if (!algorithm.minkowski) {
               break
             }
             drawMinkowskiShape(p, size * 2, minkowskiPValue)

@@ -1,6 +1,10 @@
 // https://editor.p5js.org/generative-design/sketches/M_1_5_03
 
-import ControlPanel, { Range, Toggle } from '../ControlPanel/index.mjs'
+import ControlPanel, {
+  Checkbox,
+  Range,
+  Toggle,
+} from '../ControlPanel/index.mjs'
 
 let p
 
@@ -22,10 +26,6 @@ export default function (p5Instance) {
     id: metadata.name,
     attemptReload: true,
     controls: {
-      start: new Toggle({
-        name: 'start',
-        value: false,
-      }),
       strokeWidth: new Range({
         name: 'strokeWidth',
         value: 0.3,
@@ -63,6 +63,7 @@ export default function (p5Instance) {
     const canvas = p.createCanvas(w, h)
 
     for (let i = 0; i < agentCount; i++) {
+      // eslint-disable-next-line no-use-before-define
       agents[i] = new Agent(noiseZRange)
     }
 
@@ -72,12 +73,8 @@ export default function (p5Instance) {
   }
 
   function draw() {
-    const { start, strokeWidth, noiseScale, noiseStrength, noiseZVelocity } =
+    const { strokeWidth, noiseScale, noiseStrength, noiseZVelocity } =
       controlPanel.values()
-
-    if (!start) {
-      return
-    }
 
     p.fill(255, overlayAlpha)
     p.noStroke()

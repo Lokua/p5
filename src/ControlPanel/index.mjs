@@ -1,4 +1,6 @@
 import ControlPanel from './ControlPanel.mjs'
+import Checkbox from './Checkbox.mjs'
+import Checklist from './Checklist.mjs'
 import Range from './Range.mjs'
 import Toggle from './Toggle.mjs'
 import Select from './Select.mjs'
@@ -30,4 +32,4 @@ const createBlendMode = (overrides = {}) =>
   })
 
 export default ControlPanel
-export { Range, Toggle, Select, createBlendMode }
+export { Checkbox, Checklist, Range, Toggle, Select, createBlendMode }
