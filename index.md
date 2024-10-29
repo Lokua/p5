@@ -376,6 +376,15 @@
 ## lineStudy6-1h66.png
 <img src="images/1000x/lineStudy6-1h66.png" alt="lineStudy6-1h66.png" width="500">
 
+## patterns-36g0h.png
+<img src="images/1000x/patterns-36g0h.png" alt="patterns-36g0h.png" width="500">
+
+## patterns-3y7pz.png
+<img src="images/1000x/patterns-3y7pz.png" alt="patterns-3y7pz.png" width="500">
+
+## patterns-fd3z.png
+<img src="images/1000x/patterns-fd3z.png" alt="patterns-fd3z.png" width="500">
+
 ## perlin2-k410p.png
 <img src="images/1000x/perlin2-k410p.png" alt="perlin2-k410p.png" width="500">
 
