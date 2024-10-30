@@ -291,7 +291,7 @@ export default class AnimationHelper {
   animate({
     keyframes,
     duration = 1,
-    every = null,
+    every = duration,
     delay = 0,
     easing = 'linear',
     debugLabel = '',

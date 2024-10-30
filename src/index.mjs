@@ -18,8 +18,10 @@ async function initialize() {
   await initMidi()
   setupEventListeners()
   initBackground()
-  await loadSketch(localStorage.getItem('lastSketch'))
-  await populateSketchesDropdown()
+  await Promise.all([
+    loadSketch(localStorage.getItem('lastSketch')),
+    populateSketchesDropdown(),
+  ])
 }
 
 async function initMidi() {

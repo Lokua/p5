@@ -167,6 +167,8 @@ select:focus {
 }
 
 #dynamic-controls {
+  display: flex;
+  flex-wrap: wrap;
   padding-top: 1rem;
 
   label {
@@ -182,12 +184,14 @@ select:focus {
 .control {
   display: flex;
   flex-direction: column;
+  width: 100%;
   margin-bottom: 1rem;
 }
 
 .control-checkbox {
   flex-direction: row-reverse;
   justify-content: flex-end;
+  flex-basis: 50%;
 
   > input {
     margin-right: 0.5rem;

@@ -11,7 +11,7 @@ export default function (p) {
   const [w, h] = [500, 500]
 
   const metadata = {
-    name: 'ztudy__circleOfCircles',
+    name: 'ztudy__circleOfCircles2',
     frameRate: 30,
   }
 
@@ -27,11 +27,23 @@ export default function (p) {
     p,
     id: metadata.name,
     controls: {
-      count: new Range({
-        name: 'count',
-        value: 12,
+      base: new Range({
+        name: 'base',
+        value: 3,
+        min: 2,
+        max: 11,
+      }),
+      multiplier: new Range({
+        name: 'multiplier',
+        value: 1,
         min: 1,
-        max: 256,
+        max: 8,
+      }),
+      amplitude: new Range({
+        name: 'amplitude',
+        value: 20,
+        min: 1,
+        max: 100,
       }),
       outerRadius: new Range({
         name: 'outerRadius',
@@ -55,8 +67,8 @@ export default function (p) {
         name: 'fill',
         value: false,
       }),
-      animate: new Checkbox({
-        name: 'animate',
+      rotate: new Checkbox({
+        name: 'rotate',
         value: false,
       }),
       pingPongColors: new Checkbox({
@@ -83,73 +95,64 @@ export default function (p) {
 
   function draw() {
     const {
-      count,
+      base,
+      multiplier,
+      amplitude,
       outerRadius,
       innerRadius,
       diameter,
       fill,
-      animate,
+      rotate,
       pingPongColors,
       darkBg,
     } = controlPanel.values()
+
+    const count = base * 4 * multiplier
 
     p.background(darkBg ? 0 : 255)
     p.noFill()
 
     const cx = w / 2
     const cy = h / 2
-
-    // Angle between each circle around the larger circle in radians
-    // 360 degrees in radians is 2 * PI, so dividing by count gives us
-    // the angle increment for each circle
     const angleIncrement = p.TWO_PI / count
+    const startAngle = rotate ? ah.anim8([0, p.TWO_PI], 24) : p.PI / 2
 
-    // add an offset based on the number of circles
-    // otherwise count always starts from 3'Oclock
-    // as (((angle = 0) * angleIncrement) = 0)
-    // const startAngle = 0
-    // const startAngle = p.PI / count
-    const startAngle = animate ? ah.anim8([0, p.TWO_PI], 24) : -p.PI / 2
-
-    for (let i = 0; i < count; i++) {
+    for (let i = 0, delay = 0.25; i < count; i++, delay += 0.25) {
       const angle = startAngle + i * angleIncrement
       const cosAngle = p.cos(angle)
       const sinAngle = p.sin(angle)
-
-      // x-coordinate of the circle based on the polar-to-Cartesian transformation
-      // cos(angle) gives the horizontal distance from the center at a given angle,
-      // multiplied by radius to scale it to the desired distance from the center point
       const x = cx + outerRadius * cosAngle
-
-      // y-coordinate of the circle based on the polar-to-Cartesian transformation
-      // sin(angle) gives the vertical distance from the center at a given angle,
-      // multiplied by radius to match the horizontal scale
       const y = cy + outerRadius * sinAngle
-
       const scale = pingPongColors ? pingPongColorScale : colorScale
       const color = scale(i / count).rgba()
 
+      p.stroke(color)
       if (fill) {
         p.fill(color)
       }
 
-      p.stroke(color)
-
-      // outer circle
       p.circle(x, y, diameter)
 
-      // inner circle
       const innerDiameter = diameter * (2 / 3)
+
+      const offset = 20
+      const offsetAnimation = ah.animate({
+        keyframes: [-offset, offset + amplitude, -offset],
+        duration: 1,
+        every: base,
+        delay,
+      })
+      const ox = offsetAnimation * cosAngle
+      const oy = offsetAnimation * sinAngle
       p.circle(
-        cx + innerRadius * cosAngle,
-        cy + innerRadius * sinAngle,
+        cx + ox + innerRadius * cosAngle,
+        cy + oy + innerRadius * sinAngle,
         innerDiameter,
       )
 
-      // make sure the lines meet at the edges, not the center
       p.line(
-        cx + (innerRadius + innerDiameter / 2) * cosAngle,
-        cy + (innerRadius + innerDiameter / 2) * sinAngle,
+        cx + ox + (innerRadius + innerDiameter / 2) * cosAngle,
+        cy + oy + (innerRadius + innerDiameter / 2) * sinAngle,
         x - (diameter / 2) * cosAngle,
         y - (diameter / 2) * sinAngle,
       )

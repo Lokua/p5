@@ -8,6 +8,7 @@ export default class Toggle extends Control {
     offText = 'OFF',
     ...rest
   }) {
+    console.warn('Toggle is deprecated. Use Checkbox instead.')
     super({
       name,
       value,
