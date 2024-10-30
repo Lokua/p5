@@ -319,6 +319,15 @@
 ## grid5-s4ky0.png
 <img src="images/1000x/grid5-s4ky0.png" alt="grid5-s4ky0.png" width="500">
 
+## harmoShape-1s07.png
+<img src="images/1000x/harmoShape-1s07.png" alt="harmoShape-1s07.png" width="500">
+
+## harmoShape-7f9o.png
+<img src="images/1000x/harmoShape-7f9o.png" alt="harmoShape-7f9o.png" width="500">
+
+## harmoShape-m2070.png
+<img src="images/1000x/harmoShape-m2070.png" alt="harmoShape-m2070.png" width="500">
+
 ## imageStudy2-039y1.png
 <img src="images/1000x/imageStudy2-039y1.png" alt="imageStudy2-039y1.png" width="500">
 
@@ -384,6 +393,15 @@
 
 ## patterns-fd3z.png
 <img src="images/1000x/patterns-fd3z.png" alt="patterns-fd3z.png" width="500">
+
+## patterns2-0p5a.png
+<img src="images/1000x/patterns2-0p5a.png" alt="patterns2-0p5a.png" width="500">
+
+## patterns2-7k5q9.png
+<img src="images/1000x/patterns2-7k5q9.png" alt="patterns2-7k5q9.png" width="500">
+
+## patterns2-ve48.png
+<img src="images/1000x/patterns2-ve48.png" alt="patterns2-ve48.png" width="500">
 
 ## perlin2-k410p.png
 <img src="images/1000x/perlin2-k410p.png" alt="perlin2-k410p.png" width="500">
