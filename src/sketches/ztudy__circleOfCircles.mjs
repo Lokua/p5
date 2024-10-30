@@ -53,6 +53,10 @@ export default function (p) {
         name: 'pingPongColors',
         value: false,
       }),
+      darkBg: new Checkbox({
+        name: 'darkBg',
+        value: false,
+      }),
     },
   })
 
@@ -69,10 +73,10 @@ export default function (p) {
   }
 
   function draw() {
-    const { count, radius, diameter, animate, pingPongColors } =
+    const { count, radius, diameter, animate, pingPongColors, darkBg } =
       controlPanel.values()
 
-    p.background(255)
+    p.background(darkBg ? 0 : 255)
 
     const cx = w / 2
     const cy = h / 2
@@ -120,7 +124,7 @@ export default function (p) {
 
       // just covering up the middle where the lines meet
       // because it looks bad
-      p.fill(255)
+      p.fill(darkBg ? 0 : 255)
       p.noStroke()
       p.circle(cx, cy, diameter * 8)
     }
