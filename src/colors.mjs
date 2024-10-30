@@ -11,18 +11,6 @@ export const d3ColorScales = {
     '#b5de2b',
     '#fde725',
   ],
-  inferno: [
-    '#000004',
-    '#1b0c41',
-    '#4a0c6b',
-    '#781c6d',
-    '#a52c60',
-    '#cf4446',
-    '#ed6925',
-    '#fb9b06',
-    '#f7d13d',
-    '#fcffa4',
-  ],
   magma: [
     '#000004',
     '#1c1044',

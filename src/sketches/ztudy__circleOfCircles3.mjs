@@ -11,13 +11,13 @@ export default function (p) {
   const [w, h] = [500, 500]
 
   const metadata = {
-    name: 'ztudy__circleOfCircles2',
+    name: 'ztudy__circleOfCircles3',
     frameRate: 30,
   }
 
   const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 130 })
 
-  const baseScale = d3ColorScales.viridis
+  const baseScale = d3ColorScales.magma.slice(0, -3)
   const colorScale = chroma.scale(baseScale)
   const pingPongColorScale = chroma.scale(
     baseScale.concat(baseScale.slice(0, -1).toReversed()),
@@ -127,7 +127,11 @@ export default function (p) {
     const angleIncrement = p.TWO_PI / count
     const startAngle = rotate ? ah.anim8([0, p.TWO_PI], 36) : p.PI / 2
 
-    for (let i = 0, delay = 0.25; i < count; i++, delay += 0.25) {
+    for (
+      let i = 0, delayIncrement = 0.25, delay = delayIncrement;
+      i < count;
+      i++, delay += delayIncrement
+    ) {
       const angle = startAngle + i * angleIncrement
       const direction = { x: p.cos(angle), y: p.sin(angle) }
       const d = direction
@@ -145,7 +149,7 @@ export default function (p) {
             keyframes: [0, amplitude, 0],
             duration: base,
             every: base,
-            delay: delay * 3,
+            delay: delay * 2,
           })
         : 0
 
@@ -173,6 +177,64 @@ export default function (p) {
         x - (diameter / 2) * d.x,
         y - (diameter / 2) * d.y,
       )
+
+      const nextAngle = startAngle + (i + 1) * angleIncrement
+      const nextDir = { x: p.cos(nextAngle), y: p.sin(nextAngle) }
+
+      if (i % 2 === 0) {
+        const offset = inner
+          ? ah.animate({
+              keyframes: [0, amplitude, 0],
+              duration: 1,
+              every: base,
+              delay: delayIncrement * i + delayIncrement * 2,
+            })
+          : 0
+
+        const nextX = cx + innerRadius * nextDir.x + offset * nextDir.x
+        const nextY = cy + innerRadius * nextDir.y + offset * nextDir.y
+
+        const toNext = {
+          x: nextX - ix,
+          y: nextY - iy,
+        }
+
+        const mag = Math.sqrt(toNext.x ** 2 + toNext.y ** 2)
+        const facingDir = { x: toNext.x / mag, y: toNext.y / mag }
+
+        p.line(
+          ix + (innerDiameter / 2) * facingDir.x,
+          iy + (innerDiameter / 2) * facingDir.y,
+          nextX - (innerDiameter / 2) * facingDir.x,
+          nextY - (innerDiameter / 2) * facingDir.y,
+        )
+      } else {
+        const offset = outer
+          ? ah.animate({
+              keyframes: [0, amplitude, 0],
+              duration: base,
+              every: base,
+              delay: (delayIncrement * i + delayIncrement * 2) * 2,
+            })
+          : 0
+
+        const nextX = cx + outerRadius * nextDir.x + offset * nextDir.x
+        const nextY = cy + outerRadius * nextDir.y + offset * nextDir.y
+
+        const toNext = {
+          x: nextX - x,
+          y: nextY - y,
+        }
+
+        const mag = Math.sqrt(toNext.x ** 2 + toNext.y ** 2)
+        const facingDir = { x: toNext.x / mag, y: toNext.y / mag }
+
+        const startX = x + (diameter / 2) * facingDir.x
+        const startY = y + (diameter / 2) * facingDir.y
+        const endX = nextX - (diameter / 2) * facingDir.x
+        const endY = nextY - (diameter / 2) * facingDir.y
+        p.line(startX, startY, endX, endY)
+      }
     }
   }
 
