@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 // https://www.youtube.com/watch?v=vmhRlDyPHMQ&list=PLwUlLzAS3RYow0T9ZXB0IomwB-DyBRTfm
 
 import ControlPanel, {
@@ -7,7 +6,6 @@ import ControlPanel, {
   createBlendMode,
 } from '../ControlPanel/index.mjs'
 import Counter from '../Counter.mjs'
-import { arrayModLookup, mapTimes, erf } from '../util.mjs'
 
 export default function (p) {
   const [w, h] = [500, 500]
@@ -26,10 +24,6 @@ export default function (p) {
     min: 0,
     max: 1000,
   })
-
-  const useScenes = false
-  const sceneIndex = 0
-  const scenes = []
 
   const controlPanel = new ControlPanel({
     id: metadata.name,

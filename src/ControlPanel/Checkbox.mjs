@@ -16,7 +16,7 @@ export default class Checkbox extends Control {
       <input 
         id="${this.id}" 
         type="checkbox" 
-        checked="${this.value}"
+        ${this.value ? 'checked' : ''}
       >
     `)
   }
@@ -30,11 +30,15 @@ export default class Checkbox extends Control {
     document.getElementById(this.id).addEventListener('change', fn)
   }
 
-  onChange = () => {
-    this.setValue(!this.value)
+  onChange = (e) => {
+    this.setValue(e.target.checked)
   }
 
   setValue(value) {
-    this.value = value
+    this.value = Boolean(value)
+    const checkbox = document.getElementById(this.id)
+    if (checkbox) {
+      checkbox.checked = this.value
+    }
   }
 }

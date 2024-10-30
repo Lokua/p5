@@ -327,6 +327,16 @@ export const DistanceAlgorithms = {
   },
 }
 
+export const EasingFunctions = {
+  easeIn: (x) => x * x,
+  easeOut: (x) => x * (2 - x),
+  easeInOut: (x) => (x < 0.5 ? 2 * x * x : -1 + (4 - 2 * x) * x),
+  linear: (x) => x,
+  easeInQuad: (x) => x * x,
+  easeOutQuad: (x) => x * (2 - x),
+  easeInOutQuad: (x) => (x < 0.5 ? 2 * x * x : -1 + (4 - 2 * x) * x),
+}
+
 export function lerp(start, end, t) {
   return start + (end - start) * t
 }

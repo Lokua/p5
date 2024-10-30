@@ -1,21 +1,7 @@
-import { beatsToFrames, lerp } from './util.mjs'
-
-export const EasingFunctions = {
-  easeIn: (x) => x * x,
-  easeOut: (x) => x * (2 - x),
-  easeInOut: (x) => (x < 0.5 ? 2 * x * x : -1 + (4 - 2 * x) * x),
-  linear: (x) => x,
-  easeInQuad: (x) => x * x,
-  easeOutQuad: (x) => x * (2 - x),
-  easeInOutQuad: (x) => (x < 0.5 ? 2 * x * x : -1 + (4 - 2 * x) * x),
-}
+import { beatsToFrames, lerp, EasingFunctions } from './util.mjs'
 
 export default class AnimationHelper {
-  static PLAY_MODE_FORWARD = 'forward'
-  static PLAY_MODE_BACKWARD = 'backward'
-  static PLAY_MODE_PINGPONG = 'pingpong'
-  static TRIGGER_MODE_DEFAULT = 'default'
-  static TRIGGER_MODE_ROUND_ROBIN = 'roundRobin'
+  static EasingFunctions = EasingFunctions
 
   constructor({
     p,
@@ -83,7 +69,7 @@ export default class AnimationHelper {
     let accumulatedDuration = 0
 
     for (const [duration, easingArgument] of stages) {
-      const easing = safeGetEasing(easingArgument)
+      const easing = this.#safeGetEasing(easingArgument)
 
       const stageStart = accumulatedDuration / totalDuration
       const stageEnd = (accumulatedDuration + duration) / totalDuration
@@ -96,7 +82,7 @@ export default class AnimationHelper {
       accumulatedDuration += duration
     }
 
-    const lastEasing = safeGetEasing(stages[stages.length - 1][1])
+    const lastEasing = this.#safeGetEasing(stages[stages.length - 1][1])
     return lastEasing(1)
   }
 
@@ -134,7 +120,7 @@ export default class AnimationHelper {
     }
 
     const progress = getProgressBasedOnPlayMode(playMode)
-    const easedProgress = safeGetEasing(easing)(progress)
+    const easedProgress = this.#safeGetEasing(easing)(progress)
 
     return from + (to - from) * easedProgress
   }
@@ -175,7 +161,7 @@ export default class AnimationHelper {
 
     if (currentFrameInEvery < totalFramesForDuration) {
       let progress = currentFrameInEvery / totalFramesForDuration
-      progress = safeGetEasing(easing)(progress)
+      progress = this.#safeGetEasing(easing)(progress)
       progress = Math.min(progress, 1)
 
       const totalSegments = keyframes.length + 2
@@ -232,7 +218,7 @@ export default class AnimationHelper {
     // Calculate progress from the start of the animation
     const currentFrame = this.getFrameCount()
     const progress = Math.min(currentFrame / totalFramesForDuration, 1)
-    const easedProgress = safeGetEasing(easing)(progress)
+    const easedProgress = this.#safeGetEasing(easing)(progress)
 
     const totalSegments = keyframes.length - 1
     const segmentProgress = easedProgress * totalSegments
@@ -277,6 +263,17 @@ export default class AnimationHelper {
     const beatDuration = 60 / this.bpm
     const totalTimeInSeconds = this.getFrameCount() / this.frameRate
     return totalTimeInSeconds / beatDuration
+  }
+
+  // make call sites verbose since we only use keyframes and duration 99% of time
+  anim8(keyframes, duration, every, delay, easing) {
+    return this.animate({
+      keyframes,
+      duration,
+      every,
+      delay,
+      easing,
+    })
   }
 
   /**
@@ -343,7 +340,6 @@ export default class AnimationHelper {
     if (this.getFrameCount() < totalFramesForDelay) {
       return playbackSequence[0].value
     }
-
     if (currentFrameInEvery >= totalFrames) {
       return playbackSequence[playbackSequence.length - 1].value
     }
@@ -375,7 +371,7 @@ export default class AnimationHelper {
     const value = lerp(
       currentKeyframe.value,
       nextKeyframe.value,
-      safeGetEasing(currentKeyframe.easing)(segmentProgress),
+      this.#safeGetEasing(currentKeyframe.easing)(segmentProgress),
     )
 
     if (debugLabel) {
@@ -401,12 +397,12 @@ export default class AnimationHelper {
   framesToBeats(frames) {
     return frames / ((this.frameRate / this.bpm) * 60)
   }
-}
 
-function safeGetEasing(easing) {
-  return typeof easing === 'string'
-    ? EasingFunctions[easing]
-    : typeof easing === 'function'
-      ? easing
-      : EasingFunctions.linear
+  #safeGetEasing(easing) {
+    return typeof easing === 'string'
+      ? EasingFunctions[easing]
+      : typeof easing === 'function'
+        ? easing
+        : EasingFunctions.linear
+  }
 }

@@ -1,5 +1,5 @@
 // @ts-check
-import chroma from 'chroma'
+import chroma from 'chroma-js'
 import ControlPanel, { Range } from '../ControlPanel/index.mjs'
 
 /**

@@ -6,7 +6,7 @@ import ControlPanel, {
   Select,
 } from '../ControlPanel/index.mjs'
 import AnimationHelper from '../AnimationHelper.mjs'
-import { apply, erf, multiLerp } from '../util.mjs'
+import { apply, multiLerp } from '../util.mjs'
 
 /**
  * @param {import("p5")} p
