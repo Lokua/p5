@@ -105,7 +105,6 @@ export default function (p) {
     const {
       base,
       multiplier,
-      amplitude,
       outerRadius,
       innerRadius,
       diameter,
@@ -124,118 +123,112 @@ export default function (p) {
 
     const cx = w / 2
     const cy = h / 2
-    const angleIncrement = p.TWO_PI / count
+    const angleStep = p.TWO_PI / count
     const startAngle = rotate ? ah.anim8([0, p.TWO_PI], 36) : p.PI / 2
 
     for (
-      let i = 0, delayIncrement = 0.25, delay = delayIncrement;
+      let i = 0, delayStep = 0.25, delay = delayStep;
       i < count;
-      i++, delay += delayIncrement
+      i++, delay += delayStep
     ) {
-      const angle = startAngle + i * angleIncrement
+      const angle = startAngle + i * angleStep
       const direction = { x: p.cos(angle), y: p.sin(angle) }
       const d = direction
+
+      const outerDelay = base
+      const innerDelay = 1
 
       const scale = pingPongColors ? pingPongColorScale : colorScale
       const color = scale(i / count).rgba()
 
       p.stroke(color)
-      if (fill) {
-        p.fill(color)
-      }
+      fill && p.fill(color)
 
-      const offsetAnimation = outer
-        ? ah.animate({
-            keyframes: [0, amplitude, 0],
-            duration: base,
-            every: base,
-            delay: delay * 2,
-          })
-        : 0
-
-      const x = cx + outerRadius * d.x + offsetAnimation * d.x
-      const y = cy + outerRadius * d.y + offsetAnimation * d.y
+      const outerOffset = animateOffset(outer, outerDelay, delay * 2)
+      const x = cx + outerRadius * d.x + outerOffset * d.x
+      const y = cy + outerRadius * d.y + outerOffset * d.y
       p.circle(x, y, diameter)
 
       const innerDiameter = diameter * (2 / 3)
-      const innerOffsetAnimation = inner
-        ? ah.animate({
-            keyframes: [0, amplitude, 0],
-            duration: 1,
-            every: base,
-            delay,
-          })
-        : 0
+      const innerOffset = animateOffset(inner, innerDelay, delay)
+      const ix = cx + innerRadius * d.x + innerOffset * d.x
+      const iy = cy + innerRadius * d.y + innerOffset * d.y
 
-      const ix = cx + innerRadius * d.x + innerOffsetAnimation * d.x
-      const iy = cy + innerRadius * d.y + innerOffsetAnimation * d.y
       p.circle(ix, iy, innerDiameter)
 
       p.line(
-        ix + (innerDiameter / 2) * d.x,
-        iy + (innerDiameter / 2) * d.y,
-        x - (diameter / 2) * d.x,
-        y - (diameter / 2) * d.y,
+        ...Object.values(calculateEdgePoint(ix, iy, innerDiameter, d)),
+        ...Object.values(calculateEdgePoint(x, y, diameter, d, true)),
       )
 
-      const nextAngle = startAngle + (i + 1) * angleIncrement
+      const nextAngle = startAngle + (i + 1) * angleStep
       const nextDir = { x: p.cos(nextAngle), y: p.sin(nextAngle) }
 
       if (i % 2 === 0) {
-        const offset = inner
-          ? ah.animate({
-              keyframes: [0, amplitude, 0],
-              duration: 1,
-              every: base,
-              delay: delayIncrement * i + delayIncrement * 2,
-            })
-          : 0
+        const nextDelay = delayStep * i + delayStep * 2
+        const offset = animateOffset(inner, innerDelay, nextDelay)
+        const nextPoint = getNextPoint(cx, cy, innerRadius, offset, nextDir)
+        const toNextDir = calculateToNextDir(ix, iy, nextPoint.x, nextPoint.y)
 
-        const nextX = cx + innerRadius * nextDir.x + offset * nextDir.x
-        const nextY = cy + innerRadius * nextDir.y + offset * nextDir.y
+        const d = innerDiameter / 2
+        const startX = ix + d * toNextDir.x
+        const startY = iy + d * toNextDir.y
+        const endX = nextPoint.x - d * toNextDir.x
+        const endY = nextPoint.y - d * toNextDir.y
 
-        const toNext = {
-          x: nextX - ix,
-          y: nextY - iy,
-        }
-
-        const mag = Math.sqrt(toNext.x ** 2 + toNext.y ** 2)
-        const facingDir = { x: toNext.x / mag, y: toNext.y / mag }
-
-        p.line(
-          ix + (innerDiameter / 2) * facingDir.x,
-          iy + (innerDiameter / 2) * facingDir.y,
-          nextX - (innerDiameter / 2) * facingDir.x,
-          nextY - (innerDiameter / 2) * facingDir.y,
-        )
+        p.line(startX, startY, endX, endY)
       } else {
-        const offset = outer
-          ? ah.animate({
-              keyframes: [0, amplitude, 0],
-              duration: base,
-              every: base,
-              delay: (delayIncrement * i + delayIncrement * 2) * 2,
-            })
-          : 0
+        const nextDelay = (delayStep * i + delayStep * 2) * 2
+        const offset = animateOffset(outer, outerDelay, nextDelay)
+        const nextPoint = getNextPoint(cx, cy, outerRadius, offset, nextDir)
+        const toNextDir = calculateToNextDir(x, y, nextPoint.x, nextPoint.y)
 
-        const nextX = cx + outerRadius * nextDir.x + offset * nextDir.x
-        const nextY = cy + outerRadius * nextDir.y + offset * nextDir.y
+        const d = innerDiameter / 2
+        const startX = x + d * toNextDir.x
+        const startY = y + d * toNextDir.y
+        const endX = nextPoint.x - d * toNextDir.x
+        const endY = nextPoint.y - d * toNextDir.y
 
-        const toNext = {
-          x: nextX - x,
-          y: nextY - y,
-        }
-
-        const mag = Math.sqrt(toNext.x ** 2 + toNext.y ** 2)
-        const facingDir = { x: toNext.x / mag, y: toNext.y / mag }
-
-        const startX = x + (diameter / 2) * facingDir.x
-        const startY = y + (diameter / 2) * facingDir.y
-        const endX = nextX - (diameter / 2) * facingDir.x
-        const endY = nextY - (diameter / 2) * facingDir.y
         p.line(startX, startY, endX, endY)
       }
     }
+  }
+
+  function calculateEdgePoint(x, y, diameter, direction, invert = false) {
+    const factor = invert ? -1 : 1
+    return {
+      x: x + factor * (diameter / 2) * direction.x,
+      y: y + factor * (diameter / 2) * direction.y,
+    }
+  }
+
+  function calculateToNextDir(x1, y1, x2, y2) {
+    const toNext = { x: x2 - x1, y: y2 - y1 }
+    const mag = Math.sqrt(toNext.x ** 2 + toNext.y ** 2)
+    return {
+      x: toNext.x / mag,
+      y: toNext.y / mag,
+    }
+  }
+
+  function getNextPoint(x, y, radius, offset, nextDir) {
+    const nextX = x + radius * nextDir.x + offset * nextDir.x
+    const nextY = y + radius * nextDir.y + offset * nextDir.y
+    return {
+      x: nextX,
+      y: nextY,
+    }
+  }
+
+  function animateOffset(enabled, duration, delay) {
+    return enabled
+      ? ah.animate({
+          keyframes: [0, controlPanel.get('amplitude'), 0],
+          duration,
+          every: controlPanel.get('base'),
+          delay,
+        })
+      : 0
   }
 
   return {
