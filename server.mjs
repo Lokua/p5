@@ -70,7 +70,7 @@ app.post('/upload-frames', upload.none(), async (req, res) => {
     await Promise.all(
       frames.map(async (frameDataUrl, index) => {
         const base64Data = frameDataUrl.replace(/^data:image\/png;base64,/, '')
-        const paddedIndex = String(index).padStart(padding, '0') // Zero-pad the index
+        const paddedIndex = String(index).padStart(padding, '0')
         const filePath = `${dirPath}/frame-${paddedIndex}.png`
         await fs.writeFile(filePath, base64Data, 'base64')
       }),

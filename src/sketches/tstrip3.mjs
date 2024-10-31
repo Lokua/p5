@@ -1,5 +1,5 @@
 import ControlPanel, { Range } from '../lib/ControlPanel/index.mjs'
-import { BidirectionalCounter } from '../util.mjs'
+import Counter from '../lib/Counter.mjs'
 
 export default function tstrip3(p) {
   const metadata = {
@@ -9,8 +9,8 @@ export default function tstrip3(p) {
 
   const [w, h] = [500, 500]
   const randomInts = []
-  const scale = 2
-  const zCounter = new BidirectionalCounter(70, 350)
+  const scale = 4
+  const zCounter = new Counter({ min: 70, max: 350 })
   let flying = 0
   let index = 0
 

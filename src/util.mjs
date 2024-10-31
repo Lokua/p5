@@ -1,5 +1,4 @@
 export const PHI = (1 + Math.sqrt(5)) / 2
-export const FRAMERATE_BPM_130 = Math.round(34.67)
 
 export const logInfo = (...args) =>
   console.info('%c[info]%c', 'color: teal;', '', ...args)
@@ -59,13 +58,6 @@ export function uuid(length = 5) {
   ).join('')
 }
 
-export function cross(p, w, h = w, color = [0, 0, 0]) {
-  p.strokeWeight(3)
-  p.stroke(color)
-  p.line(w / 2, 0, w / 2, h)
-  p.line(0, h / 2, w, h / 2)
-}
-
 export const isEven = (x) => x % 2 === 0
 export const isOdd = (x) => !isEven(x)
 
@@ -83,7 +75,6 @@ export function linearScale(domain, range, clamp) {
     }
 
     const ratio = (range[1] - range[0]) / (domain[1] - domain[0])
-
     const result = range[0] + ratio * (value - domain[0])
 
     return clamp ? Math.min(range[1], Math.max(range[0], result)) : result
@@ -174,33 +165,6 @@ export class P5Helpers {
     const y = radius * this.p.sin(longitude) * this.p.sin(latitude)
     const z = radius * this.p.cos(longitude)
     return [x, y, z]
-  }
-}
-
-export class BidirectionalCounter {
-  constructor(min, max, initialValue) {
-    console.warn(
-      '[BidirectionalCounter] deprecated. Use `src/Counter.mjs` instead.',
-    )
-    this.min = min
-    this.max = max
-    this.direction = 1
-    this.count = initialValue ?? min
-  }
-
-  tick() {
-    if (this.count === this.min) {
-      this.direction = 1
-    } else if (this.count === this.max) {
-      this.direction = -1
-    }
-
-    this.count += this.direction
-  }
-
-  get value() {
-    console.warn('value() is deprecated. use count')
-    return this.count
   }
 }
 
