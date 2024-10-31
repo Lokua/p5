@@ -1,11 +1,11 @@
 // @ts-check
-import chroma from 'chroma'
+import chroma from 'chroma-js'
 import ControlPanel, {
   Checkbox,
   Range,
   Select,
-} from '../ControlPanel/index.mjs'
-import AnimationHelper from '../AnimationHelper.mjs'
+} from '../lib/ControlPanel/index.mjs'
+import AnimationHelper from '../lib/AnimationHelper.mjs'
 import { apply, multiLerp } from '../util.mjs'
 
 /**

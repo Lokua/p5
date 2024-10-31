@@ -1,6 +1,6 @@
 // https://www.youtube.com/watch?v=sZBfLgfsvSk&list=PLeCiJGCSl7jc5UWvIeyQAvmCNc47IuwkM&index=22
 
-import ControlPanel, { Range, Select } from '../ControlPanel/index.mjs'
+import ControlPanel, { Range, Select } from '../lib/ControlPanel/index.mjs'
 
 export default function (p) {
   const [w, h] = [500, 500]
@@ -23,7 +23,6 @@ export default function (p) {
 
   const controlPanel = new ControlPanel({
     id: metadata.name,
-    attemptReload: true,
     controls: {
       noiseScale: new Range({
         name: 'noiseScale',
@@ -60,9 +59,6 @@ export default function (p) {
           'tan,cos',
         ],
       }),
-    },
-    inputHandler() {
-      !p.isLooping() && draw()
     },
   })
 

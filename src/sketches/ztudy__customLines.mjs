@@ -1,6 +1,6 @@
 // @ts-check
 import chroma from 'chroma-js'
-import ControlPanel from '../ControlPanel/index.mjs'
+import ControlPanel from '../lib/ControlPanel/index.mjs'
 import Lines from '../lib/Lines.mjs'
 
 /**

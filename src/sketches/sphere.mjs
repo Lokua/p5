@@ -1,4 +1,4 @@
-import ControlPanel, { Range } from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../lib/ControlPanel/index.mjs'
 import { fromXY } from '../util.mjs'
 
 export default function sphere(p) {

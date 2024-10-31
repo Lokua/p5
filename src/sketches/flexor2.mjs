@@ -1,6 +1,10 @@
 // @ts-check
-import ControlPanel, { Range, Toggle, Select } from '../ControlPanel/index.mjs'
-import AnimationHelper from '../AnimationHelper.mjs'
+import ControlPanel, {
+  Range,
+  Checkbox,
+  Select,
+} from '../lib/ControlPanel/index.mjs'
+import AnimationHelper from '../lib/AnimationHelper.mjs'
 
 /**
  * @param {import("p5")} p
@@ -35,8 +39,8 @@ export default function (p) {
   let noiseBuffer
 
   const controlPanel = new ControlPanel({
+    p,
     id: metadata.name,
-    attemptReload: true,
     controls: {
       grid: new Range({
         name: 'grid',
@@ -44,7 +48,7 @@ export default function (p) {
         min: 3,
         max: 128,
       }),
-      animateY: new Toggle({
+      animateY: new Checkbox({
         name: 'animateY',
         value: true,
       }),
@@ -54,7 +58,7 @@ export default function (p) {
         min: 0,
         max: 100,
       }),
-      colorShift: new Toggle({
+      colorShift: new Checkbox({
         name: 'colorShift',
         value: false,
       }),
@@ -72,9 +76,6 @@ export default function (p) {
         name: 'transitionPhaseMode',
         options: phaseModes,
       }),
-    },
-    inputHandler() {
-      !p.isLooping() && draw()
     },
   })
 

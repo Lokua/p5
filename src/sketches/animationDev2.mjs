@@ -1,7 +1,7 @@
 // @ts-check
-import chroma from 'chroma'
-import ControlPanel, { Range } from '../ControlPanel/index.mjs'
-import AnimationHelper from '../AnimationHelper.mjs'
+import chroma from 'chroma-js'
+import ControlPanel, { Range } from '../lib/ControlPanel/index.mjs'
+import AnimationHelper from '../lib/AnimationHelper.mjs'
 
 /**
  * @param {import("p5")} p
@@ -18,6 +18,7 @@ export default function (p) {
   const colorScale = chroma.scale(['red', 'teal'])
 
   const controlPanel = new ControlPanel({
+    p,
     id: metadata.name,
     attemptReload: true,
     controls: {
@@ -27,9 +28,6 @@ export default function (p) {
         min: 0,
         max: 1000,
       }),
-    },
-    inputHandler() {
-      !p.isLooping() && draw()
     },
   })
 

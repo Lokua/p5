@@ -1,7 +1,6 @@
 // https://editor.p5js.org/generative-design/sketches/M_1_5_03
 
-import ControlPanel, { Range, Toggle } from '../ControlPanel/index.mjs'
-import Counter from '../Counter.mjs'
+import ControlPanel, { Checkbox, Range } from '../lib/ControlPanel/index.mjs'
 
 let p
 
@@ -10,32 +9,19 @@ export default function (p5Instance) {
   const [w, h] = [500, 500]
 
   const agents = []
-  const agentCount = 100000
+  const agentCount = 10000
   const noiseZRange = 0.4
-
-  const noiseScaleCounter = new Counter({
-    min: 1,
-    max: 40,
-  })
+  const overlayAlpha = 10
+  const agentAlpha = 90
 
   const metadata = {
-    name: 'flowField3',
+    name: 'flowField2',
   }
 
   const controlPanel = new ControlPanel({
+    p,
     id: metadata.name,
-    attemptReload: true,
     controls: {
-      start: new Toggle({
-        name: 'start',
-        value: false,
-      }),
-      count: new Range({
-        name: 'count',
-        value: agentCount,
-        min: 1,
-        max: agentCount,
-      }),
       strokeWidth: new Range({
         name: 'strokeWidth',
         value: 0.3,
@@ -62,41 +48,16 @@ export default function (p5Instance) {
         max: 1,
         step: 0.001,
       }),
-      stepSize: new Range({
-        name: 'stepSize',
-        value: 1,
-        min: 1,
-        max: 50,
-      }),
-      overlayAlpha: new Range({
-        name: 'overlayAlpha',
-        value: 10,
-        min: 0,
-        max: 255,
-      }),
-      agentAlpha: new Range({
-        name: 'agentAlpha',
-        value: 90,
-        min: 0,
-        max: 255,
-      }),
-      randomSeedEverySoOften: new Toggle({
-        name: 'randomSeedEverySoOften',
-        value: false,
-      }),
-    },
-    inputHandler() {
-      !p.isLooping() && draw()
     },
   })
 
   function setup() {
     controlPanel.init()
     const canvas = p.createCanvas(w, h)
-    p.background(0, 0, 50)
 
     for (let i = 0; i < agentCount; i++) {
-      agents[i] = new Agent(noiseZRange, controlPanel.get('stepSize'))
+      // eslint-disable-next-line no-use-before-define
+      agents[i] = new Agent(noiseZRange)
     }
 
     return {
@@ -105,44 +66,16 @@ export default function (p5Instance) {
   }
 
   function draw() {
-    const {
-      start,
-      strokeWidth,
-      noiseScale,
-      noiseStrength,
-      noiseZVelocity,
-      stepSize,
-      count,
-      overlayAlpha,
-      agentAlpha,
-      randomSeedEverySoOften,
-    } = controlPanel.values()
+    const { strokeWidth, noiseScale, noiseStrength, noiseZVelocity } =
+      controlPanel.values()
 
-    if (!start) {
-      return
-    }
-
-    p.fill(0, 0, 50, overlayAlpha)
+    p.fill(255, overlayAlpha)
     p.noStroke()
     p.rect(0, 0, w, h)
+    p.stroke(0, agentAlpha)
 
-    if (randomSeedEverySoOften && p.frameCount % 200 === 0) {
-      p.noiseSeed(p.frameCount)
-    }
-
-    for (var i = 0; i < count; i++) {
-      p.stroke(0, p.random(77, 120), p.random(120, 222), agentAlpha)
-      agents[i].stepSize = stepSize
-      agents[i].update(
-        strokeWidth,
-        noiseScale + noiseScaleCounter.count,
-        noiseStrength,
-        noiseZVelocity,
-      )
-    }
-
-    if (p.frameCount % 60 === 0) {
-      noiseScaleCounter.tick()
+    for (var i = 0; i < agentCount; i++) {
+      agents[i].update(strokeWidth, noiseScale, noiseStrength, noiseZVelocity)
     }
   }
 
@@ -157,10 +90,10 @@ export default function (p5Instance) {
 }
 
 class Agent {
-  constructor(noiseZRange, stepSize) {
+  constructor(noiseZRange) {
     this.vector = p.createVector(p.random(p.width), p.random(p.height))
     this.vectorOld = this.vector.copy()
-    this.stepSize = stepSize
+    this.stepSize = p.random(1, 5)
     this.angle
     this.noiseZ = p.random(noiseZRange)
   }

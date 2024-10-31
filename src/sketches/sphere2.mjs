@@ -1,6 +1,6 @@
-import ControlPanel, { Range } from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../lib/ControlPanel/index.mjs'
 import { fromXY } from '../util.mjs'
-import AnimationHelper from '../AnimationHelper.mjs'
+import AnimationHelper from '../lib/AnimationHelper.mjs'
 
 export default function sphere(p) {
   const metadata = {

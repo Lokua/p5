@@ -3,9 +3,9 @@
 
 import ControlPanel, {
   Range,
-  Toggle,
+  Checkbox,
   createBlendMode,
-} from '../ControlPanel/index.mjs'
+} from '../lib/ControlPanel/index.mjs'
 import { arrayModLookup, mapTimes } from '../util.mjs'
 
 export default function lines(p) {
@@ -17,7 +17,6 @@ export default function lines(p) {
 
   const controlPanel = new ControlPanel({
     id: metadata.name,
-    attemptReload: true,
     controls: {
       nLines: new Range({
         name: 'nLines',
@@ -44,9 +43,6 @@ export default function lines(p) {
         max: 20,
       }),
       blendMode: createBlendMode(),
-    },
-    inputHandler() {
-      !p.isLooping() && draw()
     },
   })
 

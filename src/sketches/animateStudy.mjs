@@ -1,7 +1,7 @@
 // @ts-check
-import chroma from 'chroma'
-import ControlPanel, { Range, Toggle } from '../ControlPanel/index.mjs'
-import AnimationHelper from '../AnimationHelper.mjs'
+import chroma from 'chroma-js'
+import ControlPanel, { Range, Checkbox } from '../lib/ControlPanel/index.mjs'
+import AnimationHelper from '../lib/AnimationHelper.mjs'
 
 /**
  * @param {import("p5")} p
@@ -33,7 +33,7 @@ export default function (p) {
         min: 0,
         max: 1000,
       }),
-      animateAmplitude: new Toggle({
+      animateAmplitude: new Checkbox({
         name: 'animateAmplitude',
         value: false,
       }),

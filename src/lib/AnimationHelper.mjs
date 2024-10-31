@@ -1,4 +1,5 @@
-import { beatsToFrames, lerp, EasingFunctions } from './util.mjs'
+import { beatsToFrames, lerp } from '../util.mjs'
+import * as EasingFunctions from './EasingFunctions.mjs'
 
 export default class AnimationHelper {
   static EasingFunctions = EasingFunctions
@@ -94,7 +95,7 @@ export default class AnimationHelper {
    * @param {number} params.to - The ending value of the property.
    * @param {number} [params.duration=1] - The duration of the animation in beats.
    * @param {function} [params.easing=EasingFunctions.linear] - The easing function to use.
-   * @param {function} [params.playMode=AnimationHelper.PLAY_MODE_FORWARD] - The easing function to use.
+   * @param {function} [params.playMode='forward'] - The easing function to use.
    * @returns {number} - Animated property value.
    */
   animateProperty({
@@ -102,17 +103,17 @@ export default class AnimationHelper {
     to,
     duration = 1,
     easing = EasingFunctions.linear,
-    playMode = AnimationHelper.PLAY_MODE_FORWARD,
+    playMode = 'forward',
   }) {
     const getProgressBasedOnPlayMode = (mode) => {
       switch (mode) {
-        case AnimationHelper.PLAY_MODE_BACKWARD: {
+        case 'backward': {
           return 1 - this.getLoopProgress(duration)
         }
-        case AnimationHelper.PLAY_MODE_PINGPONG: {
+        case 'pingpong': {
           return this.getPingPongLoopProgress(duration)
         }
-        case AnimationHelper.PLAY_MODE_FORWARD:
+        case 'forward':
         default: {
           return this.getLoopProgress(duration)
         }

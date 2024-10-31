@@ -1,8 +1,8 @@
 // @ts-check
-import chroma from 'chroma'
+import chroma from 'chroma-js'
 import { isControlChange, getChannel, getType } from '@lokua/midi-util'
-import ControlPanel, { Range, Toggle } from '../ControlPanel/index.mjs'
-import AnimationHelper from '../AnimationHelper.mjs'
+import ControlPanel, { Range, Checkbox } from '../lib/ControlPanel/index.mjs'
+import AnimationHelper from '../lib/AnimationHelper.mjs'
 
 /**
  * @param {import("p5")} p
@@ -46,7 +46,7 @@ export default function (p, getMidiInputPort) {
         min: 0,
         max: 250,
       }),
-      animateAmplitude: new Toggle({
+      animateAmplitude: new Checkbox({
         name: 'animateAmplitude',
         value: false,
       }),

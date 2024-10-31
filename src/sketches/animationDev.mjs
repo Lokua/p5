@@ -1,6 +1,7 @@
 // @ts-check
-import ControlPanel, { Range } from '../ControlPanel/index.mjs'
-import AnimationHelper, { EasingFunctions } from '../AnimationHelper.mjs'
+import ControlPanel, { Range } from '../lib/ControlPanel/index.mjs'
+import AnimationHelper from '../lib/AnimationHelper.mjs'
+import * as EasingFunctions from '../lib/EasingFunctions.mjs'
 
 /**
  * @param {import("p5")} p
@@ -16,18 +17,15 @@ export default function (p) {
   const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 134 })
 
   const controlPanel = new ControlPanel({
+    p,
     id: metadata.name,
-    attemptReload: true,
     controls: {
-      a: new Range({
-        name: 'a',
+      amplitude: new Range({
+        name: 'amplitude',
         value: 50,
         min: 0,
-        max: 1000,
+        max: 250,
       }),
-    },
-    inputHandler() {
-      !p.isLooping() && draw()
     },
   })
 
@@ -43,6 +41,7 @@ export default function (p) {
   }
 
   function draw() {
+    const { amplitude } = controlPanel.values()
     p.background(255)
     p.noStroke()
 
@@ -50,13 +49,6 @@ export default function (p) {
     const diameter = 50
     const spacing = w / (count + 1)
     const y = h / 2
-
-    const amplitude = ah.animateProperty({
-      from: 1,
-      to: h / 4,
-      duration: 16,
-      playMode: AnimationHelper.PLAY_MODE_PINGPONG,
-    })
 
     for (let i = 1; i <= count; i++) {
       const x = spacing * i
@@ -109,9 +101,8 @@ export default function (p) {
           break
         }
         case 7: {
-          const offsetY = ah.triggeredAnimation({
-            value: 0,
-            keyframes: [-amplitude, amplitude, -amplitude * 2],
+          const offsetY = ah.animate({
+            keyframes: [-amplitude, amplitude, -amplitude * 2, -amplitude],
             duration: 4,
             every: 12,
             delay: 2,

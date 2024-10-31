@@ -1,8 +1,8 @@
 // @ts-check
 import chroma from 'chroma-js'
-import ControlPanel, { Checkbox, Range } from '../ControlPanel/index.mjs'
-import AnimationHelper from '../AnimationHelper.mjs'
-import { d3ColorScales } from '../colors.mjs'
+import ControlPanel, { Checkbox, Range } from '../lib/ControlPanel/index.mjs'
+import AnimationHelper from '../lib/AnimationHelper.mjs'
+import { d3ColorScales } from '../lib/colors.mjs'
 
 /**
  * @param {import("p5")} p

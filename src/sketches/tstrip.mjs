@@ -1,16 +1,16 @@
-import ControlPanel, { Range } from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../lib/ControlPanel/index.mjs'
 
 export default function tstrip(p) {
+  const metadata = {
+    name: 'tstrip',
+    frameRate: 30,
+  }
+
   const [w, h] = [500, 500]
   const randomInts = []
   const scale = 2
   let flying = 0
   let index = 0
-
-  const metadata = {
-    name: 'tstrip',
-    frameRate: 30,
-  }
 
   const controlPanel = new ControlPanel({
     p,

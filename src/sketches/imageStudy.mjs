@@ -1,4 +1,4 @@
-import ControlPanel, { Range } from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../lib/ControlPanel/index.mjs'
 
 export default function (p) {
   const [w, h] = [500, 500]
@@ -10,8 +10,8 @@ export default function (p) {
   }
 
   const controlPanel = new ControlPanel({
+    p,
     id: metadata.name,
-    attemptReload: true,
     controls: {
       resolution: new Range({
         name: 'resolution',
@@ -19,9 +19,6 @@ export default function (p) {
         min: 1,
         max: 100,
       }),
-    },
-    inputHandler() {
-      !p.isLooping() && draw()
     },
   })
 

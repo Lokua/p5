@@ -1,11 +1,18 @@
 // code forked from https://editor.p5js.org/MaximSchoemaker/sketches/hSUoBvPJB
-import ControlPanel, { Range } from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../lib/ControlPanel/index.mjs'
 import { PHI } from '../util.mjs'
 
 export default function spiral(p) {
+  const metadata = {
+    name: 'spiral',
+    frameRate: 30,
+  }
+
   const [w, h] = [500, 500]
 
   const controlPanel = new ControlPanel({
+    p,
+    id: metadata.name,
     controls: {
       count: new Range({
         name: 'count',
@@ -33,9 +40,6 @@ export default function spiral(p) {
         min: 1,
         max: 1000,
       }),
-    },
-    inputHandler() {
-      !p.isLooping() && draw()
     },
   })
 
@@ -99,8 +103,6 @@ export default function spiral(p) {
     destroy() {
       controlPanel.destroy()
     },
-    metadata: {
-      name: 'spiral',
-    },
+    metadata,
   }
 }

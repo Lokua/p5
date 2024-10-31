@@ -3,23 +3,22 @@
 
 import ControlPanel, {
   Range,
-  Toggle,
+  Checkbox,
   createBlendMode,
-} from '../ControlPanel/index.mjs'
+} from '../lib/ControlPanel/index.mjs'
 import { arrayModLookup, mapTimes } from '../util.mjs'
 
 export default function (p) {
   const [w, h] = [500, 500]
   let phase = 0
-  let phaseMod = 0
 
   const metadata = {
     name: 'perlin',
   }
 
   const controlPanel = new ControlPanel({
+    p,
     id: metadata.name,
-    attemptReload: true,
     controls: {
       blendMode: createBlendMode(),
       size: new Range({
@@ -53,13 +52,10 @@ export default function (p) {
         max: 10,
         step: 0.01,
       }),
-      flip: new Toggle({
+      flip: new Checkbox({
         name: 'flip',
         value: true,
       }),
-    },
-    inputHandler() {
-      !p.isLooping() && draw()
     },
   })
 

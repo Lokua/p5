@@ -1,16 +1,27 @@
 // code forked from https://editor.p5js.org/MaximSchoemaker/sketches/hSUoBvPJB
-import ControlPanel, { Range, createBlendMode } from '../ControlPanel/index.mjs'
+import ControlPanel, {
+  Range,
+  createBlendMode,
+} from '../lib/ControlPanel/index.mjs'
 import { PHI } from '../util.mjs'
-import Counter from '../Counter.mjs'
+import Counter from '../lib/Counter.mjs'
 
 export default function spiral(p) {
+  const metadata = {
+    name: 'spiral3',
+    frameRate: 30,
+  }
+
   const [w, h] = [500, 500]
+
   const frameCounter = new Counter({
     min: 0,
     max: 1000,
   })
 
   const controlPanel = new ControlPanel({
+    p,
+    id: metadata.name,
     controls: {
       count: new Range({
         name: 'count',
@@ -33,9 +44,6 @@ export default function spiral(p) {
         step: 0.01,
       }),
       blendMode: createBlendMode(),
-    },
-    inputHandler() {
-      !p.isLooping() && draw()
     },
   })
 
@@ -106,8 +114,6 @@ export default function spiral(p) {
     destroy() {
       controlPanel.destroy()
     },
-    metadata: {
-      name: 'spiral',
-    },
+    metadata,
   }
 }

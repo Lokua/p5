@@ -1,7 +1,7 @@
 // @ts-check
 import chroma from 'chroma-js'
-import ControlPanel, { Checklist, Range } from '../ControlPanel/index.mjs'
-import { DistanceAlgorithms } from '../util.mjs'
+import ControlPanel, { Checklist, Range } from '../lib/ControlPanel/index.mjs'
+import * as DistanceAlgorithms from '../lib/DistanceAlgorithms.mjs'
 
 /**
  * @param {import("p5")} p
@@ -10,7 +10,7 @@ export default function (p) {
   const [w, h] = [500, 500]
 
   const metadata = {
-    name: 'ConcentricShapesVisualization',
+    name: 'ztudy__distance',
     frameRate: 30,
   }
 

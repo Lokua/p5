@@ -1,4 +1,4 @@
-import { formatLog } from '../util.mjs'
+import { formatLog } from '../../util.mjs'
 
 export default class ControlPanel {
   static defaultSelector = '#dynamic-controls'

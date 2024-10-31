@@ -2,10 +2,10 @@
 
 import ControlPanel, {
   Range,
-  Toggle,
+  Checkbox,
   createBlendMode,
-} from '../ControlPanel/index.mjs'
-import Counter from '../Counter.mjs'
+} from '../lib/ControlPanel/index.mjs'
+import Counter from '../lib/Counter.mjs'
 
 export default function (p) {
   const [w, h] = [500, 500]
@@ -26,8 +26,8 @@ export default function (p) {
   })
 
   const controlPanel = new ControlPanel({
+    p,
     id: metadata.name,
-    attemptReload: true,
     controls: {
       blendMode: createBlendMode(),
       size: new Range({
@@ -109,13 +109,10 @@ export default function (p) {
         max: 1,
         step: 0.001,
       }),
-      tanSinZFlip: new Toggle({
+      tanSinZFlip: new Checkbox({
         name: 'tanSinZFlip',
         value: false,
       }),
-    },
-    inputHandler() {
-      !p.isLooping() && draw()
     },
   })
 

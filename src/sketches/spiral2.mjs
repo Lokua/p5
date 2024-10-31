@@ -1,14 +1,18 @@
 // code forked from https://editor.p5js.org/MaximSchoemaker/sketches/hSUoBvPJB
-import ControlPanel, { Range } from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../lib/ControlPanel/index.mjs'
 import { FRAMERATE_BPM_130, PHI } from '../util.mjs'
 
 export default function spiral2(p) {
+  const metadata = {
+    name: 'spiral2',
+    frameRate: 30,
+  }
+
   const [w, h] = [500, 500]
-  const frameRate = FRAMERATE_BPM_130
 
   const controlPanel = new ControlPanel({
+    p,
     id: 'spiral2',
-    attemptReload: true,
     controls: {
       count: new Range({
         name: 'count',
@@ -37,9 +41,6 @@ export default function spiral2(p) {
         max: 100,
       }),
     },
-    inputHandler() {
-      !p.isLooping() && draw()
-    },
   })
 
   function setup() {
@@ -52,7 +53,6 @@ export default function spiral2(p) {
 
     return {
       canvas,
-      frameRate,
     }
   }
 
@@ -103,9 +103,6 @@ export default function spiral2(p) {
     destroy() {
       controlPanel.destroy()
     },
-    metadata: {
-      name: 'spiral2',
-      frameRate,
-    },
+    metadata,
   }
 }

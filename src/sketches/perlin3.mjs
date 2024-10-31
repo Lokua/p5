@@ -3,9 +3,9 @@
 
 import ControlPanel, {
   Range,
-  Toggle,
+  Checkbox,
   createBlendMode,
-} from '../ControlPanel/index.mjs'
+} from '../lib/ControlPanel/index.mjs'
 import { arrayModLookup, mapTimes } from '../util.mjs'
 
 export default function (p) {
@@ -17,8 +17,8 @@ export default function (p) {
   }
 
   const controlPanel = new ControlPanel({
+    p,
     id: metadata.name,
-    attemptReload: true,
     controls: {
       blendMode: createBlendMode(),
       height: new Range({
@@ -59,13 +59,10 @@ export default function (p) {
         max: 10,
         step: 0.01,
       }),
-      flip: new Toggle({
+      flip: new Checkbox({
         name: 'flip',
         value: true,
       }),
-    },
-    inputHandler() {
-      !p.isLooping() && draw()
     },
   })
 

@@ -1,7 +1,8 @@
 // @ts-check
-import ControlPanel, { Range, Toggle } from '../ControlPanel/index.mjs'
-import AnimationHelper from '../AnimationHelper.mjs'
-import { DistanceAlgorithms, multiLerp } from '../util.mjs'
+import ControlPanel, { Range, Checkbox } from '../lib/ControlPanel/index.mjs'
+import AnimationHelper from '../lib/AnimationHelper.mjs'
+import * as DistanceAlgorithms from '../lib/DistanceAlgorithms.mjs'
+import { multiLerp } from '../util.mjs'
 
 /**
  * @param {import("p5")} p
@@ -45,11 +46,11 @@ export default function (p) {
         min: 1,
         max: 100,
       }),
-      multiDirection: new Toggle({
+      multiDirection: new Checkbox({
         name: 'multiDirection',
         value: false,
       }),
-      perNoteDuration: new Toggle({
+      perNoteDuration: new Checkbox({
         name: 'perNoteDuration',
         value: false,
       }),
@@ -186,8 +187,8 @@ export default function (p) {
         // Draw horizontal and vertical lines connecting the points
         const pt2 = gridPoints[row][col + 1]
         const pt3 = gridPoints[row + 1][col]
-        p.lines(pt.x, pt.y, pt2.x, pt2.y)
-        p.lines(pt.x, pt.y, pt3.x, pt3.y)
+        p.line(pt.x, pt.y, pt2.x, pt2.y)
+        p.line(pt.x, pt.y, pt3.x, pt3.y)
       }
     }
   }

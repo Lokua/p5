@@ -3,7 +3,7 @@ import { findPortByName, getPorts, isStart, statusMap } from '@lokua/midi-util'
 import { $, get, logInfo, uuid } from './util.mjs'
 import SketchManager from './SketchManager.mjs'
 
-const defaultSketch = 'gridTemplate'
+const defaultSketch = 'ztudy__circleOfCircles'
 const backgroundColors = ['#000000', '#7F7F7F', '#C8C8C8', '#FFFFFF']
 let backgroundColorIndex = 0
 let recording = false

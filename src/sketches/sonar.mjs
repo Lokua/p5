@@ -1,7 +1,7 @@
 // @ts-check
-import chroma from 'chroma'
-import ControlPanel, { Range } from '../ControlPanel/index.mjs'
-import AnimationHelper from '../AnimationHelper.mjs'
+import chroma from 'chroma-js'
+import ControlPanel, { Range } from '../lib/ControlPanel/index.mjs'
+import AnimationHelper from '../lib/AnimationHelper.mjs'
 
 /**
  * @param {import("p5")} p

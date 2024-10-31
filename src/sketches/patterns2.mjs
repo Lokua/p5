@@ -1,8 +1,9 @@
 // @ts-check
 import chroma from 'chroma-js'
-import ControlPanel, { Checkbox, Range } from '../ControlPanel/index.mjs'
-import AnimationHelper from '../AnimationHelper.mjs'
-import { DistanceAlgorithms, multiLerp } from '../util.mjs'
+import ControlPanel, { Checkbox, Range } from '../lib/ControlPanel/index.mjs'
+import AnimationHelper from '../lib/AnimationHelper.mjs'
+import * as DistanceAlgorithms from '../lib/DistanceAlgorithms.mjs'
+import { multiLerp } from '../util.mjs'
 
 /**
  * @param {import("p5")} p

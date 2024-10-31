@@ -1,7 +1,12 @@
-import ControlPanel, { Range } from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../lib/ControlPanel/index.mjs'
 import { BidirectionalCounter } from '../util.mjs'
 
 export default function tstrip3(p) {
+  const metadata = {
+    name: 'tstrip3',
+    frameRate: 30,
+  }
+
   const [w, h] = [500, 500]
   const randomInts = []
   const scale = 2
@@ -9,15 +14,9 @@ export default function tstrip3(p) {
   let flying = 0
   let index = 0
 
-  const metadata = {
-    name: 'tstrip3',
-    frameRate: 30,
-  }
-
   const controlPanel = new ControlPanel({
     p,
     id: metadata.name,
-    attemptReload: true,
     controls: {
       cameraX: new Range({
         name: 'cameraX',

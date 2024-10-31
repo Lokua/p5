@@ -1,7 +1,10 @@
 // https://www.youtube.com/watch?v=lNKFhaOQJys&t=259s
 
-import ControlPanel, { Range, createBlendMode } from '../ControlPanel/index.mjs'
-import AnimationHelper from '../AnimationHelper.mjs'
+import ControlPanel, {
+  Range,
+  createBlendMode,
+} from '../lib/ControlPanel/index.mjs'
+import AnimationHelper from '../lib/AnimationHelper.mjs'
 
 /**
  * @param {import("p5")} p
@@ -18,8 +21,8 @@ export default function lines(p) {
   const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm })
 
   const controlPanel = new ControlPanel({
+    p,
     id: metadata.name,
-    attemptReload: true,
     controls: {
       nLines: new Range({
         name: 'nLines',
@@ -60,9 +63,6 @@ export default function lines(p) {
         step: 0.001,
       }),
       blendMode: createBlendMode(),
-    },
-    inputHandler() {
-      !p.isLooping() && draw()
     },
   })
 

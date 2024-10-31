@@ -1,16 +1,16 @@
-import ControlPanel, { Range } from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../lib/ControlPanel/index.mjs'
 
 export default function tstrip2(p) {
+  const metadata = {
+    name: 'tstrip2',
+    frameRate: 30,
+  }
+
   const [w, h] = [500, 500]
   const randomInts = []
   const scale = 2
   let flying = 0
   let index = 0
-
-  const metadata = {
-    name: 'tstrip2',
-    frameRate: 30,
-  }
 
   const controlPanel = new ControlPanel({
     p,
@@ -90,6 +90,7 @@ export default function tstrip2(p) {
   function draw() {
     const { saturation, brightness, colorOffset, colorRange, noise } =
       controlPanel.values()
+
     const count = w / scale
     const terrain = createTerrain(count, noise * 0.01, flying)
     const colors = createColors({

@@ -1,4 +1,4 @@
-import ControlPanel, { Range } from '../ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../lib/ControlPanel/index.mjs'
 import { randomSign, FRAMERATE_BPM_130 } from '../util.mjs'
 
 export default function (p) {
@@ -11,8 +11,8 @@ export default function (p) {
   }
 
   const controlPanel = new ControlPanel({
+    p,
     id: metadata.name,
-    attemptReload: true,
     controls: {
       resolution: new Range({
         name: 'resolution',
@@ -26,9 +26,6 @@ export default function (p) {
         min: 1,
         max: 1000,
       }),
-    },
-    inputHandler() {
-      !p.isLooping() && draw()
     },
   })
 
