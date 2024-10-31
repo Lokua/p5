@@ -4,8 +4,7 @@ import { $, get, logInfo, uuid } from './util.mjs'
 import SketchManager from './SketchManager.mjs'
 
 const defaultSketch = 'ztudy__circleOfCircles'
-const backgroundColors = ['#000000', '#7F7F7F', '#C8C8C8', '#FFFFFF']
-let backgroundColorIndex = 0
+const themes = ['theme-white', 'theme-light', 'theme-dark', 'theme-black']
 let recording = false
 let midiInputPort
 let midiOutputPort
@@ -186,38 +185,20 @@ async function sendFramesToBackend(frames) {
 }
 
 function initBackground() {
-  const storedBg =
-    localStorage.getItem('backgroundColor') || backgroundColors[0]
-  backgroundColorIndex = backgroundColors.indexOf(storedBg)
-  document.body.style.backgroundColor = storedBg
-  $('#controls').style.backgroundColor =
-    localStorage.getItem('controlsBackgroundColor') || '#444'
-  updateLabelColors()
+  const defaultTheme = 'theme-dark'
+  const storedClass = localStorage.getItem('@lokua/p5/theme') || defaultTheme
+  const theme = themes.includes(storedClass) ? storedClass : defaultTheme
+  document.body.classList.add(theme)
+  localStorage.setItem('@lokua/p5/theme', theme)
 }
 
 function changeBackground() {
-  backgroundColorIndex = (backgroundColorIndex + 1) % backgroundColors.length
-  const backgroundColor = backgroundColors[backgroundColorIndex]
-  document.body.style.backgroundColor = backgroundColor
-  localStorage.setItem('backgroundColor', backgroundColor)
-  const isDark = [backgroundColors[2], backgroundColors[3]].includes(
-    backgroundColor,
-  )
-  const controlsBackgroundColor = isDark ? '#ddd' : '#444'
-  $('#controls').style.backgroundColor = controlsBackgroundColor
-  localStorage.setItem('controlsBackgroundColor', controlsBackgroundColor)
-  updateLabelColors(backgroundColorIndex)
-  document.documentElement.style.colorScheme = isDark ? 'light' : 'dark'
-}
-
-function updateLabelColors() {
-  const labelColorIndex =
-    (backgroundColorIndex - 2 + backgroundColors.length) %
-    backgroundColors.length
-  const labelColor = backgroundColors[labelColorIndex]
-  document.querySelectorAll('label').forEach((label) => {
-    label.style.color = labelColor
-  })
+  const currentTheme = localStorage.getItem('@lokua/p5/theme') || 'theme-dark'
+  const currentIndex = themes.indexOf(currentTheme)
+  const className = themes[(currentIndex + 1) % themes.length]
+  document.body.classList.remove(currentTheme)
+  document.body.classList.add(className)
+  localStorage.setItem('@lokua/p5/theme', className)
 }
 
 function sendExternalStart() {

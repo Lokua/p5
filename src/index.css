@@ -22,38 +22,6 @@ body {
   overflow: hidden;
 }
 
-button {
-  min-width: 100px;
-  height: var(--control-height);
-  margin: 2px;
-  border: none;
-  border-radius: 4px;
-  background-color: #666;
-  font-size: var(--control-font-size);
-  color: #fff;
-  cursor: pointer;
-  transition:
-    background-color 0.3s ease,
-    transform 0.2s ease;
-}
-
-button:hover {
-  background-color: #888;
-}
-
-button:active {
-  transform: scale(0.98);
-}
-
-ul {
-  list-style: inside;
-  padding: 0;
-}
-
-li {
-  text-align: left;
-}
-
 #root {
   display: flex;
 }
@@ -73,6 +41,7 @@ li {
     margin-right: 4px;
   }
 }
+
 .main-control {
   display: flex;
 }
@@ -114,6 +83,75 @@ li {
       align-items: center;
     }
   }
+}
+
+#dynamic-controls {
+  display: flex;
+  flex-wrap: wrap;
+  padding-top: 1rem;
+
+  label {
+    font-size: var(--control-font-size);
+  }
+
+  fieldset {
+    display: flex;
+    border: none;
+  }
+}
+
+ul {
+  list-style: inside;
+  padding: 0;
+}
+
+li {
+  text-align: left;
+}
+
+#sketches {
+  padding: 1rem 2rem;
+  margin-left: 2rem;
+  background-color: #444;
+}
+
+#sketches li {
+  cursor: pointer;
+}
+
+#sketches li:hover {
+  color: magenta;
+}
+
+li.active {
+  text-decoration: underline;
+}
+
+li.active::before {
+  content: '* ';
+}
+
+button {
+  min-width: 100px;
+  height: var(--control-height);
+  margin: 2px;
+  border: none;
+  border-radius: 4px;
+  background-color: #666;
+  font-size: var(--control-font-size);
+  color: #fff;
+  cursor: pointer;
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease;
+}
+
+button:hover {
+  background-color: #888;
+}
+
+button:active {
+  transform: scale(0.98);
 }
 
 input[type='range'] {
@@ -166,21 +204,6 @@ select:focus {
   box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
 }
 
-#dynamic-controls {
-  display: flex;
-  flex-wrap: wrap;
-  padding-top: 1rem;
-
-  label {
-    font-size: var(--control-font-size);
-  }
-
-  fieldset {
-    display: flex;
-    border: none;
-  }
-}
-
 .control {
   display: flex;
   flex-direction: column;
@@ -216,24 +239,60 @@ select:focus {
   }
 }
 
-#sketches {
-  padding: 1rem 2rem;
-  margin-left: 2rem;
-  background-color: #444;
+.theme-white {
+  background-color: #fff;
+
+  #controls {
+    background-color: #eee;
+  }
+
+  label {
+    color: black;
+  }
 }
 
-#sketches li {
-  cursor: pointer;
+.theme-light {
+  background-color: #ccc;
+
+  #controls {
+    background-color: #ddd;
+  }
+
+  label {
+    color: #444;
+  }
 }
 
-#sketches li:hover {
-  color: magenta;
+.theme-dark {
+  background-color: #222;
+
+  #controls {
+    background-color: #333;
+  }
+
+  label {
+    color: #ddd;
+  }
+
+  button,
+  select {
+    background-color: #555;
+  }
 }
 
-li.active {
-  text-decoration: underline;
-}
+.theme-black {
+  background-color: #000;
 
-li.active::before {
-  content: '* ';
+  #controls {
+    background-color: #222;
+  }
+
+  label {
+    color: #bbb;
+  }
+
+  button,
+  select {
+    background-color: #444;
+  }
 }
