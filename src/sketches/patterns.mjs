@@ -186,8 +186,8 @@ export default function (p) {
         // Draw horizontal and vertical lines connecting the points
         const pt2 = gridPoints[row][col + 1]
         const pt3 = gridPoints[row + 1][col]
-        p.line(pt.x, pt.y, pt2.x, pt2.y)
-        p.line(pt.x, pt.y, pt3.x, pt3.y)
+        p.lines(pt.x, pt.y, pt2.x, pt2.y)
+        p.lines(pt.x, pt.y, pt3.x, pt3.y)
       }
     }
   }

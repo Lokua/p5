@@ -133,64 +133,121 @@ export default function (p) {
     ) {
       const angle = startAngle + i * angleStep
       const direction = { x: p.cos(angle), y: p.sin(angle) }
-      const d = direction
-
       const outerDelay = base
       const innerDelay = 1
-
       const scale = pingPongColors ? pingPongColorScale : colorScale
       const color = scale(i / count).rgba()
 
       p.stroke(color)
-      fill && p.fill(color)
+      if (fill) {
+        p.fill(color)
+      }
 
       const outerOffset = animateOffset(outer, outerDelay, delay * 2)
-      const x = cx + outerRadius * d.x + outerOffset * d.x
-      const y = cy + outerRadius * d.y + outerOffset * d.y
-      p.circle(x, y, diameter)
+      const outerPoint = calculateCirclePoint(
+        cx,
+        cy,
+        outerRadius,
+        outerOffset,
+        direction,
+      )
+      p.circle(outerPoint.x, outerPoint.y, diameter)
 
-      const innerDiameter = diameter * (2 / 3)
       const innerOffset = animateOffset(inner, innerDelay, delay)
-      const ix = cx + innerRadius * d.x + innerOffset * d.x
-      const iy = cy + innerRadius * d.y + innerOffset * d.y
+      const innerDiameter = diameter * (2 / 3)
+      const innerPoint = calculateCirclePoint(
+        cx,
+        cy,
+        innerRadius,
+        innerOffset,
+        direction,
+      )
+      p.circle(innerPoint.x, innerPoint.y, innerDiameter)
 
-      p.circle(ix, iy, innerDiameter)
-
-      p.line(
-        ...Object.values(calculateEdgePoint(ix, iy, innerDiameter, d)),
-        ...Object.values(calculateEdgePoint(x, y, diameter, d, true)),
+      drawConnectingLine(
+        innerPoint,
+        outerPoint,
+        innerDiameter,
+        diameter,
+        direction,
       )
 
       const nextAngle = startAngle + (i + 1) * angleStep
       const nextDir = { x: p.cos(nextAngle), y: p.sin(nextAngle) }
 
       if (i % 2 === 0) {
-        const nextDelay = delayStep * i + delayStep * 2
-        const offset = animateOffset(inner, innerDelay, nextDelay)
-        const nextPoint = getNextPoint(cx, cy, innerRadius, offset, nextDir)
-        const toNextDir = calculateToNextDir(ix, iy, nextPoint.x, nextPoint.y)
-
-        const d = innerDiameter / 2
-        const startX = ix + d * toNextDir.x
-        const startY = iy + d * toNextDir.y
-        const endX = nextPoint.x - d * toNextDir.x
-        const endY = nextPoint.y - d * toNextDir.y
-
-        p.line(startX, startY, endX, endY)
+        drawPairLine({
+          animationEnabled: inner,
+          currentPoint: innerPoint,
+          delay: delayStep * i + delayStep * 2,
+          diameter: innerDiameter,
+          duration: innerDelay,
+          radius: innerRadius,
+          cx,
+          cy,
+          nextDir,
+        })
       } else {
-        const nextDelay = (delayStep * i + delayStep * 2) * 2
-        const offset = animateOffset(outer, outerDelay, nextDelay)
-        const nextPoint = getNextPoint(cx, cy, outerRadius, offset, nextDir)
-        const toNextDir = calculateToNextDir(x, y, nextPoint.x, nextPoint.y)
-
-        const d = innerDiameter / 2
-        const startX = x + d * toNextDir.x
-        const startY = y + d * toNextDir.y
-        const endX = nextPoint.x - d * toNextDir.x
-        const endY = nextPoint.y - d * toNextDir.y
-
-        p.line(startX, startY, endX, endY)
+        drawPairLine({
+          animationEnabled: outer,
+          currentPoint: outerPoint,
+          delay: (delayStep * i + delayStep * 2) * 2,
+          duration: outerDelay,
+          radius: outerRadius,
+          diameter,
+          cx,
+          cy,
+          nextDir,
+        })
       }
+    }
+  }
+
+  function drawConnectingLine(point1, point2, diameter1, diameter2, direction) {
+    p.line(
+      ...Object.values(
+        calculateEdgePoint(point1.x, point1.y, diameter1, direction),
+      ),
+      ...Object.values(
+        calculateEdgePoint(point2.x, point2.y, diameter2, direction, true),
+      ),
+    )
+  }
+
+  function drawPairLine({
+    animationEnabled,
+    cx,
+    cy,
+    radius,
+    diameter,
+    currentPoint,
+    nextDir,
+    delay,
+    duration,
+  }) {
+    const offset = animateOffset(animationEnabled, duration, delay)
+
+    const nextPoint = calculateCirclePoint(cx, cy, radius, offset, nextDir)
+    const toNextDir = calculateToNextDir(
+      currentPoint.x,
+      currentPoint.y,
+      nextPoint.x,
+      nextPoint.y,
+    )
+
+    const halfDiameter = diameter / 2
+    p.line(
+      currentPoint.x + halfDiameter * toNextDir.x,
+      currentPoint.y + halfDiameter * toNextDir.y,
+      nextPoint.x - halfDiameter * toNextDir.x,
+      nextPoint.y - halfDiameter * toNextDir.y,
+    )
+  }
+
+  function calculateCirclePoint(cx, cy, radius, offset, direction) {
+    return {
+      x: cx + (radius + offset) * direction.x,
+      y: cy + (radius + offset) * direction.y,
     }
   }
 
@@ -208,15 +265,6 @@ export default function (p) {
     return {
       x: toNext.x / mag,
       y: toNext.y / mag,
-    }
-  }
-
-  function getNextPoint(x, y, radius, offset, nextDir) {
-    const nextX = x + radius * nextDir.x + offset * nextDir.x
-    const nextY = y + radius * nextDir.y + offset * nextDir.y
-    return {
-      x: nextX,
-      y: nextY,
     }
   }
 

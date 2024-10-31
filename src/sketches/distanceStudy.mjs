@@ -1,11 +1,7 @@
 // @ts-check
-import chroma from 'chroma'
-import ControlPanel, {
-  Checklist,
-  Range,
-  Toggle,
-} from '../ControlPanel/index.mjs'
-import { DistanceAlgorithms } from '../util.mjs' // Ensure this path is correct
+import chroma from 'chroma-js'
+import ControlPanel, { Checklist, Range } from '../ControlPanel/index.mjs'
+import { DistanceAlgorithms } from '../util.mjs'
 
 /**
  * @param {import("p5")} p
