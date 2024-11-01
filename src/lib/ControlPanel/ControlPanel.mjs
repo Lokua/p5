@@ -62,7 +62,7 @@ export default class ControlPanel {
     }
     if (this.attemptReload && this.id) {
       console.info('[ControlPanel] restoring from localStorage')
-      this.localStorageKey = `ControlPanel-${this.id}`
+      this.localStorageKey = `@lokua/p5/controlPanel/${this.id}`
       this.#reloadControls()
     }
   }

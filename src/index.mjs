@@ -18,7 +18,7 @@ async function initialize() {
   setupEventListeners()
   initBackground()
   await Promise.all([
-    loadSketch(localStorage.getItem('lastSketch')),
+    loadSketch(localStorage.getItem('@lokua/p5/lastSketch')),
     populateSketchesDropdown(),
   ])
 }
@@ -71,12 +71,12 @@ function setupEventListeners() {
 async function loadSketch(name) {
   try {
     await sketchManager.loadSketch(name)
-    localStorage.setItem('lastSketch', name)
+    localStorage.setItem('@lokua/p5/lastSketch', name)
   } catch (error) {
     console.error(error)
     logInfo('Falling back to default sketch', defaultSketch)
     await sketchManager.loadSketch(defaultSketch)
-    localStorage.setItem('lastSketch', defaultSketch)
+    localStorage.setItem('@lokua/p5/lastSketch', defaultSketch)
   }
 }
 
@@ -89,7 +89,8 @@ async function populateSketchesDropdown() {
       return `<option value="${sketchName}">${sketchName}</option>`
     })
     .join('\n')
-  sketchesSelect.value = localStorage.getItem('lastSketch') || defaultSketch
+  sketchesSelect.value =
+    localStorage.getItem('@lokua/p5/lastSketch') || defaultSketch
 }
 
 function onKeyUp(e) {

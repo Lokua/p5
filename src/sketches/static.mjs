@@ -1,6 +1,9 @@
-// https://www.youtube.com/watch?v=lNKFhaOQJys&t=259s
-
-import ControlPanel, { Checkbox, Range } from '../lib/ControlPanel/index.mjs'
+import chroma from 'chroma-js'
+import ControlPanel, {
+  Checkbox,
+  Range,
+  Select,
+} from '../lib/ControlPanel/index.mjs'
 import AnimationHelper from '../lib/AnimationHelper.mjs'
 import { average } from '../util.mjs'
 
@@ -17,6 +20,24 @@ export default function lines(p) {
 
   const bpm = 134
   const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm })
+  // const scale = chroma.scale(['black', 'turquoise', 'lightblue', 'navy'])
+
+  const speedDistributions = {
+    topToBottom: (y) => y / h,
+    bottomToTop: (y) => (h - y) / h,
+    sineWave: (y) => Math.sin((y / h) * Math.PI),
+    hourglass: (y) => 1 - Math.abs(y / h - 0.5) * 2,
+    exponential: (y) => Math.pow(y / h, 2),
+    invertedExponential: (y) => 1 - Math.pow(y / h, 2),
+    bellCurve: (y) => Math.exp(-Math.pow((y / h - 0.5) * 4, 2)),
+    stepFunction: (y) => (y / h < 0.5 ? 0 : 1),
+    triangleWave: (y) => 1 - Math.abs((((y / h) * 2) % 2) - 1),
+    sawtoothWave: (y) => ((y / h) * 2) % 1,
+    squareWave: (y) => (((y / h) * 2) % 2 < 1 ? 0 : 1),
+    customCurve: (y) => Math.pow(Math.sin((y / h) * Math.PI), 2),
+    logistic: (y) => 1 / (1 + Math.exp(-10 * (y / h - 0.5))),
+    invertedLogistic: (y) => 1 - 1 / (1 + Math.exp(-10 * (y / h - 0.5))),
+  }
 
   const controlPanel = new ControlPanel({
     p,
@@ -24,13 +45,13 @@ export default function lines(p) {
     controls: {
       nLines: new Range({
         name: 'nLines',
-        value: 1,
-        min: 2,
+        value: 10,
+        min: 1,
         max: 200,
       }),
       range: new Range({
         name: 'range',
-        value: 2,
+        value: 20,
         min: 0,
         max: 100,
       }),
@@ -42,7 +63,7 @@ export default function lines(p) {
       }),
       strokeWeight: new Range({
         name: 'strokeWeight',
-        value: 1,
+        value: 2,
         min: 1,
         max: 20,
       }),
@@ -63,12 +84,29 @@ export default function lines(p) {
         name: 'speed',
         value: 0.1,
         min: 0.001,
-        max: 1,
+        max: 10,
         step: 0.001,
       }),
       leftToRight: new Checkbox({
         name: 'leftToRight',
         value: false,
+      }),
+      speedDistribution1: new Select({
+        name: 'speedDistribution1',
+        value: 'topToBottom',
+        options: Object.keys(speedDistributions),
+      }),
+      speedDistribution2: new Select({
+        name: 'speedDistribution2',
+        value: 'bottomToTop',
+        options: Object.keys(speedDistributions),
+      }),
+      blendAmount: new Range({
+        name: 'blendAmount',
+        value: 0,
+        min: 0,
+        max: 1,
+        step: 0.01,
       }),
     },
   })
@@ -77,7 +115,7 @@ export default function lines(p) {
     controlPanel.init()
     const canvas = p.createCanvas(w, h)
 
-    p.colorMode(p.HSB, 100)
+    p.colorMode(p.RGB, 255, 255, 255, 1)
     p.noiseSeed(42)
 
     return {
@@ -95,34 +133,45 @@ export default function lines(p) {
       speed,
       leftToRight,
       padding,
+      speedDistribution1,
+      speedDistribution2,
+      blendAmount,
     } = controlPanel.values()
 
-    p.background(100, 2, 100)
+    p.background(245)
     p.fill(0)
     p.stroke(0)
     p.strokeWeight(strokeWeight)
 
-    const globalNoiseOffset = ah.getTotalBeatsElapsed() * speed
+    const totalBeatsElapsed = ah.getTotalBeatsElapsed()
+    const globalNoiseOffset = totalBeatsElapsed * speed
 
-    const n = Math.floor(h / nLines)
-    for (let y = n; y < h - n; y += n) {
+    const lineSpacing = Math.floor(h / nLines)
+
+    const speedFunction1 = speedDistributions[speedDistribution1]
+    const speedFunction2 = speedDistributions[speedDistribution2]
+
+    for (let y = lineSpacing; y < h - lineSpacing; y += lineSpacing) {
+      const speedFactor =
+        speedFunction1(y) * (1 - blendAmount) + speedFunction2(y) * blendAmount
+      const lineNoiseOffset =
+        (leftToRight ? -globalNoiseOffset : globalNoiseOffset) * speedFactor
+
       drawLine({
-        x: padding,
-        y,
+        startX: padding,
+        startY: y,
         length: w - padding * 2,
         segmentLength,
         range,
         noiseScale,
-        globalNoiseOffset: leftToRight
-          ? globalNoiseOffset * -1
-          : globalNoiseOffset,
+        globalNoiseOffset: lineNoiseOffset,
       })
     }
   }
 
   function drawLine({
-    x: lineX,
-    y: lineY,
+    startX,
+    startY,
     length,
     segmentLength,
     range,
@@ -132,42 +181,30 @@ export default function lines(p) {
     const numSegments = Math.ceil(length / segmentLength)
     const actualSegmentLength = length / numSegments
 
-    // Arrays to store x and y coordinates
-    const xCoords = []
-    const yCoords = []
-
     let noiseOffset = 0
     const noiseIncrement = noiseScale * actualSegmentLength
 
-    // Collect noise values for all segments
     const noiseValues = []
     for (let i = 0; i <= numSegments; i++) {
       const noiseValue =
-        p.noise(noiseOffset + globalNoiseOffset, lineY * noiseScale) - 0.5
+        p.noise(noiseOffset + globalNoiseOffset, startY * noiseScale) - 0.5
       noiseValues.push(noiseValue)
       noiseOffset += noiseIncrement
     }
 
     const meanNoiseValue = average(noiseValues)
-    const adjustedNoiseValues = noiseValues.map((x) => x - meanNoiseValue)
+    const adjustedNoiseValues = noiseValues.map((val) => val - meanNoiseValue)
 
-    // Map adjusted noise values to y coordinates
-    const r = p.map(lineY, 0, h, 0, range)
-    for (let i = 0; i <= numSegments; i++) {
-      const x = lineX + i * actualSegmentLength
-      const y = lineY + adjustedNoiseValues[i] * 2 * r
-      xCoords.push(x)
-      yCoords.push(y)
-    }
+    const amplitude = p.map(startY, 0, h, 0, range)
+    let prevX = startX
+    let prevY = startY + adjustedNoiseValues[0] * 2 * amplitude
 
-    const glitch = 1
-    for (let i = glitch; i <= numSegments; i++) {
-      p.line(
-        xCoords[i - glitch],
-        Math.min(yCoords[i - glitch], h - 1),
-        xCoords[i],
-        Math.min(yCoords[i], h - 1),
-      )
+    for (let i = 1; i <= numSegments; i++) {
+      const currentX = startX + i * actualSegmentLength
+      const currentY = startY + adjustedNoiseValues[i] * 2 * amplitude
+      p.line(prevX, Math.min(prevY, h - 1), currentX, Math.min(currentY, h - 1))
+      prevX = currentX
+      prevY = currentY
     }
   }
 
