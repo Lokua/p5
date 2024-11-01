@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert'
-import Counter from './lib/Counter.mjs'
+import Counter from './Counter.mjs'
 
 test('Counter', () => {
   const counter = new Counter({

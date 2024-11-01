@@ -63,9 +63,8 @@ export const isOdd = (x) => !isEven(x)
 
 export const $ = globalThis?.document?.querySelector?.bind(document)
 
-export function average(values) {
-  return values.reduce((total, value) => total + value, 0) / values.length
-}
+export const average = (values) =>
+  values.reduce((total, value) => total + value, 0) / values.length
 
 // https://github.com/tmcw-up-for-adoption/simple-linear-scale/blob/master/index.js
 export function linearScale(domain, range, clamp) {
@@ -258,4 +257,11 @@ export function beatsToFrames(beats, bpm, frameRate) {
   const secondsPerBeat = 60 / bpm
   const totalSeconds = beats * secondsPerBeat
   return totalSeconds * frameRate
+}
+
+export class InvalidArgumentsException extends Error {
+  constructor(message) {
+    super(message)
+    this.name = 'InvalidArgumentsException'
+  }
 }

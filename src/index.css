@@ -264,10 +264,10 @@ select:focus {
 }
 
 .theme-dark {
-  background-color: #222;
+  background-color: #333;
 
   #controls {
-    background-color: #333;
+    background-color: #444;
   }
 
   label {
@@ -276,7 +276,7 @@ select:focus {
 
   button,
   select {
-    background-color: #555;
+    background-color: #666;
   }
 }
 

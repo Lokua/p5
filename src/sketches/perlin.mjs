@@ -1,20 +1,24 @@
 /* eslint-disable no-unused-vars */
 // https://www.youtube.com/watch?v=0YvPgYDR1oM&list=PLeCiJGCSl7jc5UWvIeyQAvmCNc47IuwkM&index=6
-
 import ControlPanel, {
   Range,
   Checkbox,
   createBlendMode,
 } from '../lib/ControlPanel/index.mjs'
+import AnimationHelper from '../lib/AnimationHelper.mjs'
 import { arrayModLookup, mapTimes } from '../util.mjs'
 
+/**
+ * @param {import("p5")} p
+ */
 export default function (p) {
-  const [w, h] = [500, 500]
-  let phase = 0
-
   const metadata = {
     name: 'perlin',
+    frameRate: 30,
   }
+
+  const [w, h] = [500, 500]
+  const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 134 })
 
   const controlPanel = new ControlPanel({
     p,
@@ -71,9 +75,12 @@ export default function (p) {
     }
   }
 
+  let phase = 0
+
   function draw() {
     const { blendMode, size, space, thinness, flip, nCircles, noiseFalloff } =
       controlPanel.values()
+
     p.blendMode(p[blendMode])
     p.noiseDetail(2, noiseFalloff)
     p.background(0)
@@ -83,6 +90,7 @@ export default function (p) {
       p.push()
       p.translate(w / 2, h / 2)
       for (let i = 0; i < 360; i += space) {
+        const angle = i + phase
         const xOff = p.map(p.cos(i + phase), -1, 1, 0, 3)
         const yOff = p.map(p.sin(i + phase), -1, 1, 0, 3)
         const n = p.noise(xOff, yOff, j)

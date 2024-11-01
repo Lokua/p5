@@ -1,10 +1,8 @@
 // https://www.youtube.com/watch?v=lNKFhaOQJys&t=259s
 
-import ControlPanel, {
-  Range,
-  createBlendMode,
-} from '../lib/ControlPanel/index.mjs'
+import ControlPanel, { Checkbox, Range } from '../lib/ControlPanel/index.mjs'
 import AnimationHelper from '../lib/AnimationHelper.mjs'
+import { average } from '../util.mjs'
 
 /**
  * @param {import("p5")} p
@@ -27,8 +25,8 @@ export default function lines(p) {
       nLines: new Range({
         name: 'nLines',
         value: 1,
-        min: 1,
-        max: 100,
+        min: 2,
+        max: 200,
       }),
       range: new Range({
         name: 'range',
@@ -48,6 +46,12 @@ export default function lines(p) {
         min: 1,
         max: 20,
       }),
+      padding: new Range({
+        name: 'padding',
+        value: 8,
+        min: 0,
+        max: w / 2,
+      }),
       noiseScale: new Range({
         name: 'noiseScale',
         value: 0.02,
@@ -62,7 +66,10 @@ export default function lines(p) {
         max: 1,
         step: 0.001,
       }),
-      blendMode: createBlendMode(),
+      leftToRight: new Checkbox({
+        name: 'leftToRight',
+        value: false,
+      }),
     },
   })
 
@@ -83,13 +90,13 @@ export default function lines(p) {
       nLines,
       segmentLength,
       strokeWeight,
-      blendMode,
       range,
       noiseScale,
       speed,
+      leftToRight,
+      padding,
     } = controlPanel.values()
 
-    p.blendMode(p[blendMode])
     p.background(100, 2, 100)
     p.fill(0)
     p.stroke(0)
@@ -98,16 +105,17 @@ export default function lines(p) {
     const globalNoiseOffset = ah.getTotalBeatsElapsed() * speed
 
     const n = Math.floor(h / nLines)
-    const pad = 8
     for (let y = n; y < h - n; y += n) {
       drawLine({
-        x: pad,
+        x: padding,
         y,
-        length: w - pad * 2,
+        length: w - padding * 2,
         segmentLength,
         range,
         noiseScale,
-        globalNoiseOffset,
+        globalNoiseOffset: leftToRight
+          ? globalNoiseOffset * -1
+          : globalNoiseOffset,
       })
     }
   }
@@ -121,27 +129,45 @@ export default function lines(p) {
     noiseScale,
     globalNoiseOffset,
   }) {
-    let prevX = lineX
-    let prevY = lineY
-    const r = p.map(lineY, 0, h, 0, range)
-
     const numSegments = Math.ceil(length / segmentLength)
     const actualSegmentLength = length / numSegments
+
+    // Arrays to store x and y coordinates
+    const xCoords = []
+    const yCoords = []
 
     let noiseOffset = 0
     const noiseIncrement = noiseScale * actualSegmentLength
 
-    for (let i = 1; i <= numSegments; i++) {
-      const x = lineX + i * actualSegmentLength
-      const noiseValue = p.noise(
-        noiseOffset + globalNoiseOffset,
-        lineY * noiseScale,
-      )
-      const y = lineY + p.map(noiseValue, 0, 1, -r, r)
-      p.line(prevX, prevY, x, y)
-      prevX = x
-      prevY = y
+    // Collect noise values for all segments
+    const noiseValues = []
+    for (let i = 0; i <= numSegments; i++) {
+      const noiseValue =
+        p.noise(noiseOffset + globalNoiseOffset, lineY * noiseScale) - 0.5
+      noiseValues.push(noiseValue)
       noiseOffset += noiseIncrement
+    }
+
+    const meanNoiseValue = average(noiseValues)
+    const adjustedNoiseValues = noiseValues.map((x) => x - meanNoiseValue)
+
+    // Map adjusted noise values to y coordinates
+    const r = p.map(lineY, 0, h, 0, range)
+    for (let i = 0; i <= numSegments; i++) {
+      const x = lineX + i * actualSegmentLength
+      const y = lineY + adjustedNoiseValues[i] * 2 * r
+      xCoords.push(x)
+      yCoords.push(y)
+    }
+
+    const glitch = 1
+    for (let i = glitch; i <= numSegments; i++) {
+      p.line(
+        xCoords[i - glitch],
+        Math.min(yCoords[i - glitch], h - 1),
+        xCoords[i],
+        Math.min(yCoords[i], h - 1),
+      )
     }
   }
 

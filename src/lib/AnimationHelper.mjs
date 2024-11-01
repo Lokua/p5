@@ -1,4 +1,4 @@
-import { beatsToFrames, lerp } from '../util.mjs'
+import { beatsToFrames, lerp, InvalidArgumentsException } from '../util.mjs'
 import * as EasingFunctions from './EasingFunctions.mjs'
 
 export default class AnimationHelper {
@@ -11,6 +11,16 @@ export default class AnimationHelper {
     frameSystemIsZeroIndexed = false,
     latencyOffset = 0,
   }) {
+    if (!p || !frameRate || !bpm) {
+      const missingArgs = []
+      if (!p) missingArgs.push('p')
+      if (!frameRate) missingArgs.push('frameRate')
+      if (!bpm) missingArgs.push('bpm')
+      throw new InvalidArgumentsException(
+        `Invalid arguments provided: ${missingArgs.join(', ')}`,
+      )
+    }
+
     this.p = p
     this.frameRate = frameRate
     this.bpm = bpm
@@ -256,16 +266,6 @@ export default class AnimationHelper {
     return keyframes[currentSegmentIndex]
   }
 
-  /**
-   * Returns the total beats elapsed since the sketch started.
-   * @returns {number} - Total beats elapsed.
-   */
-  getTotalBeatsElapsed() {
-    const beatDuration = 60 / this.bpm
-    const totalTimeInSeconds = this.getFrameCount() / this.frameRate
-    return totalTimeInSeconds / beatDuration
-  }
-
   // make call sites verbose since we only use keyframes and duration 99% of time
   anim8(keyframes, duration, every, delay, easing) {
     return this.animate({
@@ -389,6 +389,30 @@ export default class AnimationHelper {
     }
 
     return value
+  }
+
+  // NOTE: untested
+  /**
+   * Accumulates a value by incrementing it by 'step' every 'every' beats.
+   * @param {Object} params - Parameters for accumulation.
+   * @param {number} params.step - The amount to increment the value each time.
+   * @param {number} params.every - The interval in beats at which to increment the value.
+   * @returns {number} - The accumulated value.
+   */
+  accumulateValue(step, every) {
+    const totalBeatsElapsed = this.getTotalBeatsElapsed()
+    const numberOfIncrements = Math.floor(totalBeatsElapsed / every)
+    return step * numberOfIncrements
+  }
+
+  /**
+   * Returns the total beats elapsed since the sketch started.
+   * @returns {number} - Total beats elapsed.
+   */
+  getTotalBeatsElapsed() {
+    const beatDuration = 60 / this.bpm
+    const totalTimeInSeconds = this.getFrameCount() / this.frameRate
+    return totalTimeInSeconds / beatDuration
   }
 
   beatsToFrames(beats) {

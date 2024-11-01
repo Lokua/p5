@@ -107,4 +107,19 @@ describe('animate', () => {
       )
     })
   })
+
+  it('anim8 should work the same way', () => {
+    p.frameCount = 0
+    const ax = createHelper()
+
+    p.frameCount = ax.beatsToFrames(0.5)
+
+    assertEqual(
+      ax.animate({
+        keyframes: [0, 360],
+        duration: 1,
+      }),
+      180,
+    )
+  })
 })
