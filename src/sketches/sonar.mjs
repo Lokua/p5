@@ -1,10 +1,9 @@
-// @ts-check
 import chroma from 'chroma-js'
 import ControlPanel, { Range } from '../lib/ControlPanel/index.mjs'
 import AnimationHelper from '../lib/AnimationHelper.mjs'
 
 /**
- * @param {import("p5")} p
+ * @param {import('p5')} p
  */
 export default function (p) {
   const [w, h] = [500, 500]

@@ -1,6 +1,6 @@
 // https://editor.p5js.org/generative-design/sketches/M_1_5_03
 
-import ControlPanel, { Checkbox, Range } from '../lib/ControlPanel/index.mjs'
+import ControlPanel, { Range } from '../lib/ControlPanel/index.mjs'
 
 let p
 
