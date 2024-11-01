@@ -206,7 +206,10 @@ export const get = (url) =>
     },
   }).then((res) => res.json())
 
-export const arrayModLookup = (array, i) => array[i % array.length]
+export function arrayModLookup(array, i) {
+  const index = Math.floor(((i % array.length) + array.length) % array.length)
+  return array[index]
+}
 
 export const sigmoid = (x) => 1 / (1 + Math.exp(-x))
 

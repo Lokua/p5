@@ -1,4 +1,4 @@
-import chroma from 'chroma-js'
+// import chroma from 'chroma-js'
 import ControlPanel, {
   Checkbox,
   Range,
@@ -14,14 +14,13 @@ export default function lines(p) {
   const [w, h] = [500, 500]
 
   const metadata = {
-    name: 'static',
+    name: 'static2',
     frameRate: 30,
   }
 
   const bpm = 134
   const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm })
-  // eslint-disable-next-line no-unused-vars
-  const scale = chroma.scale(['black', 'turquoise', 'lightblue', 'navy'])
+  // const scale = chroma.scale(['black', 'turquoise', 'lightblue', 'navy'])
 
   const speedDistributions = {
     topToBottom: (y) => y / h,
@@ -85,7 +84,7 @@ export default function lines(p) {
         name: 'speed',
         value: 0.1,
         min: 0.001,
-        max: 1,
+        max: 10,
         step: 0.001,
       }),
       leftToRight: new Checkbox({
@@ -144,17 +143,16 @@ export default function lines(p) {
     p.stroke(0)
     p.strokeWeight(strokeWeight)
 
-    const totalBeatsElapsed = ah.getTotalBeatsElapsed()
-    const globalNoiseOffset = totalBeatsElapsed * speed
+    const globalNoiseOffset = 11.5
 
     const lineSpacing = Math.floor(h / nLines)
 
-    const speedFunction1 = speedDistributions[speedDistribution1]
-    const speedFunction2 = speedDistributions[speedDistribution2]
+    const speedFn1 = speedDistributions[speedDistribution1]
+    const speedFn2 = speedDistributions[speedDistribution2]
 
     for (let y = lineSpacing; y < h - lineSpacing; y += lineSpacing) {
       const speedFactor =
-        speedFunction1(y) * (1 - blendAmount) + speedFunction2(y) * blendAmount
+        speedFn1(y) * (1 - blendAmount) + speedFn2(y) * blendAmount
       const lineNoiseOffset =
         (leftToRight ? -globalNoiseOffset : globalNoiseOffset) * speedFactor
 
@@ -166,6 +164,7 @@ export default function lines(p) {
         range,
         noiseScale,
         globalNoiseOffset: lineNoiseOffset,
+        speed,
       })
     }
   }
@@ -178,6 +177,7 @@ export default function lines(p) {
     range,
     noiseScale,
     globalNoiseOffset,
+    speed,
   }) {
     const numSegments = Math.ceil(length / segmentLength)
     const actualSegmentLength = length / numSegments
@@ -186,15 +186,20 @@ export default function lines(p) {
     const noiseIncrement = noiseScale * actualSegmentLength
 
     const noiseValues = []
+    const t = (p.millis() / 1000) * speed
+    const someScale = 0.1
     for (let i = 0; i <= numSegments; i++) {
       const noiseValue =
-        p.noise(noiseOffset + globalNoiseOffset, startY * noiseScale) - 0.5
+        p.noise(
+          noiseOffset + globalNoiseOffset,
+          startY * noiseScale + t * someScale,
+        ) - 0.5
       noiseValues.push(noiseValue)
       noiseOffset += noiseIncrement
     }
 
     const meanNoiseValue = average(noiseValues)
-    const adjustedNoiseValues = noiseValues.map((val) => val - meanNoiseValue)
+    const adjustedNoiseValues = noiseValues.map((n) => n - meanNoiseValue)
 
     const amplitude = p.map(startY, 0, h, 0, range)
     let prevX = startX

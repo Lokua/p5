@@ -547,8 +547,20 @@
 ## spiral-tvb8s.png
 <img src="images/1000x/spiral-tvb8s.png" alt="spiral-tvb8s.png" width="500">
 
+## static-2vvy1.png
+<img src="images/1000x/static-2vvy1.png" alt="static-2vvy1.png" width="500">
+
+## static-4ri8s.png
+<img src="images/1000x/static-4ri8s.png" alt="static-4ri8s.png" width="500">
+
+## static-5sj9.png
+<img src="images/1000x/static-5sj9.png" alt="static-5sj9.png" width="500">
+
 ## static-hhqh.png
 <img src="images/1000x/static-hhqh.png" alt="static-hhqh.png" width="500">
+
+## static-i5nl2.png
+<img src="images/1000x/static-i5nl2.png" alt="static-i5nl2.png" width="500">
 
 ## tstrip-08f0m.png
 <img src="images/1000x/tstrip-08f0m.png" alt="tstrip-08f0m.png" width="500">
@@ -627,6 +639,9 @@
 
 ## tstrip3-mt98.png
 <img src="images/1000x/tstrip3-mt98.png" alt="tstrip3-mt98.png" width="500">
+
+## ztudy__circleOfCircles-46j81.png
+<img src="images/1000x/ztudy__circleOfCircles-46j81.png" alt="ztudy__circleOfCircles-46j81.png" width="500">
 
 ## ztudy__circleOfCircles2-966n.png
 <img src="images/1000x/ztudy__circleOfCircles2-966n.png" alt="ztudy__circleOfCircles2-966n.png" width="500">
