@@ -222,6 +222,8 @@ select:focus {
 }
 
 .control-checklist {
+  flex-basis: 50%;
+
   fieldset {
     display: flex;
     margin: 0;

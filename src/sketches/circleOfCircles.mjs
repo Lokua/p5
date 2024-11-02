@@ -1,8 +1,13 @@
 // @ts-check
 import chroma from 'chroma-js'
-import ControlPanel, { Checkbox, Range } from '../lib/ControlPanel/index.mjs'
+import ControlPanel, {
+  Checkbox,
+  Checklist,
+  Range,
+} from '../lib/ControlPanel/index.mjs'
 import AnimationHelper from '../lib/AnimationHelper.mjs'
 import { d3ColorScales } from '../lib/colors.mjs'
+import Lines from '../lib/Lines.mjs'
 
 /**
  * @param {import("p5")} p
@@ -11,7 +16,7 @@ export default function (p) {
   const [w, h] = [500, 500]
 
   const metadata = {
-    name: 'ztudy__circleOfCircles3',
+    name: 'circleOfCircles',
     frameRate: 30,
   }
 
@@ -22,6 +27,8 @@ export default function (p) {
   const pingPongColorScale = chroma.scale(
     baseScale.concat(baseScale.slice(0, -1).toReversed()),
   )
+
+  const lines = new Lines(p)
 
   const controlPanel = new ControlPanel({
     p,
@@ -35,31 +42,31 @@ export default function (p) {
       }),
       multiplier: new Range({
         name: 'multiplier',
-        value: 1,
+        value: 3,
         min: 1,
         max: 8,
       }),
       amplitude: new Range({
         name: 'amplitude',
-        value: 20,
+        value: 70,
         min: 1,
         max: 100,
       }),
       outerRadius: new Range({
         name: 'outerRadius',
-        value: 200,
+        value: 160,
         min: 10,
         max: 250,
       }),
       innerRadius: new Range({
         name: 'innerRadius',
-        value: 40,
+        value: 68,
         min: 10,
         max: 250,
       }),
       diameter: new Range({
         name: 'diameter',
-        value: 20,
+        value: 10,
         min: 2,
         max: 20,
       }),
@@ -73,7 +80,7 @@ export default function (p) {
       }),
       pingPongColors: new Checkbox({
         name: 'pingPongColors',
-        value: false,
+        value: true,
       }),
       darkBg: new Checkbox({
         name: 'darkBg',
@@ -85,11 +92,31 @@ export default function (p) {
       }),
       outer: new Checkbox({
         name: 'outer',
-        value: false,
+        value: true,
       }),
       animated: new Checkbox({
         name: 'animated',
         value: true,
+      }),
+      bordered: new Checkbox({
+        name: 'bordered',
+        value: true,
+      }),
+      pairConnectors: new Checklist({
+        name: 'pairConnectors',
+        options: {
+          even: true,
+          odd: true,
+        },
+      }),
+      shadows: new Checklist({
+        name: 'shadows',
+        options: {
+          evenA: false,
+          evenB: false,
+          oddA: false,
+          oddB: false,
+        },
       }),
     },
   })
@@ -119,10 +146,21 @@ export default function (p) {
       inner,
       outer,
       animated,
+      pairConnectors,
+      shadows,
+      bordered,
     } = controlPanel.values()
 
-    p.background(darkBg ? 0 : 255)
     p.noFill()
+    !bordered && p.noStroke()
+
+    if (darkBg) {
+      p.background(0)
+    } else {
+      p.background(255)
+      p.fill(colorScale(1).alpha(0.05).rgba())
+      p.rect(0, 0, w, h)
+    }
 
     const cx = w / 2
     const cy = h / 2
@@ -137,17 +175,18 @@ export default function (p) {
       i < count;
       i++, delay += delayStep
     ) {
-      const angle = startAngle + i * angleStep
-      const direction = { x: p.cos(angle), y: p.sin(angle) }
       const outerDelay = base
       const innerDelay = 1
       const scale = pingPongColors ? pingPongColorScale : colorScale
       const color = scale(i / count).rgba()
+      const angle = startAngle + i * angleStep
+      const direction = {
+        x: p.cos(angle),
+        y: p.sin(angle),
+      }
 
       p.stroke(color)
-      if (fill) {
-        p.fill(color)
-      }
+      fill && p.fill(color)
 
       const outerOffset = animateOffset(outer, outerDelay, delay * 2)
       const outerPoint = calculateCirclePoint(
@@ -170,7 +209,7 @@ export default function (p) {
       )
       p.circle(innerPoint.x, innerPoint.y, innerDiameter)
 
-      drawConnectingLine(
+      drawInnerToOuterConnectingLine(
         innerPoint,
         outerPoint,
         innerDiameter,
@@ -179,48 +218,139 @@ export default function (p) {
       )
 
       const nextAngle = startAngle + (i + 1) * angleStep
-      const nextDir = { x: p.cos(nextAngle), y: p.sin(nextAngle) }
+      const nextDir = {
+        x: p.cos(nextAngle),
+        y: p.sin(nextAngle),
+      }
+      const evenDelay = delayStep * i + delayStep * 2
+      const oddDelay = (delayStep * i + delayStep * 2) * 2
+      const nextInnerPoint = calculateCirclePoint(
+        cx,
+        cy,
+        innerRadius,
+        animateOffset(true, innerDelay, delayStep * i + delayStep * 2),
+        nextDir,
+      )
+      const nextOuterPoint = calculateCirclePoint(
+        cx,
+        cy,
+        outerRadius,
+        animateOffset(true, outerDelay, oddDelay),
+        nextDir,
+      )
+      const alpha = 0.1
 
       if (i % 2 === 0) {
-        drawPairLine({
-          animationEnabled: inner,
-          currentPoint: innerPoint,
-          delay: delayStep * i + delayStep * 2,
-          diameter: innerDiameter,
-          duration: innerDelay,
-          radius: innerRadius,
-          cx,
-          cy,
-          nextDir,
-        })
+        if (pairConnectors.even) {
+          drawPairConnectingLine({
+            animationEnabled: inner,
+            currentPoint: innerPoint,
+            delay: evenDelay,
+            diameter: innerDiameter,
+            duration: innerDelay,
+            radius: innerRadius,
+            cx,
+            cy,
+            nextDir,
+          })
+        }
+        if (shadows.evenA) {
+          p.noStroke()
+          p.fill(chroma(color).alpha(alpha).rgba())
+          p.triangle(
+            innerPoint.x,
+            innerPoint.y,
+            nextInnerPoint.x,
+            nextInnerPoint.y,
+            outerPoint.x,
+            outerPoint.y,
+          )
+          p.noFill()
+        }
+        if (shadows.evenB) {
+          p.noStroke()
+          p.fill(chroma(color).alpha(alpha).rgba())
+          p.triangle(
+            innerPoint.x,
+            innerPoint.y,
+            nextInnerPoint.x,
+            nextInnerPoint.y,
+            nextOuterPoint.x,
+            nextOuterPoint.y,
+          )
+          p.noFill()
+        }
       } else {
-        drawPairLine({
-          animationEnabled: outer,
-          currentPoint: outerPoint,
-          delay: (delayStep * i + delayStep * 2) * 2,
-          duration: outerDelay,
-          radius: outerRadius,
-          diameter,
-          cx,
-          cy,
-          nextDir,
-        })
+        if (pairConnectors.odd) {
+          drawPairConnectingLine({
+            animationEnabled: outer,
+            currentPoint: outerPoint,
+            delay: oddDelay,
+            duration: outerDelay,
+            radius: outerRadius,
+            diameter,
+            cx,
+            cy,
+            nextDir,
+          })
+        }
+        if (shadows.oddA) {
+          p.noStroke()
+          p.fill(chroma(color).alpha(alpha).rgba())
+          p.triangle(
+            innerPoint.x,
+            innerPoint.y,
+            outerPoint.x,
+            outerPoint.y,
+            nextOuterPoint.x,
+            nextOuterPoint.y,
+          )
+          p.noFill()
+        }
+        if (shadows.oddB) {
+          p.noStroke()
+          p.fill(chroma(color).alpha(alpha).rgba())
+          p.triangle(
+            outerPoint.x,
+            outerPoint.y,
+            nextOuterPoint.x,
+            nextOuterPoint.y,
+            nextInnerPoint.x,
+            nextInnerPoint.y,
+          )
+          p.noFill()
+        }
       }
     }
   }
 
-  function drawConnectingLine(point1, point2, diameter1, diameter2, direction) {
-    p.line(
+  function drawInnerToOuterConnectingLine(
+    point1,
+    point2,
+    diameter1,
+    diameter2,
+    direction,
+  ) {
+    lines.tapered(
       ...Object.values(
         calculateEdgePoint(point1.x, point1.y, diameter1, direction),
       ),
       ...Object.values(
         calculateEdgePoint(point2.x, point2.y, diameter2, direction, true),
       ),
+      [1, 4, 1],
     )
   }
 
-  function drawPairLine({
+  function calculateEdgePoint(x, y, diameter, direction, invert = false) {
+    const factor = invert ? -1 : 1
+    return {
+      x: x + factor * (diameter / 2) * direction.x,
+      y: y + factor * (diameter / 2) * direction.y,
+    }
+  }
+
+  function drawPairConnectingLine({
     animationEnabled,
     cx,
     cy,
@@ -242,11 +372,12 @@ export default function (p) {
     )
 
     const halfDiameter = diameter / 2
-    p.line(
+    lines.tapered(
       currentPoint.x + halfDiameter * toNextDir.x,
       currentPoint.y + halfDiameter * toNextDir.y,
       nextPoint.x - halfDiameter * toNextDir.x,
       nextPoint.y - halfDiameter * toNextDir.y,
+      [1, 2, 1],
     )
   }
 
@@ -254,14 +385,6 @@ export default function (p) {
     return {
       x: cx + (radius + offset) * direction.x,
       y: cy + (radius + offset) * direction.y,
-    }
-  }
-
-  function calculateEdgePoint(x, y, diameter, direction, invert = false) {
-    const factor = invert ? -1 : 1
-    return {
-      x: x + factor * (diameter / 2) * direction.x,
-      y: y + factor * (diameter / 2) * direction.y,
     }
   }
 

@@ -54,7 +54,7 @@ export default class Lines {
     }
   }
 
-  taperedLine(x1, y1, x2, y2, ...rest) {
+  tapered(x1, y1, x2, y2, ...rest) {
     const thicknesses = Array.isArray(rest[0]) ? rest[0] : rest
     const steps = 100
     const segmentLength = steps / (thicknesses.length - 1)
@@ -89,6 +89,11 @@ export default class Lines {
       prevX = x
       prevY = y
     }
+  }
+
+  taperedLine(...args) {
+    console.warn('[Lines] `taperedLine` is deprecated. Use `tapered` instead')
+    return this.tapered(...args)
   }
 
   glowingLine(x1, y1, x2, y2, mainColor, glowColor, layers) {

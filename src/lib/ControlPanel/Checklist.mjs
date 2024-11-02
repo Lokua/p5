@@ -64,8 +64,9 @@ export default class Checklist extends Control {
     const incomingKeys = Object.keys(incomingValue)
     this.value = Object.entries(this.value).reduce(
       (options, [label, value]) => {
-        const thatValue = incomingValue[label]
-        if (!incomingKeys.includes(label) || typeof thatValue !== 'boolean') {
+        const checked = incomingValue[label]
+
+        if (!incomingKeys.includes(label) || typeof checked !== 'boolean') {
           console.warn(
             `[Checklist] ignoring invalid value for ${label}. Using default.`,
           )
@@ -75,9 +76,14 @@ export default class Checklist extends Control {
           }
         }
 
+        const checkbox = document.getElementById(`${this.id}-${label}`)
+        if (checkbox) {
+          checkbox.checked = checked
+        }
+
         return {
           ...options,
-          [label]: thatValue,
+          [label]: checked,
         }
       },
       {},

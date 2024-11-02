@@ -10,12 +10,19 @@ export default class AnimationHelper {
     bpm = 120,
     frameSystemIsZeroIndexed = false,
     latencyOffset = 0,
+    disabled = false,
   }) {
     if (!p || !frameRate || !bpm) {
       const missingArgs = []
-      if (!p) missingArgs.push('p')
-      if (!frameRate) missingArgs.push('frameRate')
-      if (!bpm) missingArgs.push('bpm')
+      if (!p) {
+        missingArgs.push('p')
+      }
+      if (!frameRate) {
+        missingArgs.push('frameRate')
+      }
+      if (!bpm) {
+        missingArgs.push('bpm')
+      }
       throw new InvalidArgumentsException(
         `Invalid arguments provided: ${missingArgs.join(', ')}`,
       )
@@ -26,6 +33,7 @@ export default class AnimationHelper {
     this.bpm = bpm
     this.frameSystemIsZeroIndexed = frameSystemIsZeroIndexed
     this.latencyOffset = latencyOffset
+    this.disabled = disabled
   }
 
   getFrameCount() {
@@ -297,6 +305,10 @@ export default class AnimationHelper {
     easing = 'linear',
     debugLabel = '',
   }) {
+    if (this.disabled) {
+      return keyframes[0].value ?? keyframes[0]
+    }
+
     if (debugLabel) {
       console.group(debugLabel)
       console.log('[debug] FRAME COUNT', this.getFrameCount())

@@ -9,6 +9,7 @@ export default [
       },
     },
     rules: {
+      curly: 'error',
       'object-shorthand': 'error',
       'prefer-const': 'error',
       'no-use-before-define': [
