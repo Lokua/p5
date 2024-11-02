@@ -44,7 +44,7 @@ export default function (p) {
     controls: {
       grid: new Range({
         name: 'grid',
-        value: 6,
+        value: 48,
         min: 3,
         max: 128,
       }),
@@ -54,7 +54,7 @@ export default function (p) {
       }),
       nearHue: new Range({
         name: 'nearHue',
-        value: 20,
+        value: 57,
         min: 0,
         max: 100,
       }),
@@ -70,10 +70,12 @@ export default function (p) {
       }),
       phaseMode: new Select({
         name: 'phaseMode',
+        value: 'distanceFromCenter',
         options: phaseModes,
       }),
       transitionPhaseMode: new Select({
         name: 'transitionPhaseMode',
+        value: 'manhattanDistance',
         options: phaseModes,
       }),
     },
@@ -127,9 +129,8 @@ export default function (p) {
       (animateXProgress * amplitude) ** 2 + (animateY ? amplitude : 0) ** 2,
     )
 
-    const circleSize = ah.triggeredAnimation({
-      value: 0.5,
-      keyframes: [0.4],
+    const circleSize = ah.animate({
+      keyframes: [0.5, 0.4, 0.5],
       duration: 1,
       every: 2,
       delay: 0.5,

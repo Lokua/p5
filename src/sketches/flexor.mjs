@@ -71,6 +71,7 @@ export default function (p) {
       }),
       phaseMode: new Select({
         name: 'phaseMode',
+        value: 'default',
         options: [
           'default',
           'distanceFromCenter',

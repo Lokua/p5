@@ -9,7 +9,7 @@ main()
 function main() {
   fs.writeFileSync(
     `${__dirname}/../index.md`,
-    generateMarkdownContent(),
+    `Files sorted from most to least recent\n\n${generateMarkdownContent()}`,
     'utf-8',
   )
 }
@@ -18,6 +18,11 @@ function generateMarkdownContent() {
   return fs
     .readdirSync(imagesDir)
     .filter(isSupportedImageFile)
+    .sort(
+      (a, b) =>
+        fs.statSync(`${imagesDir}/${b}`).mtime -
+        fs.statSync(`${imagesDir}/${a}`).mtime,
+    )
     .map((filename) =>
       [
         `## ${filename}`,
