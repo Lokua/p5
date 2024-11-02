@@ -166,6 +166,9 @@
 ## burst3-yo7xc.png
 <img src="images/1000x/burst3-yo7xc.png" alt="burst3-yo7xc.png" width="500">
 
+## circleOfCircles3-juh90.png
+<img src="images/1000x/circleOfCircles3-juh90.png" alt="circleOfCircles3-juh90.png" width="500">
+
 ## collatz-1n0q9.png
 <img src="images/1000x/collatz-1n0q9.png" alt="collatz-1n0q9.png" width="500">
 
@@ -183,6 +186,12 @@
 
 ## collatz-v20v.png
 <img src="images/1000x/collatz-v20v.png" alt="collatz-v20v.png" width="500">
+
+## connections-7806.png
+<img src="images/1000x/connections-7806.png" alt="connections-7806.png" width="500">
+
+## connections-knprs.png
+<img src="images/1000x/connections-knprs.png" alt="connections-knprs.png" width="500">
 
 ## flexor-ti6k7.png
 <img src="images/1000x/flexor-ti6k7.png" alt="flexor-ti6k7.png" width="500">
@@ -561,6 +570,21 @@
 
 ## static-i5nl2.png
 <img src="images/1000x/static-i5nl2.png" alt="static-i5nl2.png" width="500">
+
+## static2-62nnm.png
+<img src="images/1000x/static2-62nnm.png" alt="static2-62nnm.png" width="500">
+
+## static2-63e8t.png
+<img src="images/1000x/static2-63e8t.png" alt="static2-63e8t.png" width="500">
+
+## static2-b77p6.png
+<img src="images/1000x/static2-b77p6.png" alt="static2-b77p6.png" width="500">
+
+## static2-onu8l.png
+<img src="images/1000x/static2-onu8l.png" alt="static2-onu8l.png" width="500">
+
+## static2-tl37b.png
+<img src="images/1000x/static2-tl37b.png" alt="static2-tl37b.png" width="500">
 
 ## tstrip-08f0m.png
 <img src="images/1000x/tstrip-08f0m.png" alt="tstrip-08f0m.png" width="500">
