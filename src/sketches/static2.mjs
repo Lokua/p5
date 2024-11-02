@@ -1,10 +1,9 @@
-// import chroma from 'chroma-js'
+import chroma from 'chroma-js'
 import ControlPanel, {
   Checkbox,
   Range,
   Select,
 } from '../lib/ControlPanel/index.mjs'
-import AnimationHelper from '../lib/AnimationHelper.mjs'
 import { average } from '../util.mjs'
 
 /**
@@ -17,10 +16,6 @@ export default function lines(p) {
     name: 'static2',
     frameRate: 30,
   }
-
-  const bpm = 134
-  const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm })
-  // const scale = chroma.scale(['black', 'turquoise', 'lightblue', 'navy'])
 
   const speedDistributions = {
     topToBottom: (y) => y / h,
@@ -38,6 +33,13 @@ export default function lines(p) {
     logistic: (y) => 1 / (1 + Math.exp(-10 * (y / h - 0.5))),
     invertedLogistic: (y) => 1 - 1 / (1 + Math.exp(-10 * (y / h - 0.5))),
   }
+
+  const colorScale = chroma.scale([
+    'indigo',
+    'azure',
+    'midnightblue',
+    'rebeccapurple',
+  ])
 
   const controlPanel = new ControlPanel({
     p,
@@ -79,6 +81,13 @@ export default function lines(p) {
         min: 0.001,
         max: 1,
         step: 0.001,
+      }),
+      globalNoiseOffset: new Range({
+        name: 'globalNoiseOffset',
+        value: 11.5,
+        min: 0,
+        max: 40,
+        step: 0.1,
       }),
       speed: new Range({
         name: 'speed',
@@ -130,6 +139,7 @@ export default function lines(p) {
       strokeWeight,
       range,
       noiseScale,
+      globalNoiseOffset,
       speed,
       leftToRight,
       padding,
@@ -138,19 +148,15 @@ export default function lines(p) {
       blendAmount,
     } = controlPanel.values()
 
-    p.background(245)
+    p.background(255)
     p.fill(0)
-    p.stroke(0)
     p.strokeWeight(strokeWeight)
 
-    const globalNoiseOffset = 11.5
-
-    const lineSpacing = Math.floor(h / nLines)
-
+    const lineSpacing = Math.floor(h / (nLines - 1))
     const speedFn1 = speedDistributions[speedDistribution1]
     const speedFn2 = speedDistributions[speedDistribution2]
 
-    for (let y = lineSpacing; y < h - lineSpacing; y += lineSpacing) {
+    for (let y = 0; y <= h + range; y += lineSpacing) {
       const speedFactor =
         speedFn1(y) * (1 - blendAmount) + speedFn2(y) * blendAmount
       const lineNoiseOffset =
@@ -208,7 +214,11 @@ export default function lines(p) {
     for (let i = 1; i <= numSegments; i++) {
       const currentX = startX + i * actualSegmentLength
       const currentY = startY + adjustedNoiseValues[i] * 2 * amplitude
-      p.line(prevX, Math.min(prevY, h - 1), currentX, Math.min(currentY, h - 1))
+
+      const noiseFactor = (adjustedNoiseValues[i] + 0.5) * amplitude
+      p.stroke(colorScale(noiseFactor / amplitude).rgba())
+
+      p.line(prevX, prevY, currentX, currentY)
       prevX = currentX
       prevY = currentY
     }

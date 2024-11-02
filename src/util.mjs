@@ -35,6 +35,7 @@ export const apply =
     fn(...args)
 
 // https://github.com/sindresorhus/random-int/blob/main/index.js
+// min and max are inclusive
 export function randomInt(minimum, maximum) {
   if (maximum === undefined) {
     maximum = minimum
@@ -44,6 +45,7 @@ export function randomInt(minimum, maximum) {
   return Math.floor(Math.random() * (maximum - minimum + 1) + minimum)
 }
 
+export const randomItem = (array) => array[randomInt(0, array.length - 1)]
 export const randomBool = () => randomInt(1) > 0
 export const randomSign = () => (randomBool() ? 1 : -1)
 
