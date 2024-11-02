@@ -68,17 +68,17 @@ export default function (p) {
     lines.wavyLine(getX(), y1, getX(), y2, 10, 10)
     i++
 
-    lines.taperedLine(getX(), y1, getX(), y2, 1, 5)
+    lines.tapered(getX(), y1, getX(), y2, 1, 5)
     i++
 
-    lines.taperedLine(getX(), y1, getX(), y2, 5, 1)
+    lines.tapered(getX(), y1, getX(), y2, 5, 1)
+    i++
+
+    lines.tapered(getX(), y1, getX(), y2, 5, 1, 5, 2, 3)
     i++
 
     p.strokeWeight(1)
     lines.curvedLine(getX(), y1, getX(), y2, 20)
-    i++
-
-    lines.taperedLine(getX(), y1, getX(), y2, 5, 1, 5, 2, 3)
     i++
 
     lines.glowingLine(getX(), y1, getX(), y2, 'black', 'magenta', 1)

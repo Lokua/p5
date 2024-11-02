@@ -8,13 +8,12 @@ import { d3ColorScales } from '../lib/colors.mjs'
  * @param {import("p5")} p
  */
 export default function (p) {
-  const [w, h] = [500, 500]
-
   const metadata = {
     name: 'ztudy__circleOfCircles3',
     frameRate: 30,
   }
 
+  const [w, h] = [500, 500]
   const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 130 })
 
   const baseScale = d3ColorScales.magma.slice(0, -3)
