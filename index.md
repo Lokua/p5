@@ -669,3 +669,6 @@
 
 ## ztudy__circleOfCircles3-z8e0m.png
 <img src="images/1000x/ztudy__circleOfCircles3-z8e0m.png" alt="ztudy__circleOfCircles3-z8e0m.png" width="500">
+
+## ztudy__noise-pthkk.png
+<img src="images/1000x/ztudy__noise-pthkk.png" alt="ztudy__noise-pthkk.png" width="500">
