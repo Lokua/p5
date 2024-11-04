@@ -16,6 +16,10 @@ export default [
         'error',
         {
           functions: false,
+
+          // note to self: do not port to lokua config,
+          // this is just for this project
+          classes: false,
         },
       ],
     },

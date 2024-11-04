@@ -1,8 +1,8 @@
 import { beatsToFrames, lerp, InvalidArgumentsException } from '../util.mjs'
-import * as EasingFunctions from './EasingFunctions.mjs'
+import { interpolators } from './scaling.mjs'
 
 export default class AnimationHelper {
-  static EasingFunctions = EasingFunctions
+  static interpolators = interpolators
 
   constructor({
     p,
@@ -120,7 +120,7 @@ export default class AnimationHelper {
     from,
     to,
     duration = 1,
-    easing = EasingFunctions.linear,
+    easing = interpolators.linear,
     playMode = 'forward',
   }) {
     const getProgressBasedOnPlayMode = (mode) => {
@@ -253,6 +253,13 @@ export default class AnimationHelper {
     const output = startValue + (endValue - startValue) * segmentFraction
 
     return progress < 1 ? output : keyframes[keyframes.length - 1]
+  }
+
+  repeat(keyframes, duration) {
+    return this.repeatValues({
+      keyframes,
+      duration,
+    })
   }
 
   /**
@@ -437,9 +444,9 @@ export default class AnimationHelper {
 
   #safeGetEasing(easing) {
     return typeof easing === 'string'
-      ? EasingFunctions[easing]
+      ? interpolators[easing]
       : typeof easing === 'function'
         ? easing
-        : EasingFunctions.linear
+        : interpolators.linear
   }
 }

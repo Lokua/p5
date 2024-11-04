@@ -1,7 +1,7 @@
 // @ts-check
 import ControlPanel, { Range } from '../lib/ControlPanel/index.mjs'
 import AnimationHelper from '../lib/AnimationHelper.mjs'
-import * as EasingFunctions from '../lib/EasingFunctions.mjs'
+import { interpolators } from '../lib/scaling.mjs'
 
 /**
  * @param {import("p5")} p
@@ -60,17 +60,17 @@ export default function (p) {
           break
         }
         case 2: {
-          const progress = EasingFunctions.easeIn(ah.getLoopProgress(4))
+          const progress = interpolators.easeIn(ah.getLoopProgress(4))
           p.circle(x, y + amplitude * p.sin(progress * p.TWO_PI), diameter)
           break
         }
         case 3: {
-          const progress = EasingFunctions.easeOut(ah.getLoopProgress(4))
+          const progress = interpolators.easeOut(ah.getLoopProgress(4))
           p.circle(x, y + amplitude * p.sin(progress * p.TWO_PI), diameter)
           break
         }
         case 4: {
-          const progress = EasingFunctions.easeInOut(ah.getLoopProgress(4))
+          const progress = interpolators.easeInOut(ah.getLoopProgress(4))
           p.circle(x, y + amplitude * p.sin(progress * p.TWO_PI), diameter)
           break
         }

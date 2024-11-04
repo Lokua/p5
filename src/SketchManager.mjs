@@ -21,6 +21,8 @@ export default class SketchManager {
       (p) => this.initSketch(p, sketchFunction),
       this.containerId,
     )
+    // // for debugging
+    // window.p5Instance = this.currentP5
     this.currentSketchName = sketchName
   }
 
@@ -39,6 +41,7 @@ export default class SketchManager {
       this.frameRate = metadata.frameRate || 30
       p.frameRate(this.frameRate)
       p.pixelDensity(metadata.pixelDensity || p.pixelDensity())
+      p.textFont('Fira Code')
       canvas.parent(this.containerId)
       this.maxRecordingFrames = this.recordingDurationSeconds * this.frameRate
       this.currentSketch = { p, destroy, metadata }

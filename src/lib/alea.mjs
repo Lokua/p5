@@ -31,11 +31,17 @@ function Alea(...args) {
 
   for (const arg of args) {
     s0 -= mash(arg)
-    if (s0 < 0) s0 += 1
+    if (s0 < 0) {
+      s0 += 1
+    }
     s1 -= mash(arg)
-    if (s1 < 0) s1 += 1
+    if (s1 < 0) {
+      s1 += 1
+    }
     s2 -= mash(arg)
-    if (s2 < 0) s2 += 1
+    if (s2 < 0) {
+      s2 += 1
+    }
   }
   mash = null
 

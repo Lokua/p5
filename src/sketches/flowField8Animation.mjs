@@ -22,6 +22,7 @@ export default function (p) {
   ]
 
   const controlPanel = new ControlPanel({
+    p,
     id: metadata.name,
     controls: {
       noiseScale: new Range({

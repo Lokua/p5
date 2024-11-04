@@ -39,6 +39,10 @@ folder are available to load in the UI
 
 ## Learning Resources
 
-Resources I'm using to guide myself:
-
+- https://natureofcode.com/
+- https://available-anaconda-10d.notion.site/That-Creative-Code-Page-c5550ef2f7574126bdc77b09ed76651b
+- http://recodeproject.com/
+- https://easings.net
+- https://www.tylerxhobbs.com/words/a-guide-to-simulating-watercolor-paint-with-generative-art
+- https://openprocessing.org/
 - https://genekogan.com/code/p5js-transformations/

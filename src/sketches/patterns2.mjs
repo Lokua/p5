@@ -2,7 +2,7 @@
 import chroma from 'chroma-js'
 import ControlPanel, { Checkbox, Range } from '../lib/ControlPanel/index.mjs'
 import AnimationHelper from '../lib/AnimationHelper.mjs'
-import * as DistanceAlgorithms from '../lib/DistanceAlgorithms.mjs'
+import * as distanceAlgorithms from '../lib/distance.mjs'
 import { multiLerp } from '../util.mjs'
 
 /**
@@ -145,10 +145,10 @@ export default function (p) {
 
     const distanceFromCenter = multiLerp(
       [
-        // DistanceAlgorithms.euclidean(x, y, cx, cy),
-        DistanceAlgorithms.manhattan(x, y, cx, cy),
-        // DistanceAlgorithms.polar(x, y, cx, cy),
-        DistanceAlgorithms.radialSinusoidal(x, y, cx, cy),
+        // distanceAlgorithms.euclidean(x, y, cx, cy),
+        distanceAlgorithms.manhattan(x, y, cx, cy),
+        // distanceAlgorithms.polar(x, y, cx, cy),
+        distanceAlgorithms.radialSinusoidal(x, y, cx, cy),
       ],
       ah.getPingPongLoopProgress(12),
     )
@@ -176,9 +176,9 @@ export default function (p) {
     const cy = h / 2
     const distanceFromCenter = multiLerp(
       [
-        DistanceAlgorithms.manhattan(x, y, cx, cy),
-        DistanceAlgorithms.harmonic(x, y, cx, cy),
-        DistanceAlgorithms.radialSinusoidal(x, y, cx, cy),
+        distanceAlgorithms.manhattan(x, y, cx, cy),
+        distanceAlgorithms.harmonic(x, y, cx, cy),
+        distanceAlgorithms.radialSinusoidal(x, y, cx, cy),
       ],
       ah.getPingPongLoopProgress(8),
     )

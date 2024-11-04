@@ -10,12 +10,12 @@ import { average } from '../util.mjs'
  * @param {import("p5")} p
  */
 export default function lines(p) {
-  const [w, h] = [500, 500]
-
   const metadata = {
     name: 'static2',
     frameRate: 30,
   }
+
+  const [w, h] = [500, 500]
 
   const speedDistributions = {
     topToBottom: (y) => y / h,

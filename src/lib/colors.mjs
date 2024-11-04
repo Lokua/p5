@@ -102,3 +102,67 @@ export const d3ColorScales = {
     '#3f007d',
   ],
 }
+
+export const chromaBrewerKeys = [
+  'OrRd',
+  'PuBu',
+  'BuPu',
+  'Oranges',
+  'BuGn',
+  'YlOrBr',
+  'YlGn',
+  'Reds',
+  'RdPu',
+  'Greens',
+  'YlGnBu',
+  'Purples',
+  'GnBu',
+  'Greys',
+  'YlOrRd',
+  'PuRd',
+  'Blues',
+  'PuBuGn',
+  'Viridis',
+  'Spectral',
+  'RdYlGn',
+  'RdBu',
+  'PiYG',
+  'PRGn',
+  'RdYlBu',
+  'BrBG',
+  'RdGy',
+  'PuOr',
+  'Set2',
+  'Accent',
+  'Set1',
+  'Set3',
+  'Dark2',
+  'Paired',
+  'Pastel2',
+  'Pastel1',
+]
+
+export function renderSwatches(
+  p,
+  w,
+  scales,
+  numSwatches = 10,
+  swatchSize = 20,
+  margin = 5,
+) {
+  const maxSwatchSize = Math.floor(
+    (w - margin * (numSwatches - 1)) / numSwatches,
+  )
+  const size = Math.min(swatchSize, maxSwatchSize)
+
+  scales.forEach((scale, i) => {
+    for (let j = 0; j < numSwatches; j++) {
+      const color = scale(j / (numSwatches - 1))
+      p.fill(p.color(color.rgba()))
+      p.noStroke()
+      const x = margin + j * (size + margin)
+      const y = margin + i * (size + margin)
+      p.rect(x, y, size, size)
+    }
+  })
+}

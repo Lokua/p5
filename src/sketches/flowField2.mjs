@@ -113,10 +113,18 @@ class Agent {
     this.vector.x += p.cos(this.angle) * this.stepSize
     this.vector.y += p.sin(this.angle) * this.stepSize
 
-    if (this.vector.x < -10) this.vector.x = this.vectorOld.x = p.width + 10
-    if (this.vector.x > p.width + 10) this.vector.x = this.vectorOld.x = -10
-    if (this.vector.y < -10) this.vector.y = this.vectorOld.y = p.height + 10
-    if (this.vector.y > p.height + 10) this.vector.y = this.vectorOld.y = -10
+    if (this.vector.x < -10) {
+      this.vector.x = this.vectorOld.x = p.width + 10
+    }
+    if (this.vector.x > p.width + 10) {
+      this.vector.x = this.vectorOld.x = -10
+    }
+    if (this.vector.y < -10) {
+      this.vector.y = this.vectorOld.y = p.height + 10
+    }
+    if (this.vector.y > p.height + 10) {
+      this.vector.y = this.vectorOld.y = -10
+    }
 
     p.strokeWeight(strokeWidth * this.stepSize)
     p.line(this.vectorOld.x, this.vectorOld.y, this.vector.x, this.vector.y)

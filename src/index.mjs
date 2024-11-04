@@ -95,7 +95,9 @@ async function populateSketchesDropdown() {
 
 function onKeyUp(e) {
   const p = sketchManager.getCurrentP5()
-  if (!p) return
+  if (!p) {
+    return
+  }
   switch (e.key) {
     case 'd':
       p.redraw()
@@ -164,7 +166,24 @@ function saveCanvas() {
   if (p && metadata) {
     const id = uuid()
     const fileName = `${metadata.name}-${id}`
+    const originalDensity = p.pixelDensity()
+
+    // Set pixel density to achieve 3000x3000 output from 500x500 canvas
+    // 500 * 6 = 3000
+    p.pixelDensity(6)
+
+    // This unfortunately is needed or we'll get a blank image :(
+    // dafuq
+    if (!p.isLooping()) {
+      p.loop()
+      p.redraw()
+      p.noLoop()
+    } else {
+      p.redraw()
+    }
+
     p.saveCanvas(fileName, 'png')
+    p.pixelDensity(originalDensity)
   }
 }
 

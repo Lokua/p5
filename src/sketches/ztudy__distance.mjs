@@ -1,7 +1,7 @@
 // @ts-check
 import chroma from 'chroma-js'
 import ControlPanel, { Checklist, Range } from '../lib/ControlPanel/index.mjs'
-import * as DistanceAlgorithms from '../lib/DistanceAlgorithms.mjs'
+import * as distanceAlgorithms from '../lib/distance.mjs'
 
 /**
  * @param {import("p5")} p
@@ -84,7 +84,7 @@ export default function (p) {
     p.noStroke()
     p.translate(w / 2, h / 2)
 
-    Object.keys(DistanceAlgorithms).forEach((alg) => {
+    Object.keys(distanceAlgorithms).forEach((alg) => {
       if (!algorithmColors[alg]) {
         return
       }
