@@ -14,6 +14,7 @@ import Lines from '../lib/Lines.mjs'
  */
 export default function (p) {
   const [w, h] = [500, 500]
+  const center = p.createVector(w / 2, h / 2)
 
   const metadata = {
     name: 'circleOfCircles',
@@ -162,8 +163,6 @@ export default function (p) {
       p.rect(0, 0, w, h)
     }
 
-    const cx = w / 2
-    const cy = h / 2
     const count = base * 4 * multiplier
     const angleStep = p.TWO_PI / count
     const startAngle = rotate ? ah.anim8([0, p.TWO_PI], 36) : p.PI / 2
@@ -180,18 +179,14 @@ export default function (p) {
       const scale = pingPongColors ? pingPongColorScale : colorScale
       const color = scale(i / count).rgba()
       const angle = startAngle + i * angleStep
-      const direction = {
-        x: p.cos(angle),
-        y: p.sin(angle),
-      }
+      const direction = p.createVector(p.cos(angle), p.sin(angle))
 
       p.stroke(color)
       fill && p.fill(color)
 
       const outerOffset = animateOffset(outer, outerDelay, delay * 2)
       const outerPoint = calculateCirclePoint(
-        cx,
-        cy,
+        center,
         outerRadius,
         outerOffset,
         direction,
@@ -201,8 +196,7 @@ export default function (p) {
       const innerOffset = animateOffset(inner, innerDelay, delay)
       const innerDiameter = diameter * (2 / 3)
       const innerPoint = calculateCirclePoint(
-        cx,
-        cy,
+        center,
         innerRadius,
         innerOffset,
         direction,
@@ -218,22 +212,17 @@ export default function (p) {
       )
 
       const nextAngle = startAngle + (i + 1) * angleStep
-      const nextDir = {
-        x: p.cos(nextAngle),
-        y: p.sin(nextAngle),
-      }
+      const nextDir = p.createVector(p.cos(nextAngle), p.sin(nextAngle))
       const evenDelay = delayStep * i + delayStep * 2
       const oddDelay = (delayStep * i + delayStep * 2) * 2
       const nextInnerPoint = calculateCirclePoint(
-        cx,
-        cy,
+        center,
         innerRadius,
         animateOffset(true, innerDelay, delayStep * i + delayStep * 2),
         nextDir,
       )
       const nextOuterPoint = calculateCirclePoint(
-        cx,
-        cy,
+        center,
         outerRadius,
         animateOffset(true, outerDelay, oddDelay),
         nextDir,
@@ -249,35 +238,20 @@ export default function (p) {
             diameter: innerDiameter,
             duration: innerDelay,
             radius: innerRadius,
-            cx,
-            cy,
+            center,
             nextDir,
           })
         }
         if (shadows.evenA) {
           p.noStroke()
           p.fill(chroma(color).alpha(alpha).rgba())
-          p.triangle(
-            innerPoint.x,
-            innerPoint.y,
-            nextInnerPoint.x,
-            nextInnerPoint.y,
-            outerPoint.x,
-            outerPoint.y,
-          )
+          drawTriangle(innerPoint, nextInnerPoint, outerPoint)
           p.noFill()
         }
         if (shadows.evenB) {
           p.noStroke()
           p.fill(chroma(color).alpha(alpha).rgba())
-          p.triangle(
-            innerPoint.x,
-            innerPoint.y,
-            nextInnerPoint.x,
-            nextInnerPoint.y,
-            nextOuterPoint.x,
-            nextOuterPoint.y,
-          )
+          drawTriangle(innerPoint, nextInnerPoint, nextOuterPoint)
           p.noFill()
         }
       } else {
@@ -289,35 +263,20 @@ export default function (p) {
             duration: outerDelay,
             radius: outerRadius,
             diameter,
-            cx,
-            cy,
+            center,
             nextDir,
           })
         }
         if (shadows.oddA) {
           p.noStroke()
           p.fill(chroma(color).alpha(alpha).rgba())
-          p.triangle(
-            innerPoint.x,
-            innerPoint.y,
-            outerPoint.x,
-            outerPoint.y,
-            nextOuterPoint.x,
-            nextOuterPoint.y,
-          )
+          drawTriangle(innerPoint, outerPoint, nextOuterPoint)
           p.noFill()
         }
         if (shadows.oddB) {
           p.noStroke()
           p.fill(chroma(color).alpha(alpha).rgba())
-          p.triangle(
-            outerPoint.x,
-            outerPoint.y,
-            nextOuterPoint.x,
-            nextOuterPoint.y,
-            nextInnerPoint.x,
-            nextInnerPoint.y,
-          )
+          drawTriangle(outerPoint, nextOuterPoint, nextInnerPoint)
           p.noFill()
         }
       }
@@ -332,28 +291,20 @@ export default function (p) {
     direction,
   ) {
     lines.tapered(
-      ...Object.values(
-        calculateEdgePoint(point1.x, point1.y, diameter1, direction),
-      ),
-      ...Object.values(
-        calculateEdgePoint(point2.x, point2.y, diameter2, direction, true),
-      ),
+      calculateEdgePoint(point1, diameter1, direction),
+      calculateEdgePoint(point2, diameter2, direction, true),
       [1, 4, 1],
     )
   }
 
-  function calculateEdgePoint(x, y, diameter, direction, invert = false) {
+  function calculateEdgePoint(point, diameter, direction, invert = false) {
     const factor = invert ? -1 : 1
-    return {
-      x: x + factor * (diameter / 2) * direction.x,
-      y: y + factor * (diameter / 2) * direction.y,
-    }
+    return point.copy().add(direction.copy().mult((diameter / 2) * factor))
   }
 
   function drawPairConnectingLine({
     animationEnabled,
-    cx,
-    cy,
+    center,
     radius,
     diameter,
     currentPoint,
@@ -362,39 +313,22 @@ export default function (p) {
     duration,
   }) {
     const offset = animateOffset(animationEnabled, duration, delay)
-
-    const nextPoint = calculateCirclePoint(cx, cy, radius, offset, nextDir)
-    const toNextDir = calculateToNextDir(
-      currentPoint.x,
-      currentPoint.y,
-      nextPoint.x,
-      nextPoint.y,
-    )
-
+    const nextPoint = calculateCirclePoint(center, radius, offset, nextDir)
+    const toNextDir = calculateToNextDir(currentPoint, nextPoint)
     const halfDiameter = diameter / 2
     lines.tapered(
-      currentPoint.x + halfDiameter * toNextDir.x,
-      currentPoint.y + halfDiameter * toNextDir.y,
-      nextPoint.x - halfDiameter * toNextDir.x,
-      nextPoint.y - halfDiameter * toNextDir.y,
+      currentPoint.copy().add(toNextDir.copy().mult(halfDiameter)),
+      nextPoint.copy().sub(toNextDir.copy().mult(halfDiameter)),
       [1, 2, 1],
     )
   }
 
-  function calculateCirclePoint(cx, cy, radius, offset, direction) {
-    return {
-      x: cx + (radius + offset) * direction.x,
-      y: cy + (radius + offset) * direction.y,
-    }
+  function calculateCirclePoint(center, radius, offset, direction) {
+    return center.copy().add(direction.copy().mult(radius + offset))
   }
 
-  function calculateToNextDir(x1, y1, x2, y2) {
-    const toNext = { x: x2 - x1, y: y2 - y1 }
-    const mag = Math.sqrt(toNext.x ** 2 + toNext.y ** 2)
-    return {
-      x: toNext.x / mag,
-      y: toNext.y / mag,
-    }
+  function calculateToNextDir(p1, p2) {
+    return p2.copy().sub(p1).normalize()
   }
 
   function animateOffset(enabled, duration, delay) {
@@ -406,6 +340,10 @@ export default function (p) {
           delay,
         })
       : 0
+  }
+
+  function drawTriangle(p1, p2, p3) {
+    p.triangle(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)
   }
 
   return {

@@ -54,19 +54,16 @@ export default class Lines {
     }
   }
 
-  tapered(x1, y1, x2, y2, ...rest) {
+  tapered(start, end, ...rest) {
     const thicknesses = Array.isArray(rest[0]) ? rest[0] : rest
     const steps = 100
     const segmentLength = steps / (thicknesses.length - 1)
 
-    let prevX = x1
-    let prevY = y1
+    let prevPoint = start.copy()
 
     for (let i = 0; i <= steps; i++) {
       const t = i / steps
-      const x = this.p.lerp(x1, x2, t)
-      const y = this.p.lerp(y1, y2, t)
-
+      const currentPoint = start.copy().lerp(end, t)
       const segment = Math.floor(i / segmentLength)
       const thicknessStart = thicknesses[segment]
       const thicknessEnd =
@@ -83,11 +80,10 @@ export default class Lines {
       this.p.strokeWeight(thickness)
 
       if (i > 0) {
-        this.p.line(prevX, prevY, x, y)
+        this.p.line(prevPoint.x, prevPoint.y, currentPoint.x, currentPoint.y)
       }
 
-      prevX = x
-      prevY = y
+      prevPoint = currentPoint.copy()
     }
   }
 

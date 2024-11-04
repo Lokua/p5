@@ -3,7 +3,6 @@ import chroma from 'chroma-js'
 import ControlPanel, { Checkbox, Range } from '../lib/ControlPanel/index.mjs'
 import AnimationHelper from '../lib/AnimationHelper.mjs'
 import { d3ColorScales, renderSwatches } from '../lib/colors.mjs'
-import { randomInt } from '../util.mjs'
 
 /**
  * @param {import('p5')} p

@@ -40,7 +40,7 @@ export default function (p) {
     controls: {
       steps: new Range({
         name: 'steps',
-        value: 100,
+        value: 255,
         min: 3,
         max: 255,
       }),

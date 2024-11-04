@@ -5,12 +5,12 @@ import ControlPanel, { Range } from '../lib/ControlPanel/index.mjs'
  * @param {import('p5')} p
  */
 export default function (p) {
-  const [w, h] = [500, 500]
-
   const metadata = {
     name: 'template',
     frameRate: 30,
   }
+
+  const [w, h] = [500, 500]
 
   const controlPanel = new ControlPanel({
     p,
