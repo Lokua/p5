@@ -1,5 +1,4 @@
 // https://editor.p5js.org/generative-design/sketches/M_1_5_03
-
 import ControlPanel, { Range } from '../lib/ControlPanel/index.mjs'
 
 let p
@@ -56,7 +55,6 @@ export default function (p5Instance) {
     const canvas = p.createCanvas(w, h)
 
     for (let i = 0; i < agentCount; i++) {
-      // eslint-disable-next-line no-use-before-define
       agents[i] = new Agent(noiseZRange)
     }
 

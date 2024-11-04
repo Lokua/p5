@@ -141,10 +141,10 @@ export function fromXY(x, y, nColumns) {
   return nColumns * x + y
 }
 
-// Deprecated?
 export class P5Helpers {
   constructor(p) {
     this.p = p
+    this.Vector = this.p.constructor.Vector
   }
 
   pushPop = (fn) => {
