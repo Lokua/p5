@@ -1,5 +1,14 @@
 Files sorted from most to least recent
 
+## wFrequencyModulation-6e1c6.png
+<img src="images/1000x/wFrequencyModulation-6e1c6.png" alt="wFrequencyModulation-6e1c6.png" width="500">
+
+## z__nocVectors-7j0wa.png
+<img src="images/1000x/z__nocVectors-7j0wa.png" alt="z__nocVectors-7j0wa.png" width="500">
+
+## z__nocOscillation-ooga.png
+<img src="images/1000x/z__nocOscillation-ooga.png" alt="z__nocOscillation-ooga.png" width="500">
+
 ## z__nocWalker2-r1ktd.png
 <img src="images/1000x/z__nocWalker2-r1ktd.png" alt="z__nocWalker2-r1ktd.png" width="500">
 
