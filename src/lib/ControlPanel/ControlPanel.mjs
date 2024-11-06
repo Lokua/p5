@@ -1,4 +1,4 @@
-import { formatLog } from '../../util.mjs'
+import { formatLog, logInfo } from '../../util.mjs'
 
 export default class ControlPanel {
   static defaultSelector = '#dynamic-controls'
@@ -8,60 +8,42 @@ export default class ControlPanel {
     id,
     controls,
     selector = ControlPanel.defaultSelector,
-    inputHandler,
     attemptReload = true,
+    autoRedraw = true,
   }) {
     this.p = p
     this.id = id
     this.controls = Object.fromEntries(
       Object.entries(controls).filter(([, control]) => !control.disabled),
     )
-    this.validateControls()
+    this.#validateControls()
     this.selector = selector
-    this.inputHandler = inputHandler
     this.attemptReload = attemptReload
-
-    if (!inputHandler) {
-      this.inputHandler = () => {
-        if (!this.p.isLooping()) {
-          this.p.redraw()
-        }
-      }
-    } else {
-      console.warn(
-        formatLog(`
-          [ControlPanel] custom inputHandler is deprecated.
-          remove it and also add \`p\` argument to the constructor.
-        `),
-      )
-    }
+    this.autoRedraw = autoRedraw
 
     if (this.attemptReload && !this.id) {
       throw new Error('Cannot attemptReload without an id.')
     }
   }
 
-  validateControls() {
-    Object.entries(this.controls).forEach(([key, { name }]) => {
-      if (key !== name) {
-        throw new Error(
-          formatLog(`
-            Invalid control name "${name}" provided for key "${key}". 
-            Please make sure key and name match.
-          `),
-        )
-      }
-    })
-  }
-
   init() {
     this.html()
-    this.#mapControls((control) => control.bind())
-    if (this.inputHandler) {
-      this.onInput(this.inputHandler)
-    }
+    this.#mapControls((control) => {
+      control.bind()
+      control.addInputListener(() => {
+        if (this.autoRedraw && !this.p.isLooping()) {
+          this.p.redraw()
+        }
+        if (this.attemptReload && this.id) {
+          localStorage.setItem(
+            this.localStorageKey,
+            JSON.stringify(this.values()),
+          )
+        }
+      })
+    })
     if (this.attemptReload && this.id) {
-      console.info('[ControlPanel] restoring from localStorage')
+      logInfo('[ControlPanel] restoring from localStorage')
       this.localStorageKey = `@lokua/p5/controlPanel/${this.id}`
       this.#reloadControls()
     }
@@ -71,20 +53,6 @@ export default class ControlPanel {
     this.#getElement().innerHTML = this.#mapControls((control) =>
       control.html(),
     ).join('\n')
-  }
-
-  onInput(fn) {
-    this.#mapControls((control) => {
-      control.addInputListener((e) => {
-        fn(e)
-        if (this.attemptReload && this.id) {
-          localStorage.setItem(
-            this.localStorageKey,
-            JSON.stringify(this.values()),
-          )
-        }
-      })
-    })
   }
 
   values() {
@@ -103,20 +71,40 @@ export default class ControlPanel {
 
   destroy() {
     this.#getElement().innerHTML = ''
+    this.#mapControls((control) => {
+      control?.destroy?.()
+    })
   }
 
-  #getElement = () => document.querySelector(this.selector)
+  #validateControls() {
+    Object.entries(this.controls).forEach(([key, { name }]) => {
+      if (key !== name) {
+        throw new Error(
+          formatLog(`
+            Invalid control name "${name}" provided for key "${key}". 
+            Please make sure key and name match.
+          `),
+        )
+      }
+    })
+  }
 
-  #mapControls = (fn) => Object.values(this.controls).map(fn)
+  #getElement() {
+    return document.querySelector(this.selector)
+  }
 
-  #reloadControls = () => {
+  #mapControls(fn) {
+    return Object.values(this.controls).map(fn)
+  }
+
+  #reloadControls() {
     try {
       const saved = JSON.parse(localStorage.getItem(this.localStorageKey))
       this.#mapControls((control) => {
         const value = saved[control.name]
         if (value !== undefined && value !== null) {
           control.setValue(value)
-        } else {
+        } else if (control.type !== 'button') {
           console.warn('[ControlPanel] skipping nil value for', control.name)
         }
       })

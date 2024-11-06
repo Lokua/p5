@@ -4,6 +4,7 @@ export default class Control {
   constructor({
     name,
     value,
+    hasLabel = true,
     hasLabelValue = true,
     type = 'default',
     disabled = false,
@@ -11,6 +12,7 @@ export default class Control {
     this.id = `${name}--${Date.now()}`
     this.name = name
     this.value = value
+    this.hasLabel = hasLabel
     this.hasLabelValue = hasLabelValue
     this.type = type
     this.disabled = disabled
@@ -18,9 +20,15 @@ export default class Control {
 
   html(children, containerAttributes = '') {
     const labelValue = this.hasLabelValue ? `<span>${this.value}</span>` : ''
+    const label = this.hasLabel
+      ? `<label for="${this.id}">${this.name} ${labelValue}</label>`
+      : ''
     return `
-      <div class="control ${this.id}-control control-${this.type}" ${containerAttributes}>
-        <label for="${this.id}">${this.name} ${labelValue}</label>
+      <div 
+        class="control ${this.id}-control control-${this.type}" 
+        ${containerAttributes}
+      >
+        ${label}
         ${children}
       </div>
     `
@@ -28,11 +36,6 @@ export default class Control {
 
   bind() {
     this.getElement().addEventListener('input', this.#onInput)
-  }
-
-  destroy() {
-    const element = this.getElement()
-    element.parentNode.removeChild(element)
   }
 
   addInputListener(fn) {

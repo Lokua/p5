@@ -10,7 +10,7 @@ import ControlPanel, {
  */
 export default function (p) {
   const metadata = {
-    name: 'wFrequencyModulation',
+    name: 'ampAndFreqMod',
     frameRate: 30,
   }
 
@@ -112,6 +112,8 @@ export default function (p) {
         'magenta',
         (x) => center.y + amplitude * p.sin(theta + x * f2),
       )
+
+    // ???
     show.result &&
       drawNeonWaveform(chroma.mix('magenta', 'cyan', 0.5), (x) => {
         if (modulationType === 'frequency') {

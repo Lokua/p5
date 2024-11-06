@@ -1,5 +1,6 @@
 import chroma from 'chroma-js'
 import ControlPanel from './ControlPanel.mjs'
+import Button from './Button.mjs'
 import Checkbox from './Checkbox.mjs'
 import Checklist from './Checklist.mjs'
 import Range from './Range.mjs'
@@ -45,6 +46,7 @@ const createChromaPalettes = (overrides = {}) => {
 
 export default ControlPanel
 export {
+  Button,
   Checkbox,
   Checklist,
   Range,
