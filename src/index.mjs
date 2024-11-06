@@ -3,6 +3,8 @@ import { findPortByName, getPorts, isStart, statusMap } from '@lokua/midi-util'
 import { $, get, logInfo, uuid } from './util.mjs'
 import SketchManager from './SketchManager.mjs'
 
+const INCREASE_DENSITY_ON_SAVE = true
+
 const defaultSketch = 'ztudy__circleOfCircles'
 const themes = ['theme-white', 'theme-light', 'theme-dark', 'theme-black']
 let recording = false
@@ -168,22 +170,26 @@ function saveCanvas() {
     const fileName = `${metadata.name}-${id}`
     const originalDensity = p.pixelDensity()
 
-    // Set pixel density to achieve 3000x3000 output from 500x500 canvas
-    // 500 * 6 = 3000
-    p.pixelDensity(6)
+    if (INCREASE_DENSITY_ON_SAVE) {
+      // Set pixel density to achieve 3000x3000 output from 500x500 canvas
+      // 500 * 6 = 3000
+      p.pixelDensity(6)
 
-    // This unfortunately is needed or we'll get a blank image :(
-    // dafuq
-    if (!p.isLooping()) {
-      p.loop()
-      p.redraw()
-      p.noLoop()
+      // This unfortunately is needed or we'll get a blank image :(
+      // dafuq
+      if (!p.isLooping()) {
+        p.loop()
+        p.redraw()
+        p.noLoop()
+      } else {
+        p.redraw()
+      }
+
+      p.saveCanvas(fileName, 'png')
+      p.pixelDensity(originalDensity)
     } else {
-      p.redraw()
+      p.saveCanvas(fileName, 'png')
     }
-
-    p.saveCanvas(fileName, 'png')
-    p.pixelDensity(originalDensity)
   }
 }
 

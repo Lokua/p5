@@ -7,6 +7,7 @@ export default class Checklist extends Control {
       value: options,
       type: 'checklist',
       hasLabelValue: false,
+      labelHasFor: false,
       ...rest,
     })
   }
@@ -17,7 +18,9 @@ export default class Checklist extends Control {
 
   html() {
     return super.html(
-      `
+      ` <!-- dummy input to silence chrome warning about label for/id missing -->
+        <!-- ^ DOESN'T WORK -->
+        <input id="${this.id}" type="hidden">
         ${Object.entries(this.options)
           .map(
             ([label, value]) =>

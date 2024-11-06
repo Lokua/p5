@@ -143,6 +143,9 @@ export function fromXY(x, y, nColumns) {
 
 export class P5Helpers {
   constructor(p) {
+    console.warn(
+      'P5Helpers is deprecated. Use P5Extensions (available directly on p5 instance)',
+    )
     this.p = p
     this.Vector = this.p.constructor.Vector
   }

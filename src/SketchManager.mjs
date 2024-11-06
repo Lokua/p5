@@ -1,3 +1,5 @@
+import P5Extensions from './P5Extensions.mjs'
+
 export default class SketchManager {
   constructor(containerId, ...additionalSketchArgs) {
     this.containerId = containerId
@@ -21,8 +23,7 @@ export default class SketchManager {
       (p) => this.initSketch(p, sketchFunction),
       this.containerId,
     )
-    // // for debugging
-    // window.p5Instance = this.currentP5
+    this.currentP5.$ = new P5Extensions(this.currentP5)
     this.currentSketchName = sketchName
   }
 
