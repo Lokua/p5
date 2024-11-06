@@ -1,13 +1,13 @@
 import chroma from 'chroma-js'
 import ControlPanel, { Button, Range } from '../lib/ControlPanel/index.mjs'
-import { randomInt } from '../util.mjs'
+import { logInfo, randomInt } from '../util.mjs'
 
 /**
  * @param {import('p5')} p
  */
 export default function (p) {
   const metadata = {
-    name: 'un',
+    name: 'gridSpray',
     frameRate: 30,
   }
 
@@ -20,37 +20,27 @@ export default function (p) {
     id: metadata.name,
     autoRedraw: false,
     controls: {
-      strokeWeight: new Range({
-        name: 'strokeWeight',
-        value: 2,
-        min: 1,
+      intensity: new Range({
+        name: 'intensity',
+        value: 10,
+        min: 10,
         max: 100,
       }),
-      segmentLength: new Range({
-        name: 'segmentLength',
-        value: 1,
+      maxSegmentLength: new Range({
+        name: 'maxSegmentLength',
+        value: 4,
         min: 1,
-        max: 10,
-      }),
-      speed: new Range({
-        name: 'speed',
-        value: 5,
-        min: 1,
-        max: 1000,
+        max: 40,
       }),
       splash: new Button({
         name: 'splash',
         shortcut: 'q',
         handler() {
+          logInfo('[gridSpray] processing...')
           splashed = true
           p.redraw()
+          logInfo('[gridSpray] done')
         },
-      }),
-      intensity: new Range({
-        name: 'intensity',
-        value: 100,
-        min: 10,
-        max: 1000,
       }),
       clear: new Button({
         name: 'clear',
@@ -108,17 +98,19 @@ export default function (p) {
       return
     }
 
-    const { strokeWeight, segmentLength, speed, alpha, intensity } =
-      controlPanel.values()
+    const { intensity, maxSegmentLength } = controlPanel.values()
 
-    p.background(255)
-    buffer.strokeWeight(strokeWeight)
+    p.background('white')
     buffer.strokeCap(p.SQUARE)
     buffer.noFill()
 
-    for (let i = 0; i < speed * intensity; i++) {
-      updateAndDrawPoint(pointA, segmentLength, alpha)
-      updateAndDrawPoint(pointB, segmentLength, alpha)
+    const iterations = Math.round(Math.pow(intensity, 3))
+    for (let i = 0; i < iterations; i++) {
+      for (let j = maxSegmentLength; j > 1; j--) {
+        buffer.strokeWeight(maxSegmentLength - j)
+        updateAndDrawPoint(pointA, j)
+        updateAndDrawPoint(pointB, j)
+      }
     }
 
     p.image(buffer, 0, 0)
@@ -131,7 +123,6 @@ export default function (p) {
     }
 
     point.previous.set(point.position)
-
     point.position.add(point.velocity)
 
     buffer.stroke(point.color)

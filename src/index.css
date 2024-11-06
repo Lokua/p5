@@ -211,6 +211,10 @@ select:focus {
   margin-bottom: 1rem;
 }
 
+.control-button {
+  flex-basis: 50%;
+}
+
 .control-checkbox {
   flex-direction: row-reverse;
   justify-content: flex-end;
