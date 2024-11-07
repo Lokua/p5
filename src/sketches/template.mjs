@@ -8,6 +8,10 @@ export default function (p) {
   const metadata = {
     name: 'template',
     frameRate: 30,
+
+    // WARNING! This is probably too big
+    // if recording video but perfect for images
+    pixelDensity: 6,
   }
 
   const [w, h] = [500, 500]

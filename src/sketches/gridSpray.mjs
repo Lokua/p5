@@ -1,5 +1,6 @@
 import chroma from 'chroma-js'
 import ControlPanel, { Button, Range } from '../lib/ControlPanel/index.mjs'
+import { createPrng } from '../lib/Noise.mjs'
 import { logInfo, randomInt } from '../util.mjs'
 
 /**
@@ -9,11 +10,14 @@ export default function (p) {
   const metadata = {
     name: 'gridSpray',
     frameRate: 30,
+    pixelDensity: 6,
   }
 
   const [w, h] = [500, 500]
   let buffer
   let splashed = false
+
+  const random = createPrng(87625)
 
   const controlPanel = new ControlPanel({
     p,
@@ -58,6 +62,7 @@ export default function (p) {
     const canvas = p.createCanvas(w, h)
     buffer = p.createGraphics(w, h)
     p.colorMode(p.RGB, 255, 255, 255, 1)
+    p.noiseSeed('peach')
     buffer.colorMode(p.RGB, 255, 255, 255, 1)
     buffer.strokeCap(p.SQUARE)
 
@@ -82,6 +87,7 @@ export default function (p) {
     previous: center.copy(),
     velocity: directions[randomInt(0, 3)].copy(),
     segmentRemaining: 0,
+    noiseOffset: 0,
     color: chroma('black').alpha(0.2).rgba(),
   }
 
@@ -90,6 +96,7 @@ export default function (p) {
     previous: center.copy(),
     velocity: directions[randomInt(0, 3)].copy(),
     segmentRemaining: 0,
+    noiseOffset: 0,
     color: chroma('white').alpha(0.5).rgba(),
   }
 
@@ -106,10 +113,14 @@ export default function (p) {
 
     const iterations = Math.round(Math.pow(intensity, 3))
     for (let i = 0; i < iterations; i++) {
-      for (let j = maxSegmentLength; j > 1; j--) {
-        buffer.strokeWeight(maxSegmentLength - j)
-        updateAndDrawPoint(pointA, j)
-        updateAndDrawPoint(pointB, j)
+      for (
+        let segmentLength = maxSegmentLength;
+        segmentLength > 1;
+        segmentLength--
+      ) {
+        buffer.strokeWeight(maxSegmentLength - segmentLength)
+        updateAndDrawPoint(pointA, segmentLength)
+        updateAndDrawPoint(pointB, segmentLength)
       }
     }
 
@@ -118,7 +129,8 @@ export default function (p) {
 
   function updateAndDrawPoint(point, segmentLength) {
     if (point.segmentRemaining <= 0) {
-      point.velocity = directions[randomInt(0, 3)].copy()
+      const index = Math.floor(random() * 4)
+      point.velocity = directions[index].copy()
       point.segmentRemaining = segmentLength
     }
 

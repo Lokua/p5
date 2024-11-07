@@ -1,9 +1,10 @@
 import 'p5'
 import { findPortByName, getPorts, isStart, statusMap } from '@lokua/midi-util'
-import { $, get, logInfo, uuid } from './util.mjs'
+import { $, formatLog, get, logInfo, uuid } from './util.mjs'
 import SketchManager from './SketchManager.mjs'
 
-const INCREASE_DENSITY_ON_SAVE = true
+// experimental; requires redraw, not ideal
+const INCREASE_DENSITY_ON_SAVE = false
 
 const defaultSketch = 'ztudy__circleOfCircles'
 const themes = ['theme-white', 'theme-light', 'theme-dark', 'theme-black']
@@ -188,6 +189,16 @@ function saveCanvas() {
       p.saveCanvas(fileName, 'png')
       p.pixelDensity(originalDensity)
     } else {
+      if (p.pixelDensity() <= 2) {
+        console.warn(
+          formatLog(`
+            You are saving at pixelDensity of 1 
+            which you probably don't want.
+            Export pixelDensity=6 in sketch metadata to 
+            turn 500x canvas to 3000x image
+          `),
+        )
+      }
       p.saveCanvas(fileName, 'png')
     }
   }

@@ -2,22 +2,18 @@ import { createNoise2D, createNoise3D, createNoise4D } from 'simplex-noise'
 import alea from './alea.mjs'
 
 const prng = alea()
-
 export const random = prng
+export const createPrng = alea
 
 export class Simplex {
   constructor(type = '2d', seed) {
     this.#createNoiseImplemenation(type, seed)
   }
 
-  #createPrng(seed) {
-    return alea(seed)
-  }
-
   #createNoiseImplemenation(type, seed) {
     this.type = type.toLowerCase()
     this.seed = seed
-    this.prng = this.#createPrng(seed ?? Math.random())
+    this.prng = createPrng(seed ?? Math.random())
     this.prng = this.prng.bind(this)
     this.noiseImplemenation =
       type === '2d'
