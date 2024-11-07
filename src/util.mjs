@@ -267,6 +267,11 @@ export function beatsToFrames(beats, bpm, frameRate) {
   return totalSeconds * frameRate
 }
 
+export function getShaderFiles(name) {
+  const prefix = `./sketches/${name}`
+  return [`${prefix}.vert`, `${prefix}.frag`]
+}
+
 export class InvalidArgumentsException extends Error {
   constructor(message) {
     super(message)

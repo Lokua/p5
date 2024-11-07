@@ -19,11 +19,10 @@ export default class SketchManager {
     await this.unloadSketch()
     const sketchModule = await import(this.sketchNameToPath(sketchName))
     const sketchFunction = sketchModule.default
-    this.currentP5 = new p5(
-      (p) => this.initSketch(p, sketchFunction),
-      this.containerId,
-    )
-    this.currentP5.$ = new P5Extensions(this.currentP5)
+    this.currentP5 = new p5((p) => {
+      p.$ = new P5Extensions(p)
+      this.initSketch(p, sketchFunction)
+    }, this.containerId)
     this.currentSketchName = sketchName
   }
 

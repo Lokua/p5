@@ -20,11 +20,17 @@ export default function (p) {
     p,
     id: metadata.name,
     controls: {
-      diameter: new Range({
-        name: 'diameter',
-        value: 50,
-        min: 0,
-        max: 1000,
+      count: new Range({
+        name: 'count',
+        value: 100,
+        min: 1,
+        max: 100,
+      }),
+      radius: new Range({
+        name: 'radius',
+        value: 200,
+        min: 40,
+        max: 200,
       }),
     },
   })
@@ -34,18 +40,29 @@ export default function (p) {
     const canvas = p.createCanvas(w, h)
 
     p.colorMode(p.RGB, 255, 255, 255, 1)
-    p.noStroke()
 
     return {
       canvas,
     }
   }
 
+  const center = p.createVector(w / 2, h / 2)
+
   function draw() {
-    const { diameter } = controlPanel.values()
+    const { count, radius } = controlPanel.values()
     p.background(255)
-    p.fill(chroma('rebeccapurple').rgba())
-    p.circle(w / 2, h / 2, diameter)
+    p.noFill()
+    p.stroke(chroma('red').rgba())
+
+    const angleStep = p.TWO_PI / count
+
+    for (let i = 0; i < count; i++) {
+      const startAngle = p.PI * 1.5
+      const angle = startAngle + i * angleStep
+      const x = center.x + radius * p.cos(angle)
+      const y = center.x + radius * p.sin(angle)
+      p.circle(x, y, 10)
+    }
   }
 
   return {

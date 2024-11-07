@@ -54,7 +54,13 @@ export default class Lines {
     }
   }
 
-  tapered(start, end, ...rest) {
+  tapered(a, b, c, d, ...theRest) {
+    // TODO: put me in every fn to support vector vs positionals
+    const [start, end, ...rest] =
+      typeof a === 'number'
+        ? [this.p.createVector(a, b), this.p.createVector(c, d), ...theRest]
+        : [a, b, ...[c, d].concat(theRest)]
+
     const thicknesses = Array.isArray(rest[0]) ? rest[0] : rest
     const steps = 100
     const segmentLength = steps / (thicknesses.length - 1)

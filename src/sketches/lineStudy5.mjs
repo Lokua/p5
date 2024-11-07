@@ -16,6 +16,7 @@ export default function lines(p) {
   }
 
   const controlPanel = new ControlPanel({
+    p,
     id: metadata.name,
     controls: {
       nLines: new Range({

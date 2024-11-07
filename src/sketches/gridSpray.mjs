@@ -26,15 +26,18 @@ export default function (p) {
     controls: {
       intensity: new Range({
         name: 'intensity',
-        value: 10,
+        value: 50,
         min: 10,
         max: 100,
       }),
       maxSegmentLength: new Range({
         name: 'maxSegmentLength',
-        value: 4,
+        value: 5,
         min: 1,
         max: 40,
+      }),
+      anomaly: new Range({
+        name: 'anomaly',
       }),
       splash: new Button({
         name: 'splash',
@@ -129,9 +132,20 @@ export default function (p) {
 
   function updateAndDrawPoint(point, segmentLength) {
     if (point.segmentRemaining <= 0) {
-      const index = Math.floor(random() * 4)
-      point.velocity = directions[index].copy()
-      point.segmentRemaining = segmentLength
+      const anomaly = controlPanel.get('anomaly')
+      const isAnomaly = p.random(100) < anomaly
+
+      if (isAnomaly && point.previousDirection) {
+        point.velocity = point.previousDirection.copy()
+        const multiplier = 3
+        point.segmentRemaining = segmentLength * multiplier
+      } else {
+        const index = Math.floor(random() * 4)
+        point.velocity = directions[index].copy()
+        point.segmentRemaining = segmentLength
+      }
+
+      point.previousDirection = point.velocity.copy()
     }
 
     point.previous.set(point.position)

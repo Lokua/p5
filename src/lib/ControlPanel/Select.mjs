@@ -40,5 +40,6 @@ export default class Select extends Control {
   setValue(value) {
     this.value = value
     document.getElementById(this.id).value = value
+    this.experimental__runHandlers()
   }
 }

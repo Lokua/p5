@@ -44,6 +44,45 @@ const createChromaPalettes = (overrides = {}) => {
   })
 }
 
+const createFilter = (filterOverrides = {}, filterParamOverrides = {}) => {
+  // ??? Is it possible to hook into events to disable filterParam?
+
+  const filter = new Select({
+    name: 'filter',
+    value: 'none',
+    hasLabelValue: false,
+    options: [
+      'none',
+      'INVERT',
+      'GRAY',
+      'THRESHOLD',
+      'OPAQUE',
+      'POSTERIZE',
+      'BLUR',
+      'ERODE',
+      'DILATE',
+    ],
+    ...filterOverrides,
+  })
+
+  const filterParam = new Range({
+    name: 'filterParam',
+    ...filterParamOverrides,
+  })
+
+  // not quite workin; control class support needed
+  filter.experimental__onChange((value) => {
+    filterParam.disabled = ['none', 'THRESHOLD', 'POSTERIZE', 'BLUR'].includes(
+      value,
+    )
+  })
+
+  return {
+    filter,
+    filterParam,
+  }
+}
+
 export default ControlPanel
 export {
   Button,
@@ -53,4 +92,5 @@ export {
   Select,
   createBlendMode,
   createChromaPalettes,
+  createFilter,
 }

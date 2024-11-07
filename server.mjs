@@ -34,13 +34,17 @@ app.get('/', (req, res) => {
 })
 
 app.get('/sketches', async (req, res) => {
-  res.send(await fs.readdir('./src/sketches'))
+  res.send(
+    (await fs.readdir('./src/sketches')).filter((file) =>
+      file.endsWith('.mjs'),
+    ),
+  )
 })
 
 app.post('/upload-frames', upload.none(), async (req, res) => {
   try {
     const { name, frameRate } = req.body
-    // Collect only the frames from the request body
+
     const frames = Object.keys(req.body)
       .filter((key) => key.startsWith('frame-'))
       .map((key) => req.body[key])
@@ -52,10 +56,8 @@ app.post('/upload-frames', upload.none(), async (req, res) => {
     const timestamp = prettyDate(new Date())
     const dirPath = `${os.homedir()}/Movies/p5/${name}-${timestamp}`
 
-    // Create a directory for the frames
     await fs.mkdir(dirPath, { recursive: true })
 
-    // Zero-padding logic
     const totalFrames = frames.length
     const padding = String(totalFrames).length // Calculate padding length based on total frames
 
@@ -65,8 +67,6 @@ app.post('/upload-frames', upload.none(), async (req, res) => {
     })
 
     log('writing files')
-
-    // Save each frame with zero-padded index
     await Promise.all(
       frames.map(async (frameDataUrl, index) => {
         const base64Data = frameDataUrl.replace(/^data:image\/png;base64,/, '')
@@ -75,10 +75,9 @@ app.post('/upload-frames', upload.none(), async (req, res) => {
         await fs.writeFile(filePath, base64Data, 'base64')
       }),
     )
-
     log('Files written')
-    log('Converting to mp4')
 
+    log('Converting to mp4')
     await convertImagesToMP4({
       imagesPath: dirPath,
       totalFrames,

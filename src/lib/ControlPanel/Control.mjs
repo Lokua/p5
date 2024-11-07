@@ -60,4 +60,15 @@ export default class Control {
     element.querySelector('span').textContent = value
     element.querySelector('input').value = value
   }
+
+  experimental__onChange(fn) {
+    this.onChangeHandlers = this.onChangeHandlers || []
+    this.onChangeHandlers.push(fn)
+  }
+
+  experimental__runHandlers() {
+    this.onChangeHandlers?.forEach((handler) => {
+      handler(this.value)
+    })
+  }
 }

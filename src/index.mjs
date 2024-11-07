@@ -68,6 +68,7 @@ function setupEventListeners() {
   })
   $('#reset-button').addEventListener('click', resetSketch)
   $('#midi-start').addEventListener('click', sendExternalStart)
+  $('#clear-storage').addEventListener('click', clearStorage)
   document.body.addEventListener('keyup', onKeyUp)
 }
 
@@ -140,6 +141,12 @@ function resetSketch() {
   if (p) {
     p.frameCount = 0
   }
+}
+
+function clearStorage() {
+  const path = `@lokua/p5/controlPanel/${sketchManager.currentSketchName}`
+  localStorage.removeItem(path)
+  window.location.reload()
 }
 
 function onClickRecord() {
