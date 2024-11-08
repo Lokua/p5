@@ -5,6 +5,7 @@ import SketchManager from './SketchManager.mjs'
 
 // experimental; requires redraw, not ideal
 const INCREASE_DENSITY_ON_SAVE = false
+const LOAD_DEFAULT_SKETCH_ON_FAIL = false
 
 const defaultSketch = 'ztudy__circleOfCircles'
 const themes = ['theme-white', 'theme-light', 'theme-dark', 'theme-black']
@@ -78,9 +79,11 @@ async function loadSketch(name) {
     localStorage.setItem('@lokua/p5/lastSketch', name)
   } catch (error) {
     console.error(error)
-    logInfo('Falling back to default sketch', defaultSketch)
-    await sketchManager.loadSketch(defaultSketch)
-    localStorage.setItem('@lokua/p5/lastSketch', defaultSketch)
+    if (LOAD_DEFAULT_SKETCH_ON_FAIL) {
+      logInfo('Falling back to default sketch', defaultSketch)
+      await sketchManager.loadSketch(defaultSketch)
+      localStorage.setItem('@lokua/p5/lastSketch', defaultSketch)
+    }
   }
 }
 

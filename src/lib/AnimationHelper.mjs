@@ -281,6 +281,35 @@ export default class AnimationHelper {
     return keyframes[currentSegmentIndex]
   }
 
+  /**
+   * Returns a function that executes 'fn' every 'every' beats and returns its result.
+   * The result is cached and returned on subsequent calls until the next trigger.
+   *
+   * @param {function} fn - The function to execute every 'every' beats.
+   * @param {number} every - The interval in beats at which to execute the function.
+   * @returns {function} - A function that when called, returns the result of 'fn' executed at the correct interval.
+   */
+  triggerEvery(fn, every) {
+    if (this.disabled) {
+      return fn
+    }
+
+    let lastTriggerCount = -1
+    let lastValue = undefined
+
+    return () => {
+      const totalBeatsElapsed = this.getTotalBeatsElapsed()
+      const timesTriggered = Math.floor(totalBeatsElapsed / every)
+
+      if (timesTriggered !== lastTriggerCount) {
+        lastTriggerCount = timesTriggered
+        lastValue = fn()
+      }
+
+      return lastValue
+    }
+  }
+
   // make call sites verbose since we only use keyframes and duration 99% of time
   anim8(keyframes, duration, every, delay, easing) {
     return this.animate({

@@ -13,6 +13,14 @@ export default function (p) {
   const nPoints = 10000
   const points = []
 
+  let patternIndex = 0
+  const patterns = [
+    ['tan', 'tan'],
+    ['tan', 'sin'],
+    ['sin', 'tan'],
+    ['tan', 'cos'],
+  ]
+
   const controlPanel = new ControlPanel({
     p,
     id: metadata.name,
@@ -75,29 +83,29 @@ export default function (p) {
       noiseScale: ns,
       velocity: vel,
       particleAlpha,
-      pattern,
     } = controlPanel.values()
     p.background(0, 5)
     p.stroke(255, particleAlpha)
     p.strokeWeight(1)
 
-    const [fnA, fnB] = pattern.split(',')
+    const [fnA, fnB] = patterns[patternIndex]
 
     for (let i = 0; i < nPoints; i++) {
       const point = points[i]
       p.point(point.x, point.y)
       const n = p[fnA](point.x * ns) + p[fnB](point.y * ns)
       const a = p.TWO_PI * 6 * n
-      point.x += p.cos(a) * vel
-      point.y += p.sin(a) * vel
+      point.x += Math.cos(a) * vel
+      point.y += Math.sin(a) * vel
       if (!onScreen(point)) {
         point.x = p.random(w)
         point.y = p.random(h)
       }
     }
 
-    if (p.frameCount % 200 === 0) {
+    if (p.frameCount % 300 === 0) {
       p.noiseSeed(p.millis())
+      patternIndex = (patternIndex + 1) % patterns.length
     }
   }
 

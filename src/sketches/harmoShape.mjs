@@ -29,7 +29,8 @@ export default function (p) {
     },
     hourglass({ index, halfLineCount, scale, a = 2 }) {
       const normalizedIndex = Math.abs(index) / halfLineCount
-      return (1 - normalizedIndex * a) * w * scale
+      const offset = (1 - normalizedIndex * a) * w * scale
+      return Math.max(0, offset)
     },
     sineWave({ index, halfLineCount, scale, a = 1 }) {
       const normalizedIndex = index / halfLineCount
@@ -48,13 +49,13 @@ export default function (p) {
     controls: {
       lineCount: new Range({
         name: 'lineCount',
-        value: 5,
+        value: 37,
         min: 1,
         max: 50,
       }),
       rectHeight: new Range({
         name: 'rectHeight',
-        value: 2,
+        value: 8,
         min: 1,
         max: 100,
         step: 1,
@@ -68,7 +69,8 @@ export default function (p) {
       }),
       backgroundAlpha: new Range({
         name: 'backgroundAlpha',
-        value: 100,
+        ...Range.float,
+        value: 0.04,
       }),
       interpolateShapes: new Checkbox({
         name: 'interpolateShapes',
@@ -162,15 +164,6 @@ export default function (p) {
       rectRadius += ah.getPingPongLoopProgress(1) * Math.abs(i) * 2
       rectRadius = rectRadius % 20
 
-      // center
-      p.rect(
-        w / 2 - rectWidth / 2,
-        centerY + yOffset - rectHeight / 2,
-        rectWidth,
-        rectHeight,
-        rectRadius,
-      )
-
       const edgeWidth = rectWidth * 2
       p.fill(
         colorScale(
@@ -185,7 +178,7 @@ export default function (p) {
       // left
       p.rect(
         0,
-        centerY + yOffset - rectHeight / 2,
+        centerY + yOffset - rectHeight / 8,
         edgeWidth,
         rectHeight / 4,
         rectRadius,
@@ -193,9 +186,17 @@ export default function (p) {
       // right
       p.rect(
         w - edgeWidth,
-        centerY + yOffset - rectHeight / 2,
+        centerY + yOffset - rectHeight / 8,
         edgeWidth,
         rectHeight / 4,
+        rectRadius,
+      )
+      // center
+      p.rect(
+        w / 2 - rectWidth / 2,
+        centerY + yOffset - rectHeight / 2,
+        rectWidth,
+        rectHeight,
         rectRadius,
       )
     }

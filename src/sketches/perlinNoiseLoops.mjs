@@ -13,7 +13,7 @@ export default function (p) {
   let phase = 0
 
   const metadata = {
-    name: 'perlin3',
+    name: 'perlinNoiseLoops',
   }
 
   const controlPanel = new ControlPanel({
@@ -23,13 +23,13 @@ export default function (p) {
       blendMode: createBlendMode(),
       height: new Range({
         name: 'height',
-        value: 1,
+        value: 25,
         min: 1,
         max: 100,
       }),
       size: new Range({
         name: 'size',
-        value: 1,
+        value: 57,
         min: 1,
         max: 1000,
       }),
@@ -41,7 +41,7 @@ export default function (p) {
       }),
       thinness: new Range({
         name: 'thinness',
-        value: 1,
+        value: 2,
         min: 0.1,
         max: 100,
         step: 0.1,
@@ -54,7 +54,7 @@ export default function (p) {
       }),
       noiseFalloff: new Range({
         name: 'noiseFalloff',
-        value: 0,
+        value: 0.5,
         min: 0,
         max: 10,
         step: 0.01,

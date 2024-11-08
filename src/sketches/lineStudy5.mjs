@@ -1,12 +1,9 @@
-/* eslint-disable no-unused-vars */
 // https://www.youtube.com/watch?v=lNKFhaOQJys&t=259s
 
 import ControlPanel, {
   Range,
-  Checkbox,
   createBlendMode,
 } from '../lib/ControlPanel/index.mjs'
-import { arrayModLookup, mapTimes } from '../util.mjs'
 
 export default function lines(p) {
   const [w, h] = [500, 500]
@@ -21,25 +18,25 @@ export default function lines(p) {
     controls: {
       nLines: new Range({
         name: 'nLines',
-        value: 1,
+        value: 40,
         min: 1,
         max: 100,
       }),
       range: new Range({
         name: 'range',
-        value: 2,
+        value: 5,
         min: 0,
         max: 100,
       }),
       segmentLength: new Range({
         name: 'segmentLength',
-        value: 10,
+        value: 1,
         min: 1,
         max: 100,
       }),
       strokeWeight: new Range({
         name: 'strokeWeight',
-        value: 1,
+        value: 2,
         min: 1,
         max: 20,
       }),
@@ -87,11 +84,11 @@ export default function lines(p) {
     let prevY = lineY
     const r = p.map(lineY, 0, h, 0, range)
 
-    for (
-      let x = lineX + segmentLength;
-      x < lineX + length;
-      x += segmentLength
-    ) {
+    const nSegments = Math.floor(length / segmentLength)
+    const adjustedSegmentLength = length / nSegments
+
+    for (let i = 1; i <= nSegments; i++) {
+      const x = lineX + i * adjustedSegmentLength
       const y = lineY + p.random(-r, r)
       p.line(prevX, prevY, x, y)
       prevX = x

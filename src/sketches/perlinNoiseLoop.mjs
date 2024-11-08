@@ -12,7 +12,7 @@ export default function (p) {
   const [w, h] = [500, 500]
 
   const metadata = {
-    name: 'perlin2',
+    name: 'perlinNoiseLoop',
   }
 
   const controlPanel = new ControlPanel({
@@ -22,39 +22,39 @@ export default function (p) {
       blendMode: createBlendMode(),
       height: new Range({
         name: 'height',
-        value: 1,
+        value: 46,
         min: 1,
         max: 100,
       }),
       size: new Range({
         name: 'size',
-        value: 1,
+        value: 108,
         min: 1,
         max: 1000,
       }),
       space: new Range({
         name: 'space',
-        value: 1,
+        value: 4,
         min: 1,
         max: 100,
       }),
       thinness: new Range({
         name: 'thinness',
-        value: 1,
+        value: 1.5,
         min: 0.1,
         max: 100,
         step: 0.1,
       }),
       noiseFalloff: new Range({
         name: 'noiseFalloff',
-        value: 0,
+        value: 3.08,
         min: 0,
         max: 10,
         step: 0.01,
       }),
       flip: new Checkbox({
         name: 'flip',
-        value: true,
+        value: false,
       }),
     },
   })
