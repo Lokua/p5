@@ -13,27 +13,8 @@ export default function (p) {
     // if recording video but perfect for images
     pixelDensity: 6,
   }
-
+  const controlPanel = createControlPanel(p, metadata)
   const [w, h] = [500, 500]
-
-  const controlPanel = new ControlPanel({
-    p,
-    id: metadata.name,
-    controls: {
-      count: new Range({
-        name: 'count',
-        value: 100,
-        min: 1,
-        max: 100,
-      }),
-      radius: new Range({
-        name: 'radius',
-        value: 200,
-        min: 40,
-        max: 200,
-      }),
-    },
-  })
 
   function setup() {
     controlPanel.init()
@@ -73,4 +54,25 @@ export default function (p) {
     },
     metadata,
   }
+}
+
+function createControlPanel(p, metadata) {
+  return new ControlPanel({
+    p,
+    id: metadata.name,
+    controls: {
+      count: new Range({
+        name: 'count',
+        value: 100,
+        min: 1,
+        max: 100,
+      }),
+      radius: new Range({
+        name: 'radius',
+        value: 200,
+        min: 40,
+        max: 200,
+      }),
+    },
+  })
 }

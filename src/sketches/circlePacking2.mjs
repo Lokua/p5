@@ -66,14 +66,16 @@ export default function (p) {
     p.colorMode(p.RGB, 255, 255, 255, 1)
     p.noLoop()
 
+    console.group('Setup')
     console.time('Execution time')
     console.log('Creating circles')
     while (!done) {
-      done = drawCircles()
+      done = generateCircles()
     }
     console.log({ circles })
     console.log('Done')
     console.timeEnd('Execution time')
+    console.groupEnd('Setup')
 
     return {
       canvas,
@@ -88,7 +90,7 @@ export default function (p) {
     })
   }
 
-  function drawCircles() {
+  function generateCircles() {
     const { colorScheme, mode, minRadius, total } = controlPanel.values()
 
     let count = 0
@@ -150,7 +152,6 @@ export default function (p) {
           circle.growing = false
         }
       }
-      // circle.show()
       circle.grow()
     }
 

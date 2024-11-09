@@ -47,3 +47,5 @@ folder are available to load in the UI
 - https://openprocessing.org/
 - https://genekogan.com/code/p5js-transformations/
 - https://julienleonard.com/tutorials.html
+- https://palmdrop.github.io/
+- https://iquilezles.org/articles/warp/

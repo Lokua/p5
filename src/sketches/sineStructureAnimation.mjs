@@ -2,17 +2,23 @@
 
 import ControlPanel, {
   Range,
-  Checkbox,
   createBlendMode,
 } from '../lib/ControlPanel/index.mjs'
+import AnimationHelper from '../lib/AnimationHelper.mjs'
 import Counter from '../lib/Counter.mjs'
 
 export default function (p) {
-  const [w, h] = [500, 500]
-
   const metadata = {
     name: 'sineStructureAnimation',
+    frameRate: 30,
   }
+  const [w, h] = [500, 500]
+
+  const ah = new AnimationHelper({
+    p,
+    frameRate: metadata.frameRate,
+    bpm: 134,
+  })
 
   const sizeCounter = new Counter({
     initialValue: 40,
@@ -109,10 +115,6 @@ export default function (p) {
         max: 1,
         step: 0.001,
       }),
-      tanSinZFlip: new Checkbox({
-        name: 'tanSinZFlip',
-        value: false,
-      }),
     },
   })
 
@@ -137,13 +139,11 @@ export default function (p) {
       zOffset,
       radOffset,
       rotateX,
-      rotate,
       speed,
       hue,
       saturation,
       lightness,
       alpha,
-      tanSinZFlip,
     } = controlPanel.values()
     p.blendMode(p[blendMode])
     p.noiseDetail(1, noiseFalloff)
@@ -156,15 +156,19 @@ export default function (p) {
     p.push()
     p.rotateX(p.frameCount * rotateX)
     for (let i = 0; i < nCircles; i++) {
-      p.rotate(p.frameCount / rotate)
+      p.rotate(
+        ah.animate({
+          keyframes: [100, 300, 100],
+          duration: 128,
+        }),
+      )
       p.beginShape()
       for (let j = 0; j < 360; j += size) {
         const rad = i * radOffset
         const x = rad * p.cos(j)
         const y = rad * p.sin(j)
         const z =
-          p[tanSinZFlip ? 'tan' : 'sin'](p.frameCount * speed + i * zOffset) *
-          50
+          p.sin(ah.getPingPongLoopProgress(16) * speed + i * zOffset) * 50
         p.vertex(x, y, z)
       }
       p.endShape(p.CLOSE)

@@ -56,7 +56,7 @@ export default function (p) {
       color: colorScale(0).rgba(),
       animation: ah.animate({
         keyframes: [0, 1],
-        duration: 1.5,
+        duration: 1,
       }),
     })
     drawCircle({
@@ -66,8 +66,7 @@ export default function (p) {
       color: colorScale(0.25).rgba(),
       animation: ah.animate({
         keyframes: [0, 1],
-        duration: 1.5,
-        every: 3,
+        duration: 6,
       }),
     })
 
@@ -77,8 +76,10 @@ export default function (p) {
       diameter,
       color: colorScale(0.5).rgba(),
       animation: ah.animate({
-        keyframes: [0, 1],
-        easing: 'easeIn',
+        keyframes: [0, 2, 1],
+        duration: 3,
+        every: 3,
+        delay: 0.75,
       }),
     })
 
@@ -89,8 +90,7 @@ export default function (p) {
       color: colorScale(0.75).rgba(),
       animation: ah.animate({
         keyframes: [0, 1],
-        duration: 2.5,
-        every: 5,
+        duration: 12,
       }),
     })
     drawCircle({
@@ -100,7 +100,8 @@ export default function (p) {
       color: colorScale(1).rgba(),
       animation: ah.animate({
         keyframes: [0, 1],
-        duration: 1.25,
+        duration: 1,
+        delay: 0.5,
       }),
     })
   }

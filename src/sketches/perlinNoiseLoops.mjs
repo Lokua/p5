@@ -6,17 +6,97 @@ import ControlPanel, {
   Checkbox,
   createBlendMode,
 } from '../lib/ControlPanel/index.mjs'
+import AnimationHelper from '../lib/AnimationHelper.mjs'
+import { Simplex } from '../lib/Noise.mjs'
 import { arrayModLookup, mapTimes } from '../util.mjs'
 
+/**
+ * @param {import('p5')} p
+ */
 export default function (p) {
-  const [w, h] = [500, 500]
-  let phase = 0
-
   const metadata = {
     name: 'perlinNoiseLoops',
+    frameRate: 30,
+  }
+  const [w, h] = [500, 500]
+  const controlPanel = createControlPanel(p, metadata)
+  const simplex = new Simplex('2d', 'seed')
+  const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 134 })
+  let phase = 0
+
+  function setup() {
+    controlPanel.init()
+    const canvas = p.createCanvas(w, h)
+
+    p.colorMode(p.HSB, 1)
+    p.angleMode(p.DEGREES)
+    p.noStroke()
+
+    return {
+      canvas,
+    }
   }
 
-  const controlPanel = new ControlPanel({
+  function draw() {
+    const {
+      blendMode,
+      height,
+      size,
+      space,
+      flip,
+      thinness,
+      nCircles,
+      noiseFalloff,
+    } = controlPanel.values()
+    p.blendMode(p[blendMode])
+    p.noiseDetail(2, noiseFalloff)
+    p.background(0, 0.2)
+    p.fill('beige')
+
+    for (let o = 1; o < nCircles + 1; o++) {
+      p.push()
+      p.translate(w / 2, h / 2)
+      for (let ii = 0; ii < 360; ii += space) {
+        const i = (ii - o * 30) % 360
+        const xOff = p.map(p.cos(i), -1, 1, 0, 3)
+        const yOff = p.map(p.sin(i), -1, 1, 0, 3)
+        const n = simplex.noise(
+          xOff + phase * (noiseFalloff / o),
+          yOff + phase * (noiseFalloff / o),
+        )
+        const hh = p.map(n, 0, 1, flip ? -(height * o) : 0, height * o)
+        p.rotate(space)
+        p.ellipse(
+          o * size,
+          0,
+          hh +
+            n *
+              ah.animate({
+                keyframes: [20, 40, 20],
+                duration: 4,
+                delay: o * 0.5,
+              }),
+          thinness,
+        )
+      }
+      p.pop()
+    }
+
+    phase += 0.015
+  }
+
+  return {
+    setup,
+    draw,
+    destroy() {
+      controlPanel.destroy()
+    },
+    metadata,
+  }
+}
+
+function createControlPanel(p, metadata) {
+  return new ControlPanel({
     p,
     id: metadata.name,
     controls: {
@@ -65,60 +145,4 @@ export default function (p) {
       }),
     },
   })
-
-  function setup() {
-    controlPanel.init()
-    const canvas = p.createCanvas(w, h)
-
-    p.colorMode(p.HSB, 1)
-    p.angleMode(p.DEGREES)
-    p.noStroke()
-
-    return {
-      canvas,
-    }
-  }
-
-  function draw() {
-    const {
-      blendMode,
-      height,
-      size,
-      space,
-      flip,
-      thinness,
-      nCircles,
-      noiseFalloff,
-    } = controlPanel.values()
-    p.blendMode(p[blendMode])
-    p.noiseDetail(2, noiseFalloff)
-    p.background(0)
-    p.fill(1, 0, 1, 0.8)
-
-    for (let o = 1; o < nCircles + 1; o++) {
-      p.push()
-      p.translate(w / 2, h / 2)
-      for (let ii = 0; ii < 360; ii += space) {
-        const i = (ii - o * 30) % 360
-        const xOff = p.map(p.cos(i), -1, 1, 0, 3)
-        const yOff = p.map(p.sin(i), -1, 1, 0, 3)
-        const n = p.noise(xOff + phase, yOff + phase)
-        const hh = p.map(n, 0, 1, flip ? -(height * o) : 0, height * o)
-        p.rotate(space)
-        p.rect(o * size, 0, hh + n * 20, thinness)
-      }
-      p.pop()
-    }
-
-    phase += 0.01
-  }
-
-  return {
-    setup,
-    draw,
-    destroy() {
-      controlPanel.destroy()
-    },
-    metadata,
-  }
 }

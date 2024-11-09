@@ -35,91 +35,7 @@ export default function (p) {
 
   const lines = new Lines(p)
 
-  const controlPanel = new ControlPanel({
-    p,
-    id: metadata.name,
-    controls: {
-      outerDelayDuration: new Range({
-        name: 'outerDelayDuration',
-        value: 6,
-        min: 2,
-        max: 12,
-      }),
-      innerDelayDuration: new Range({
-        name: 'innerDelayDuration',
-        value: 3,
-        min: 1,
-        max: 12,
-      }),
-      multiplier: new Range({
-        name: 'multiplier',
-        value: 2,
-        min: 2,
-        max: 24,
-        step: 2,
-      }),
-      amplitude: new Range({
-        name: 'amplitude',
-        value: 64,
-        min: 1,
-        max: 100,
-      }),
-      diameter: new Range({
-        name: 'diameter',
-        value: 6,
-        min: 2,
-        max: 20,
-      }),
-      pairConnectors: new Checklist({
-        name: 'pairConnectors',
-        options: {
-          even: true,
-          odd: true,
-        },
-      }),
-      shadows: new Checklist({
-        name: 'shadows',
-        options: {
-          evenA: false,
-          evenB: false,
-          oddA: false,
-          oddB: false,
-        },
-      }),
-      fill: new Checkbox({
-        name: 'fill',
-        value: false,
-      }),
-      rotate: new Checkbox({
-        name: 'rotate',
-        value: false,
-      }),
-      darkBg: new Checkbox({
-        name: 'darkBg',
-        value: false,
-      }),
-      inner: new Checkbox({
-        name: 'inner',
-        value: true,
-      }),
-      outer: new Checkbox({
-        name: 'outer',
-        value: true,
-      }),
-      animated: new Checkbox({
-        name: 'animated',
-        value: true,
-      }),
-      bordered: new Checkbox({
-        name: 'bordered',
-        value: true,
-      }),
-      taperedLines: new Checkbox({
-        name: 'taperedLines',
-        value: true,
-      }),
-    },
-  })
+  const controlPanel = createControlPanel(p, metadata)
 
   function setup() {
     controlPanel.init()
@@ -434,4 +350,92 @@ export default function (p) {
     },
     metadata,
   }
+}
+
+function createControlPanel(p, metadata) {
+  return new ControlPanel({
+    p,
+    id: metadata.name,
+    controls: {
+      outerDelayDuration: new Range({
+        name: 'outerDelayDuration',
+        value: 6,
+        min: 2,
+        max: 12,
+      }),
+      innerDelayDuration: new Range({
+        name: 'innerDelayDuration',
+        value: 3,
+        min: 1,
+        max: 12,
+      }),
+      multiplier: new Range({
+        name: 'multiplier',
+        value: 2,
+        min: 2,
+        max: 24,
+        step: 2,
+      }),
+      amplitude: new Range({
+        name: 'amplitude',
+        value: 64,
+        min: 1,
+        max: 100,
+      }),
+      diameter: new Range({
+        name: 'diameter',
+        value: 6,
+        min: 2,
+        max: 20,
+      }),
+      pairConnectors: new Checklist({
+        name: 'pairConnectors',
+        options: {
+          even: true,
+          odd: true,
+        },
+      }),
+      shadows: new Checklist({
+        name: 'shadows',
+        options: {
+          evenA: false,
+          evenB: false,
+          oddA: false,
+          oddB: false,
+        },
+      }),
+      fill: new Checkbox({
+        name: 'fill',
+        value: false,
+      }),
+      rotate: new Checkbox({
+        name: 'rotate',
+        value: false,
+      }),
+      darkBg: new Checkbox({
+        name: 'darkBg',
+        value: false,
+      }),
+      inner: new Checkbox({
+        name: 'inner',
+        value: true,
+      }),
+      outer: new Checkbox({
+        name: 'outer',
+        value: true,
+      }),
+      animated: new Checkbox({
+        name: 'animated',
+        value: true,
+      }),
+      bordered: new Checkbox({
+        name: 'bordered',
+        value: true,
+      }),
+      taperedLines: new Checkbox({
+        name: 'taperedLines',
+        value: true,
+      }),
+    },
+  })
 }
