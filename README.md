@@ -46,3 +46,4 @@ folder are available to load in the UI
 - https://www.tylerxhobbs.com/words/a-guide-to-simulating-watercolor-paint-with-generative-art
 - https://openprocessing.org/
 - https://genekogan.com/code/p5js-transformations/
+- https://julienleonard.com/tutorials.html

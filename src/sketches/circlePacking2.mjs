@@ -7,7 +7,7 @@ import ControlPanel, { Range, Select } from '../lib/ControlPanel/index.mjs'
  */
 export default function (p) {
   const metadata = {
-    name: 'circlePacking',
+    name: 'circlePacking2',
     frameRate: 30,
     pixelDensity: 6,
   }
@@ -32,7 +32,7 @@ export default function (p) {
     controls: {
       colorScheme: new Select({
         name: 'colorScheme',
-        value: 'rgb',
+        value: 'cmk',
         options: Object.keys(schemes),
       }),
       mode: new Select({
@@ -43,56 +43,70 @@ export default function (p) {
       minRadius: new Range({
         name: 'minRadius',
         value: 2,
-        min: 2,
+        min: 1,
         max: 100,
       }),
       total: new Range({
         name: 'total',
         value: 5,
         min: 1,
-        max: 50,
+        max: 20,
       }),
     },
   })
+
+  const circles = []
+  const buffer = 1
+  let done = false
 
   function setup() {
     controlPanel.init()
     const canvas = p.createCanvas(w, h)
 
     p.colorMode(p.RGB, 255, 255, 255, 1)
+    p.noLoop()
+
+    console.time('Execution time')
+    console.log('Creating circles')
+    while (!done) {
+      done = drawCircles()
+    }
+    console.log({ circles })
+    console.log('Done')
+    console.timeEnd('Execution time')
 
     return {
       canvas,
     }
   }
 
-  let done = false
-
   function draw() {
-    if (!done) {
-      done = drawCircles()
-    } else {
-      console.log('Done.')
-      p.noLoop()
-    }
-  }
+    p.background(255)
 
-  const buffer = 1
-  const circles = []
+    circles.forEach((circle) => {
+      circle.show()
+    })
+  }
 
   function drawCircles() {
     const { colorScheme, mode, minRadius, total } = controlPanel.values()
-    p.background(255)
 
     let count = 0
-    const maxFailedAttempts = 1000
+    const maxFailedAttempts = 10_000
     let failedAttempts = 0
     let finished = false
+    const pad = 20
+    const box = {
+      x: pad,
+      y: pad,
+      w: w - pad * 2,
+      h: h - pad * 2,
+    }
 
     while (count < total) {
       let valid = true
-      const x = p.random(0, w)
-      const y = p.random(0, h)
+      const x = p.random(box.x, box.x + box.w)
+      const y = p.random(box.y, box.y + box.h)
 
       for (let i = 0; i < circles.length; i++) {
         const circle = circles[i]
@@ -104,7 +118,8 @@ export default function (p) {
       }
 
       if (valid) {
-        const circle = new Circle(x, y, schemes[colorScheme](), mode, minRadius)
+        const color = schemes[colorScheme]()
+        const circle = new Circle(x, y, color, mode, minRadius, box)
         circles.push(circle)
         count++
       } else {
@@ -135,7 +150,7 @@ export default function (p) {
           circle.growing = false
         }
       }
-      circle.show()
+      // circle.show()
       circle.grow()
     }
 
@@ -143,7 +158,7 @@ export default function (p) {
   }
 
   class Circle {
-    constructor(x, y, color, mode, minRadius) {
+    constructor(x, y, color, mode, minRadius, box) {
       this.x = x
       this.y = y
       this.r = minRadius
@@ -151,6 +166,7 @@ export default function (p) {
       this.color = color
       this.strokeWeight = 1
       this.mode = mode
+      this.box = box
     }
     grow() {
       if (this.growing) {
@@ -169,11 +185,12 @@ export default function (p) {
       p.circle(this.x, this.y, this.r * 2)
     }
     isWithinBoundaries() {
+      const { x, y, w, h } = this.box
       return (
-        this.x - this.r > 0 &&
-        this.x + this.r < w &&
-        this.y - this.r > 0 &&
-        this.y + this.r < h
+        this.x - this.r > x &&
+        this.x + this.r < x + w &&
+        this.y - this.r > y &&
+        this.y + this.r < y + h
       )
     }
   }
