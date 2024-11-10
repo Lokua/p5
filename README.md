@@ -4,9 +4,9 @@ Exploratory sketches made with p5.js
 
 Stuff like this:
 
-<img src="images/1000x/static-hhqh.png" alt="images/1000x/grid4-u2m4.png" width="400">
-<img src="images/1000x/flexor2-slo0.png" alt="images/1000x/grid4-u2m4.png" width="400">
-<img src="images/1000x/tstrip-wh953.png" alt="images/1000x/grid4-u2m4.png" width="400">
+<img src="images/1000x/radialPerlin2-un8i8.png" alt="images/1000x/radialPerlin2-un8i8.png" width="400">
+<img src="images/1000x/flexor2-sui98.png" alt="images/1000x/flexor2-sui98.png" width="400">
+<img src="images/1000x/gridSpray-8959g.png" alt="images/1000x/gridSpray-8959g.png" width="400">
 
 You can see more here on github by looking at the auto generated
 [markdown index](index.md)

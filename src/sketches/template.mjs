@@ -1,5 +1,5 @@
 import chroma from 'chroma-js'
-import createControlPanel from '../lib/ControlPanel/index.mjs'
+import { createControlPanel } from '../lib/ControlPanel/index.mjs'
 
 /**
  * @param {import('p5')} p

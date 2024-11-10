@@ -206,14 +206,14 @@ export const chromaBrewerKeys = [
   'Pastel2',
   'Pastel1',
 ]
-export function renderSwatches(
+export function renderSwatches({
   p,
   w,
   scales,
   numSwatches = 10,
   swatchSize = 20,
   margin = 5,
-) {
+}) {
   const maxSwatchSize = Math.floor(
     (w - margin * (numSwatches - 1)) / numSwatches,
   )

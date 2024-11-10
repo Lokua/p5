@@ -109,7 +109,7 @@ export default function (p) {
     p.image(buffer, 0, 0)
 
     if (showSwatches) {
-      renderSwatches(p, w, [colorScale, eraserColorScale])
+      renderSwatches({ p, w, scales: [colorScale, eraserColorScale] })
     }
   }
 

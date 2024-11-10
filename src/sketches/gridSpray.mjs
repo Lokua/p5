@@ -1,7 +1,7 @@
 import chroma from 'chroma-js'
 import ControlPanel, { Button, Range } from '../lib/ControlPanel/index.mjs'
 import { createPrng } from '../lib/Noise.mjs'
-import { logInfo, randomInt } from '../util.mjs'
+import { logInfo } from '../util.mjs'
 
 /**
  * @param {import('p5')} p
@@ -15,9 +15,8 @@ export default function (p) {
 
   const [w, h] = [500, 500]
   let buffer
+  let spray
   let splashed = false
-
-  const random = createPrng(87625)
 
   const controlPanel = new ControlPanel({
     p,
@@ -39,10 +38,18 @@ export default function (p) {
       anomaly: new Range({
         name: 'anomaly',
       }),
+      seed: new Range({
+        name: 'seed',
+        value: 25,
+        min: 20,
+        max: 30,
+        step: 1,
+      }),
       splash: new Button({
         name: 'splash',
         shortcut: 'q',
         handler() {
+          console.log('what the fuck!?!')
           logInfo('[gridSpray] processing...')
           splashed = true
           p.redraw()
@@ -61,13 +68,22 @@ export default function (p) {
   })
 
   function setup() {
-    controlPanel.init()
     const canvas = p.createCanvas(w, h)
-    buffer = p.createGraphics(w, h)
-    p.colorMode(p.RGB, 255, 255, 255, 1)
-    p.noiseSeed('peach')
-    buffer.colorMode(p.RGB, 255, 255, 255, 1)
-    buffer.strokeCap(p.SQUARE)
+
+    controlPanel.init()
+    const { intensity, maxSegmentLength, anomaly, seed } = controlPanel.values()
+
+    spray = gridSpray({
+      p,
+      w,
+      h,
+      intensity,
+      maxSegmentLength,
+      anomaly,
+      color1: chroma('black').alpha(0.2).rgba(),
+      color2: chroma('white').alpha(0.5).rgba(),
+      seed,
+    })
 
     p.noLoop()
 
@@ -76,6 +92,46 @@ export default function (p) {
     }
   }
 
+  function draw() {
+    if (splashed) {
+      const { intensity, maxSegmentLength, anomaly } = controlPanel.values()
+      p.background(255)
+      buffer = spray({
+        intensity,
+        maxSegmentLength,
+        anomaly,
+      })
+      p.image(buffer, 0, 0, w, h)
+    }
+  }
+
+  return {
+    setup,
+    draw,
+    destroy() {
+      controlPanel.destroy()
+    },
+    metadata,
+  }
+}
+
+export function gridSpray({
+  p,
+  w,
+  h,
+  intensity: intensity_,
+  maxSegmentLength: maxSegmentLength_,
+  anomaly: anomaly_,
+  color1,
+  color2,
+  seed = 36_592,
+}) {
+  const buffer = p.createGraphics(w, h)
+  const random = createPrng(seed)
+  buffer.colorMode(p.RGB, 255, 255, 255, 1)
+  buffer.noiseSeed(seed)
+  buffer.colorMode(p.RGB, 255, 255, 255, 1)
+  buffer.strokeCap(p.SQUARE)
   const center = p.createVector(w / 2, h / 2)
 
   const directions = [
@@ -88,52 +144,58 @@ export default function (p) {
   const pointA = {
     position: center.copy(),
     previous: center.copy(),
-    velocity: directions[randomInt(0, 3)].copy(),
+    velocity: directions[0].copy(),
     segmentRemaining: 0,
     noiseOffset: 0,
-    color: chroma('black').alpha(0.2).rgba(),
+    color: chroma(color1).rgba(),
   }
 
   const pointB = {
     position: center.copy(),
     previous: center.copy(),
-    velocity: directions[randomInt(0, 3)].copy(),
+    velocity: directions[0].copy(),
     segmentRemaining: 0,
     noiseOffset: 0,
-    color: chroma('white').alpha(0.5).rgba(),
+    color: chroma(color2).rgba(),
   }
 
-  function draw() {
-    if (!splashed) {
-      return
-    }
-
-    const { intensity, maxSegmentLength } = controlPanel.values()
-
-    p.background('white')
-    buffer.strokeCap(p.SQUARE)
+  return ({
+    splashes = 1,
+    intensity = intensity_,
+    maxSegmentLength = maxSegmentLength_,
+    anomaly = anomaly_,
+  } = {}) => {
     buffer.noFill()
 
-    const iterations = Math.round(Math.pow(intensity, 3))
-    for (let i = 0; i < iterations; i++) {
-      for (
-        let segmentLength = maxSegmentLength;
-        segmentLength > 1;
-        segmentLength--
-      ) {
-        buffer.strokeWeight(maxSegmentLength - segmentLength)
-        updateAndDrawPoint(pointA, segmentLength)
-        updateAndDrawPoint(pointB, segmentLength)
+    for (let s = 0; s < splashes; s++) {
+      const iterations = Math.round(Math.pow(intensity, 3))
+      for (let i = 0; i < iterations; i++) {
+        for (
+          let segmentLength = maxSegmentLength;
+          segmentLength > 1;
+          segmentLength--
+        ) {
+          buffer.strokeWeight(maxSegmentLength - segmentLength)
+          updateAndDrawPoint({
+            point: pointA,
+            segmentLength,
+            anomaly,
+          })
+          updateAndDrawPoint({
+            point: pointB,
+            segmentLength,
+            anomaly,
+          })
+        }
       }
     }
 
-    p.image(buffer, 0, 0)
+    return buffer
   }
 
-  function updateAndDrawPoint(point, segmentLength) {
+  function updateAndDrawPoint({ point, segmentLength, anomaly }) {
     if (point.segmentRemaining <= 0) {
-      const anomaly = controlPanel.get('anomaly')
-      const isAnomaly = p.random(100) < anomaly
+      const isAnomaly = random() * 100 < anomaly
 
       if (isAnomaly && point.previousDirection) {
         point.velocity = point.previousDirection.copy()
@@ -175,14 +237,5 @@ export default function (p) {
       point.position.y = h
       point.segmentRemaining = 0
     }
-  }
-
-  return {
-    setup,
-    draw,
-    destroy() {
-      controlPanel.destroy()
-    },
-    metadata,
   }
 }

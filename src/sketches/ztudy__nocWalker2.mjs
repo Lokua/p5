@@ -96,7 +96,7 @@ export default function (p) {
     p.image(buffer, 0, 0)
 
     if (showSwatches) {
-      renderSwatches(p, w, [walkerColorScale, eraserColorScale])
+      renderSwatches({ p, w, scales: [walkerColorScale, eraserColorScale] })
     }
   }
 
