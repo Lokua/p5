@@ -48,8 +48,8 @@ export default class File extends Control {
   onClickFile = (e) => {
     const file = e.target.files[0]
     this.setValue(file.name)
-    this.handler?.(file)
     document.getElementById(this.id).textContent = this.value
+    this.handler?.(file)
   }
 
   setValue(value) {

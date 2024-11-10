@@ -84,6 +84,27 @@ const createFilter = (filterOverrides = {}, filterParamOverrides = {}) => {
   }
 }
 
+function createControlPanel({ controls, ...rest }) {
+  const controlClasses = {
+    Button,
+    Checkbox,
+    Checklist,
+    File,
+    Range,
+    Select,
+  }
+  return new ControlPanel({
+    ...rest,
+    controls: controls.reduce(
+      (acc, { type, ...def }) => ({
+        ...acc,
+        [def.name]: new controlClasses[type](def),
+      }),
+      {},
+    ),
+  })
+}
+
 export default ControlPanel
 export {
   Button,
@@ -93,6 +114,7 @@ export {
   Range,
   Select,
   createBlendMode,
+  createControlPanel,
   createChromaPalettes,
   createFilter,
 }

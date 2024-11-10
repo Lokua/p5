@@ -10,6 +10,7 @@ export default class ControlPanel {
     selector = ControlPanel.defaultSelector,
     attemptReload = true,
     autoRedraw = true,
+    onChange = null,
   }) {
     this.p = p
     this.id = id
@@ -20,6 +21,7 @@ export default class ControlPanel {
     this.selector = selector
     this.attemptReload = attemptReload
     this.autoRedraw = autoRedraw
+    this.onChange = onChange
 
     if (this.attemptReload && !this.id) {
       throw new Error('Cannot attemptReload without an id.')
@@ -31,6 +33,9 @@ export default class ControlPanel {
     this.#mapControls((control) => {
       control.bind()
       control.addInputListener(() => {
+        if (this.onChange) {
+          this.onChange()
+        }
         if (this.autoRedraw && !this.p.isLooping()) {
           this.p.redraw()
         }

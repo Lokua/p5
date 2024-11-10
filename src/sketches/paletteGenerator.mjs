@@ -1,10 +1,6 @@
-import ControlPanel, {
-  Button,
-  File,
-  Range,
-} from '../lib/ControlPanel/index.mjs'
+import { createControlPanel } from '../lib/ControlPanel/index.mjs'
 import { generatePalette, sortColorsDarkToLight } from '../lib/colors.mjs'
-import { msToTime } from '../util.mjs'
+import { formatLog, msToTime } from '../util.mjs'
 
 /**
  * @param {import('p5')} p
@@ -18,61 +14,76 @@ export default function (p) {
   const [w, h] = [500, 500]
 
   let image = null
-  let colors = []
+  let colors
   let palette
-  let showPalette = false
+  let imageBuffer
+  let paletteBuffer
+  let needsPaletteRender = false
 
-  const controlPanel = new ControlPanel({
+  const controlPanel = createControlPanel({
     p,
     id: metadata.name,
-    autoRedraw: false,
-    controls: {
-      file: new File({
+    controls: [
+      {
+        type: 'File',
         name: 'file',
         handler(file) {
           const dataUrl = URL.createObjectURL(file)
-          p.loadImage(dataUrl, (loadedImage) => {
+          p.loadImage(dataUrl, (img) => {
             const scaleFactor = Math.min(
-              w / 2 / loadedImage.width,
-              h / 2 / loadedImage.height,
+              w / img.width,
+              (2 * h) / 3 / img.height,
             )
-            loadedImage.resize(
-              loadedImage.width * scaleFactor,
-              loadedImage.height * scaleFactor,
-            )
-            image = loadedImage
-            p.redraw()
+            img.resize(img.width * scaleFactor, img.height * scaleFactor)
+            image = img
           })
         },
-      }),
-      generatePalette: new Button({
+      },
+      {
+        type: 'Button',
         name: 'generatePalette',
         handler() {
-          showPalette = true
-          p.redraw()
+          if (colors && colors.length > 0) {
+            needsPaletteRender = true
+          } else {
+            alert(
+              formatLog(`
+                'No colors available to generate palette. 
+                Please load an image first.',
+              `),
+            )
+          }
         },
-      }),
-      resolution: new Range({
+      },
+      {
+        type: 'Range',
         name: 'resolution',
         value: 1,
         min: 1,
         max: 64,
-      }),
-      swatchCount: new Range({
+      },
+      {
+        type: 'Range',
         name: 'swatchCount',
         value: 12,
         min: 2,
         max: 13,
-      }),
-    },
+      },
+    ],
   })
 
   function setup() {
     controlPanel.init()
     const canvas = p.createCanvas(w, h)
 
-    p.colorMode(p.RGB, 255, 255, 255, 1)
-    p.noLoop()
+    imageBuffer = p.createGraphics(w, (2 * h) / 3)
+    paletteBuffer = p.createGraphics(w, h / 3)
+
+    imageBuffer.colorMode(p.RGB, 255, 255, 255, 1)
+    paletteBuffer.colorMode(p.RGB, 255, 255, 255, 1)
+
+    imageBuffer.background(255)
+    paletteBuffer.background(255)
 
     return {
       canvas,
@@ -80,72 +91,94 @@ export default function (p) {
   }
 
   function draw() {
-    if (image && !showPalette) {
-      p.background(255)
-      renderImage()
-    } else if (showPalette) {
-      p.background(255)
-      renderImage()
-      generateAndDrawPalette()
-      showPalette = false
+    p.background(255)
+
+    if (image) {
+      renderImageToBuffer()
+    }
+
+    if (image) {
+      p.image(imageBuffer, 0, 0, w, (2 * h) / 3)
+    }
+
+    if (needsPaletteRender) {
+      generateAndDrawPaletteToBuffer()
+      needsPaletteRender = false
+    }
+
+    if (palette) {
+      p.image(paletteBuffer, 0, (2 * h) / 3, w, h / 3)
     }
   }
 
-  function renderImage() {
+  function renderImageToBuffer() {
     const { resolution } = controlPanel.values()
     colors = []
+    imageBuffer.clear()
+    imageBuffer.background(255)
+
+    imageBuffer.strokeWeight(resolution)
+
+    const offsetX = (w - image.width) / 2
+    const offsetY = ((2 * h) / 3 - image.height) / 2
 
     for (let y = 0; y < image.height; y += resolution) {
       for (let x = 0; x < image.width; x += resolution) {
         const color = image.get(x, y)
         colors.push(color)
-        p.push()
-        p.stroke(color)
-        p.strokeWeight(resolution)
-        p.translate(x, y)
-        p.point(0, 0)
-        p.pop()
+        imageBuffer.stroke(color)
+        imageBuffer.point(x + offsetX, y + offsetY)
       }
     }
   }
 
-  function generateAndDrawPalette() {
+  function generateAndDrawPaletteToBuffer() {
     const { swatchCount } = controlPanel.values()
 
     const startTime = Date.now()
     console.log('Processing palette...')
+
     palette = sortColorsDarkToLight(generatePalette(colors, swatchCount))
 
-    // Layout for palette display
     const totalHeight = h / 2
-    const startY = h - totalHeight
+    const startY = 0
     const margin = 20
     const padding = 10
     const availableWidth = w - 2 * margin
+
     const maxSwatchesPerRow = Math.min(
       palette.length,
       Math.floor(availableWidth / (padding + 20)),
     )
+
     const rows = Math.ceil(palette.length / maxSwatchesPerRow)
-    const swatchSize = Math.min(
-      (availableWidth - (maxSwatchesPerRow - 1) * padding) / maxSwatchesPerRow,
-      (totalHeight - (rows + 1) * padding) / rows,
+
+    const swatchSize = Math.max(
+      Math.min(
+        (availableWidth - (maxSwatchesPerRow - 1) * padding) /
+          maxSwatchesPerRow,
+        (totalHeight - (rows + 1) * padding) / rows,
+      ),
+      10,
     )
 
-    // Draw the palette swatches
+    paletteBuffer.clear()
+    paletteBuffer.background(255)
+
     palette.forEach((color, i) => {
       const row = Math.floor(i / maxSwatchesPerRow)
       const col = i % maxSwatchesPerRow
       const x = margin + col * (swatchSize + padding)
       const y = startY + padding + row * (swatchSize + padding)
-      p.noStroke()
-      p.fill(color.rgba())
-      p.rect(x, y, swatchSize, swatchSize)
+
+      paletteBuffer.noStroke()
+      paletteBuffer.fill(color.rgba())
+      paletteBuffer.rect(x, y, swatchSize, swatchSize)
     })
 
-    p.stroke(200)
-    p.strokeWeight(1)
-    p.line(0, startY, w, startY)
+    paletteBuffer.stroke(200)
+    paletteBuffer.strokeWeight(1)
+    paletteBuffer.line(0, startY, w, startY)
 
     console.log('Done. Execution time:', msToTime(Date.now() - startTime))
     console.log(

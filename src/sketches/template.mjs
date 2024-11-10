@@ -1,5 +1,5 @@
 import chroma from 'chroma-js'
-import ControlPanel, { Range } from '../lib/ControlPanel/index.mjs'
+import createControlPanel from '../lib/ControlPanel/index.mjs'
 
 /**
  * @param {import('p5')} p
@@ -13,7 +13,28 @@ export default function (p) {
     // if recording video but perfect for images
     pixelDensity: 6,
   }
-  const controlPanel = createControlPanel(p, metadata)
+
+  const controlPanel = createControlPanel({
+    p,
+    id: metadata.name,
+    controls: [
+      {
+        type: 'Range',
+        name: 'count',
+        value: 100,
+        min: 1,
+        max: 100,
+      },
+      {
+        type: 'Range',
+        name: 'radius',
+        value: 200,
+        min: 40,
+        max: 200,
+      },
+    ],
+  })
+
   const [w, h] = [500, 500]
 
   function setup() {
@@ -54,25 +75,4 @@ export default function (p) {
     },
     metadata,
   }
-}
-
-function createControlPanel(p, metadata) {
-  return new ControlPanel({
-    p,
-    id: metadata.name,
-    controls: {
-      count: new Range({
-        name: 'count',
-        value: 100,
-        min: 1,
-        max: 100,
-      }),
-      radius: new Range({
-        name: 'radius',
-        value: 200,
-        min: 40,
-        max: 200,
-      }),
-    },
-  })
 }
