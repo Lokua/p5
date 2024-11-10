@@ -62,7 +62,7 @@ export default function (p) {
     const { showSwatches } = controlPanel.values()
     p.background(255)
 
-    !buffer && (buffer = spray(2))
+    !buffer && (buffer = spray({ splashes: 2 }))
     p.image(buffer, 0, 0, w, h)
 
     if (showSwatches) {
@@ -73,13 +73,10 @@ export default function (p) {
       p,
       x: w / 2,
       y: h / 2,
-      // d: ah.anim8([1, 600, 1], 128),
-      d: 400,
+      d: ah.anim8([1, 800, 1], 128),
       segments: 6,
-      // fillStep: 12,
-      // fillStep: ah.repeat([12, 24], 8),
-      fillStep: ah.anim8([12, 16], 8),
-      fillOrder: 'allReversed',
+      fillStep: 3,
+      fillOrder: 'trbl',
       fillPattern: 'random',
       lineFn: (...args) => {
         p.stroke(colorScale(0.2).rgba())
@@ -87,11 +84,12 @@ export default function (p) {
       },
       fillFn(x, y, index, totalPoints) {
         p.noStroke()
-        const colorFromOrder = colorScale(index / totalPoints)
-          .alpha(0.3)
-          .rgba()
-        p.fill(colorFromOrder)
-        p.circle(x, y, 6)
+        p.fill(
+          colorScale(index / totalPoints)
+            .alpha(0.1)
+            .rgba(),
+        )
+        p.circle(x, y, 4)
       },
     })
   }
