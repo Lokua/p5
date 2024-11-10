@@ -278,3 +278,14 @@ export class InvalidArgumentsException extends Error {
     this.name = 'InvalidArgumentsException'
   }
 }
+
+export function msToTime(duration) {
+  const milliseconds = Math.floor((duration % 1000) / 100)
+  const seconds = Math.floor((duration / 1000) % 60)
+  const minutes = Math.floor((duration / (1000 * 60)) % 60)
+  const hours = Math.floor((duration / (1000 * 60 * 60)) % 24)
+
+  const format = (num) => (num < 10 ? '0' + num : num)
+
+  return `${format(hours)}:${format(minutes)}:${format(seconds)}.${milliseconds}`
+}

@@ -104,7 +104,7 @@ export default class ControlPanel {
         const value = saved[control.name]
         if (value !== undefined && value !== null) {
           control.setValue(value)
-        } else if (control.type !== 'button') {
+        } else if (control.type !== 'button' && control.type !== 'file') {
           console.warn('[ControlPanel] skipping nil value for', control.name)
         }
       })

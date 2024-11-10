@@ -3,6 +3,7 @@ import ControlPanel from './ControlPanel.mjs'
 import Button from './Button.mjs'
 import Checkbox from './Checkbox.mjs'
 import Checklist from './Checklist.mjs'
+import File from './File.mjs'
 import Range from './Range.mjs'
 import Select from './Select.mjs'
 
@@ -88,6 +89,7 @@ export {
   Button,
   Checkbox,
   Checklist,
+  File,
   Range,
   Select,
   createBlendMode,

@@ -153,6 +153,9 @@ button {
   transition:
     background-color 0.3s ease,
     transform 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 button:hover {
@@ -220,7 +223,8 @@ select:focus {
   margin-bottom: 1rem;
 }
 
-.control-button {
+.control-button,
+.control-file {
   flex-basis: 50%;
 }
 
@@ -251,6 +255,12 @@ select:focus {
     input[type='checkbox'] {
       margin-right: 0.5rem;
     }
+  }
+}
+
+.control-file {
+  input[type='file'] {
+    display: none;
   }
 }
 

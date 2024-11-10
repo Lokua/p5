@@ -1,3 +1,34 @@
+import chroma from 'chroma-js'
+
+export const lokuaScales = {
+  goat: ['#201b0e', '#554833', '#8f826b', '#c8bfa6', '#dde7e7'],
+  tgb: [
+    '#030405',
+    '#12131a',
+    '#0e1728',
+    '#41172b',
+    '#17284b',
+    '#122f27',
+    '#3d4b5e',
+    '#a00d44',
+    '#2c5895',
+    '#92a8bf',
+  ],
+  dhc: ['#21211b', '#46443a', '#7b7260', '#c2cad1', '#eacda2'],
+  ruralSunset: [
+    '#211d1a',
+    '#413a30',
+    '#725e78',
+    '#938fc2',
+    '#cc8587',
+    '#ab90b6',
+    '#8f9ad4',
+    '#c492aa',
+    '#ee9374',
+    '#aba9d3',
+  ],
+}
+
 export const d3ColorScales = {
   viridis: [
     '#440154',
@@ -141,7 +172,6 @@ export const chromaBrewerKeys = [
   'Pastel2',
   'Pastel1',
 ]
-
 export function renderSwatches(
   p,
   w,
@@ -165,4 +195,120 @@ export function renderSwatches(
       p.rect(x, y, size, size)
     }
   })
+}
+
+export function generatePalette(colors, numColors = 5) {
+  const chromaColors = colors.map((color) =>
+    Array.isArray(color)
+      ? chroma(color[0], color[1], color[2], 'rgb')
+      : chroma(color),
+  )
+  const uniqueColors = new Set(chromaColors.map((c) => c.hex()))
+  numColors = Math.min(numColors, uniqueColors.size)
+
+  const centroids = []
+  const selectedColors = new Set()
+  while (centroids.length < numColors) {
+    const randomColor =
+      chromaColors[Math.floor(Math.random() * chromaColors.length)]
+    if (!selectedColors.has(randomColor.hex())) {
+      selectedColors.add(randomColor.hex())
+      centroids.push(randomColor)
+    }
+  }
+
+  let oldCentroids = []
+  let iterations = 0
+  const maxIterations = 50
+  let clusters
+
+  while (
+    !centroidsEqual(centroids, oldCentroids) &&
+    iterations < maxIterations
+  ) {
+    oldCentroids = centroids.map((c) => chroma.lab(...c.lab()))
+    clusters = Array(numColors)
+      .fill()
+      .map(() => [])
+
+    chromaColors.forEach((color) => {
+      let minDistance = Infinity
+      let closestCentroidIndex = 0
+      centroids.forEach((centroid, index) => {
+        const distance = calculateColorDistance(color, centroid)
+        if (distance < minDistance) {
+          minDistance = distance
+          closestCentroidIndex = index
+        }
+      })
+      clusters[closestCentroidIndex].push(color)
+    })
+
+    centroids.forEach((_, i) => {
+      const cluster = clusters[i]
+      if (cluster.length > 0) {
+        const colorSum = cluster.reduce(
+          (sum, color) => {
+            const lab = color.lab()
+            return [sum[0] + lab[0], sum[1] + lab[1], sum[2] + lab[2]]
+          },
+          [0, 0, 0],
+        )
+        centroids[i] = chroma.lab(
+          colorSum[0] / cluster.length,
+          colorSum[1] / cluster.length,
+          colorSum[2] / cluster.length,
+        )
+      }
+    })
+    iterations++
+  }
+
+  const prominenceCounts = Array(numColors).fill(0)
+  chromaColors.forEach((color) => {
+    let minDistance = Infinity
+    let closestCentroidIndex = 0
+    centroids.forEach((centroid, index) => {
+      const distance = calculateColorDistance(color, centroid)
+      if (distance < minDistance) {
+        minDistance = distance
+        closestCentroidIndex = index
+      }
+    })
+    prominenceCounts[closestCentroidIndex]++
+  })
+
+  return centroids
+    .map((color, i) => ({ color, count: prominenceCounts[i] }))
+    .sort((a, b) => b.count - a.count)
+    .map((cluster) => cluster.color)
+}
+
+function calculateColorDistance(color1, color2) {
+  const lab1 = color1.lab()
+  const lab2 = color2.lab()
+  return Math.sqrt(
+    Math.pow(lab1[0] - lab2[0], 2) +
+      Math.pow(lab1[1] - lab2[1], 2) +
+      Math.pow(lab1[2] - lab2[2], 2),
+  )
+}
+
+function centroidsEqual(centroids1, centroids2) {
+  if (centroids1.length !== centroids2.length) {
+    return false
+  }
+  for (let i = 0; i < centroids1.length; i++) {
+    if (calculateColorDistance(centroids1[i], centroids2[i]) >= 0.01) {
+      return false
+    }
+  }
+  return true
+}
+
+export function sortColorsLightToDark(colors) {
+  return colors.sort((a, b) => chroma(b).luminance() - chroma(a).luminance())
+}
+export function sortColorsDarkToLight(colors) {
+  return colors.sort((a, b) => chroma(a).luminance() - chroma(b).luminance())
 }

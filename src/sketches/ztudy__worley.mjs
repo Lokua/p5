@@ -7,7 +7,7 @@ import ControlPanel, { Checkbox } from '../lib/ControlPanel/index.mjs'
  */
 export default function (p) {
   const metadata = {
-    name: 'worley',
+    name: 'ztudy__worley',
     frameRate: 30,
 
     // p.pixels

@@ -10,7 +10,7 @@ export default function (p) {
   const [w, h] = [500, 500]
 
   const metadata = {
-    name: 'z__nocVectors',
+    name: 'ztudy__nocVectors',
     frameRate: 60,
   }
 

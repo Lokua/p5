@@ -3,15 +3,13 @@ import chroma from 'chroma-js'
 import ControlPanel, { Checkbox, Range } from '../lib/ControlPanel/index.mjs'
 import AnimationHelper from '../lib/AnimationHelper.mjs'
 import { d3ColorScales, renderSwatches } from '../lib/colors.mjs'
-import { generateRange } from '../lib/scaling.mjs'
-import { randomInt } from '../util.mjs'
 
 /**
  * @param {import('p5')} p
  */
 export default function (p) {
   const metadata = {
-    name: 'z__nocWalker',
+    name: 'ztudy__nocWalker2',
     frameRate: 30,
   }
 
@@ -23,41 +21,40 @@ export default function (p) {
     bpm: 130,
   })
 
-  const colorScale = chroma.scale(d3ColorScales.cool)
-  const eraserColorScale = chroma.scale(['azure', 'white', colorScale(0.2)])
+  const walkerColorScale = chroma.scale(d3ColorScales.cool)
+  const eraserColorScale = chroma.scale([
+    'azure',
+    'white',
+    walkerColorScale(0.2),
+  ])
 
   let walker
+  let eraser
   let buffer
+
+  const config = {
+    walker: [
+      [2, 20],
+      [3, 15],
+      [4, 10],
+      [8, 5],
+    ],
+    eraser: [
+      [5, 20],
+      [7, 10],
+      [9, 5],
+    ],
+  }
 
   const controlPanel = new ControlPanel({
     p,
     id: metadata.name,
     controls: {
-      allowDiagonal: new Checkbox({
-        name: 'allowDiagonal',
-        value: false,
-      }),
-      minStep: new Range({
-        name: 'minStep',
-        value: 2,
-        min: 1,
-        max: 100,
-      }),
-      maxStep: new Range({
-        name: 'maxStep',
-        value: 8,
-        min: 1,
-        max: 100,
-      }),
-      velocity: new Range({
-        name: 'velocity',
+      velocityMultiplier: new Range({
+        name: 'velocityMultiplier',
         value: 1,
         min: 1,
-        max: 1000,
-      }),
-      eraser: new Checkbox({
-        name: 'eraser',
-        value: false,
+        max: 100,
       }),
       showSwatches: new Checkbox({
         name: 'showSwatches',
@@ -72,6 +69,7 @@ export default function (p) {
 
     buffer = p.createGraphics(w, h)
     walker = new Walker(buffer, w, h)
+    eraser = new Walker(buffer, w, h)
 
     p.colorMode(p.RGB, 255, 255, 255, 1)
 
@@ -81,35 +79,39 @@ export default function (p) {
   }
 
   function draw() {
-    const { allowDiagonal, velocity, minStep, maxStep, eraser, showSwatches } =
-      controlPanel.values()
+    const { showSwatches } = controlPanel.values()
+    p.background(walkerColorScale(0.03).rgba())
 
-    p.background(colorScale(0.03).rgba())
-
-    walker.allowDiagonal = allowDiagonal
-    walker.stepSize = ah.repeat(
-      generateRange(minStep, maxStep, maxStep - minStep, 'exponential', 2),
-      0.25,
+    walk(walker, ah.repeat(config.walker, 1), (velocity, index) =>
+      p.color(walkerColorScale(p.map(index, 0, velocity, 0, 1)).rgba()),
     )
-
-    for (let i = 0; i < velocity; i++) {
-      walker.step()
-      buffer.stroke(
-        eraser
-          ? p.color(
-              eraserColorScale(p.map(i, 0, velocity, 0, 1))
-                .alpha(0.1)
-                .rgba(),
-            )
-          : p.color(colorScale(p.map(i, 0, velocity, 0, 1)).rgba()),
-      )
-      walker.show()
-    }
+    walk(eraser, ah.repeat(config.eraser, 1), (velocity, index) =>
+      p.color(
+        eraserColorScale(p.map(index, 0, velocity, 0, 1))
+          .alpha(0.1)
+          .rgba(),
+      ),
+    )
 
     p.image(buffer, 0, 0)
 
     if (showSwatches) {
-      renderSwatches(p, w, [colorScale, eraserColorScale])
+      renderSwatches(p, w, [walkerColorScale, eraserColorScale])
+    }
+  }
+
+  function walk(walker, [stepSize, velocity, rectSize = 3], getColor) {
+    const { velocityMultiplier } = controlPanel.values()
+    const vel = velocity * velocityMultiplier
+
+    walker.stepSize = stepSize
+    walker.rectSize = rectSize
+
+    for (let i = 0; i < vel; i++) {
+      walker.step()
+      buffer.noFill()
+      buffer.stroke(getColor(vel, i))
+      walker.show()
     }
   }
 
@@ -130,6 +132,8 @@ class Walker {
     this.h = h
     this.x = Math.floor(w / 2 / stepSize) * stepSize
     this.y = Math.floor(h / 2 / stepSize) * stepSize
+    this.tx = 0
+    this.ty = 2627
     this.allowDiagonal = allowDiagonal
     this.stepSize = stepSize
     this.rectSize = rectSize
@@ -140,22 +144,11 @@ class Walker {
   }
 
   step() {
-    if (this.allowDiagonal) {
-      const r = () => randomInt(-this.stepSize, this.stepSize)
-      this.x += r()
-      this.y += r()
-    } else {
-      const choice = randomInt(3)
-      if (choice === 0) {
-        this.x += this.stepSize
-      } else if (choice === 1) {
-        this.x -= this.stepSize
-      } else if (choice === 2) {
-        this.y += this.stepSize
-      } else {
-        this.y -= this.stepSize
-      }
-    }
+    this.x = this.p.map(this.p.noise(this.tx), 0, 1, 0, this.w)
+    this.y = this.p.map(this.p.noise(this.ty), 0, 1, 0, this.h)
+
+    this.tx += 0.001
+    this.ty += 0.001
 
     if (this.x < 0) {
       this.x += this.stepSize * 2

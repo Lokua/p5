@@ -12,7 +12,7 @@ export default function (p) {
   const [w, h] = [500, 500]
 
   const metadata = {
-    name: 'z__rangeBias',
+    name: 'ztudy__rangeBias',
     frameRate: 30,
   }
 
