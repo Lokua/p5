@@ -73,17 +73,25 @@ export default function (p) {
       p,
       x: w / 2,
       y: h / 2,
-      d: ah.anim8([200, 500, 200], 16),
+      // d: ah.anim8([1, 600, 1], 128),
+      d: 400,
       segments: 6,
-      fillStep: ah.anim8([12, 24, 12], 8),
+      // fillStep: 12,
+      // fillStep: ah.repeat([12, 24], 8),
+      fillStep: ah.anim8([12, 16], 8),
+      fillOrder: 'allReversed',
+      fillPattern: 'random',
       lineFn: (...args) => {
         p.stroke(colorScale(0.2).rgba())
         lines.tapered(...args, [1, 2, 3, 1])
       },
-      fillFn(x, y) {
+      fillFn(x, y, index, totalPoints) {
         p.noStroke()
-        p.fill(colorScale(p.random()).alpha(0.1).rgba())
-        p.circle(x, y, 10)
+        const colorFromOrder = colorScale(index / totalPoints)
+          .alpha(0.3)
+          .rgba()
+        p.fill(colorFromOrder)
+        p.circle(x, y, 6)
       },
     })
   }
@@ -95,6 +103,8 @@ export default function (p) {
     d = 20,
     segments = 100,
     fillStep = 1,
+    fillOrder = 'allReversed',
+    fillPattern = 'spiral',
     lineFn,
     fillFn,
   }) {
@@ -110,17 +120,144 @@ export default function (p) {
     }
 
     if (fillFn) {
-      const left = x - radius
-      const right = x + radius
-      const top = y - radius
-      const bottom = y + radius
+      const left = Math.floor(x - radius)
+      const right = Math.ceil(x + radius)
+      const top = Math.floor(y - radius)
+      const bottom = Math.ceil(y + radius)
+      const centerX = x
+      const centerY = y
+      const validPoints = []
 
-      for (let px = left; px <= right; px += fillStep) {
-        for (let py = top; py <= bottom; py += fillStep) {
-          if (pointInPolygon(px, py, points)) {
-            fillFn(px, py)
+      if (fillOrder === 'tlbr') {
+        for (let px = left; px <= right; px += fillStep) {
+          for (let py = top; py <= bottom; py += fillStep) {
+            if (pointInPolygon(px, py, points)) {
+              validPoints.push({ x: px, y: py })
+            }
           }
         }
+      } else if (fillOrder === 'trbl') {
+        for (let px = right; px >= left; px -= fillStep) {
+          for (let py = top; py <= bottom; py += fillStep) {
+            if (pointInPolygon(px, py, points)) {
+              validPoints.push({ x: px, y: py })
+            }
+          }
+        }
+      } else if (fillOrder === 'brtl') {
+        for (let px = right; px >= left; px -= fillStep) {
+          for (let py = bottom; py >= top; py -= fillStep) {
+            if (pointInPolygon(px, py, points)) {
+              validPoints.push({ x: px, y: py })
+            }
+          }
+        }
+      } else if (fillOrder === 'bltr') {
+        for (let px = left; px <= right; px += fillStep) {
+          for (let py = bottom; py >= top; py -= fillStep) {
+            if (pointInPolygon(px, py, points)) {
+              validPoints.push({ x: px, y: py })
+            }
+          }
+        }
+      } else if (fillOrder === 'all') {
+        // Top-Left quadrant: left to right, top to bottom
+        for (let px = left; px <= (left + right) / 2; px += fillStep) {
+          for (let py = top; py <= (top + bottom) / 2; py += fillStep) {
+            if (pointInPolygon(px, py, points)) {
+              validPoints.push({ x: px, y: py })
+            }
+          }
+        }
+
+        // Top-Right quadrant: right to left, top to bottom
+        for (let px = right; px >= (left + right) / 2; px -= fillStep) {
+          for (let py = top; py <= (top + bottom) / 2; py += fillStep) {
+            if (pointInPolygon(px, py, points)) {
+              validPoints.push({ x: px, y: py })
+            }
+          }
+        }
+
+        // Bottom-Left quadrant: left to right, bottom to top
+        for (let px = left; px <= (left + right) / 2; px += fillStep) {
+          for (let py = bottom; py >= (top + bottom) / 2; py -= fillStep) {
+            if (pointInPolygon(px, py, points)) {
+              validPoints.push({ x: px, y: py })
+            }
+          }
+        }
+
+        // Bottom-Right quadrant: right to left, bottom to top
+        for (let px = right; px >= (left + right) / 2; px -= fillStep) {
+          for (let py = bottom; py >= (top + bottom) / 2; py -= fillStep) {
+            if (pointInPolygon(px, py, points)) {
+              validPoints.push({ x: px, y: py })
+            }
+          }
+        }
+      } else if (fillOrder === 'allReversed') {
+        // Top-Left quadrant: start from center and move to top-left corner
+        for (let py = (top + bottom) / 2; py >= top; py -= fillStep) {
+          for (let px = (left + right) / 2; px >= left; px -= fillStep) {
+            if (pointInPolygon(px, py, points)) {
+              validPoints.push({ x: px, y: py })
+            }
+          }
+        }
+
+        // Top-Right quadrant: start from center and move to top-right corner
+        for (let py = (top + bottom) / 2; py >= top; py -= fillStep) {
+          for (let px = (left + right) / 2; px <= right; px += fillStep) {
+            if (pointInPolygon(px, py, points)) {
+              validPoints.push({ x: px, y: py })
+            }
+          }
+        }
+
+        // Bottom-Left quadrant: start from center and move to bottom-left corner
+        for (let py = (top + bottom) / 2; py <= bottom; py += fillStep) {
+          for (let px = (left + right) / 2; px >= left; px -= fillStep) {
+            if (pointInPolygon(px, py, points)) {
+              validPoints.push({ x: px, y: py })
+            }
+          }
+        }
+
+        // Bottom-Right quadrant: start from center and move to bottom-right corner
+        for (let py = (top + bottom) / 2; py <= bottom; py += fillStep) {
+          for (let px = (left + right) / 2; px <= right; px += fillStep) {
+            if (pointInPolygon(px, py, points)) {
+              validPoints.push({ x: px, y: py })
+            }
+          }
+        }
+      }
+
+      if (fillPattern === 'spiral') {
+        validPoints.sort((a, b) => {
+          const angleA = Math.atan2(a.y - centerY, a.x - centerX)
+          const angleB = Math.atan2(b.y - centerY, b.x - centerX)
+          const distA = Math.hypot(a.x - centerX, a.y - centerY)
+          const distB = Math.hypot(b.x - centerX, b.y - centerY)
+          return distA - distB || angleA - angleB
+        })
+      } else if (fillPattern === 'radial') {
+        validPoints.sort((a, b) => {
+          const distA = Math.hypot(a.x - centerX, a.y - centerY)
+          const distB = Math.hypot(b.x - centerX, b.y - centerY)
+          return distA - distB
+        })
+      } else if (fillPattern === 'random') {
+        for (let i = validPoints.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1))
+          ;[validPoints[i], validPoints[j]] = [validPoints[j], validPoints[i]]
+        }
+      }
+
+      for (let i = 0; i < validPoints.length; i++) {
+        const point = validPoints[i]
+        fillFn(point.x, point.y, i, validPoints.length, radius)
       }
     } else {
       p.noStroke()
