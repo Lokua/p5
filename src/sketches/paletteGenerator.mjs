@@ -1,5 +1,9 @@
+import chroma from 'chroma-js'
 import { createControlPanel } from '../lib/ControlPanel/index.mjs'
-import { generatePalette, sortColorsDarkToLight } from '../lib/colors.mjs'
+import {
+  generatePalette,
+  sortColorsDarkToLightRespectingHue,
+} from '../lib/colors.mjs'
 import { formatLog, msToTime } from '../util.mjs'
 
 /**
@@ -30,10 +34,7 @@ export default function (p) {
         handler(file) {
           const dataUrl = URL.createObjectURL(file)
           p.loadImage(dataUrl, (img) => {
-            const scaleFactor = Math.min(
-              w / img.width,
-              (2 * h) / 3 / img.height,
-            )
+            const scaleFactor = Math.min(w / img.width, h / img.height)
             img.resize(img.width * scaleFactor, img.height * scaleFactor)
             image = img
           })
@@ -65,9 +66,21 @@ export default function (p) {
       {
         type: 'Range',
         name: 'swatchCount',
-        value: 12,
+        value: 5,
         min: 2,
-        max: 13,
+        max: 15,
+      },
+      {
+        type: 'Select',
+        name: 'background',
+        value: 'transparent',
+        options: ['black', 'white', 'transparent'],
+      },
+      {
+        type: 'Select',
+        name: 'shape',
+        value: 'rect',
+        options: ['circle', 'rect'],
       },
     ],
   })
@@ -76,8 +89,8 @@ export default function (p) {
     controlPanel.init()
     const canvas = p.createCanvas(w, h)
 
-    imageBuffer = p.createGraphics(w, (2 * h) / 3)
-    paletteBuffer = p.createGraphics(w, h / 3)
+    imageBuffer = p.createGraphics(w, h)
+    paletteBuffer = p.createGraphics(w, h / 6)
 
     imageBuffer.colorMode(p.RGB, 255, 255, 255, 1)
     paletteBuffer.colorMode(p.RGB, 255, 255, 255, 1)
@@ -91,14 +104,16 @@ export default function (p) {
   }
 
   function draw() {
-    p.background(255)
+    const { background } = controlPanel.values()
+    p.clear()
+    p.background(background === 'transparent' ? [0, 0, 0, 0] : background)
 
     if (image) {
       renderImageToBuffer()
     }
 
     if (image) {
-      p.image(imageBuffer, 0, 0, w, (2 * h) / 3)
+      p.image(imageBuffer, 0, 0, w, h)
     }
 
     if (needsPaletteRender) {
@@ -107,27 +122,49 @@ export default function (p) {
     }
 
     if (palette) {
-      p.image(paletteBuffer, 0, (2 * h) / 3, w, h / 3)
+      p.image(
+        paletteBuffer,
+        0,
+        h - paletteBuffer.height,
+        w,
+        paletteBuffer.height,
+      )
     }
   }
 
   function renderImageToBuffer() {
-    const { resolution } = controlPanel.values()
-    colors = []
+    const { resolution, shape } = controlPanel.values()
+    const shapeSize = resolution
+
     imageBuffer.clear()
-    imageBuffer.background(255)
+    colors = []
 
-    imageBuffer.strokeWeight(resolution)
+    const cols = Math.ceil(image.width / resolution)
+    const rows = Math.ceil(image.height / resolution)
 
-    const offsetX = (w - image.width) / 2
-    const offsetY = ((2 * h) / 3 - image.height) / 2
+    const renderedWidth = cols * shapeSize
+    const renderedHeight = rows * shapeSize
+
+    const offsetX = (w - renderedWidth) / 2
+    const offsetY = (h - renderedHeight) / 2
 
     for (let y = 0; y < image.height; y += resolution) {
       for (let x = 0; x < image.width; x += resolution) {
         const color = image.get(x, y)
         colors.push(color)
-        imageBuffer.stroke(color)
-        imageBuffer.point(x + offsetX, y + offsetY)
+        imageBuffer.fill(color)
+        imageBuffer.noStroke()
+
+        const posX = offsetX + (x / resolution) * shapeSize + shapeSize / 2
+        const posY = offsetY + (y / resolution) * shapeSize + shapeSize / 2
+
+        if (shape === 'rect') {
+          imageBuffer.rectMode(p.CENTER)
+          imageBuffer.rect(posX, posY, shapeSize, shapeSize)
+        } else {
+          imageBuffer.ellipseMode(p.CENTER)
+          imageBuffer.ellipse(posX, posY, shapeSize, shapeSize)
+        }
       }
     }
   }
@@ -138,47 +175,43 @@ export default function (p) {
     const startTime = Date.now()
     console.log('Processing palette...')
 
-    palette = sortColorsDarkToLight(generatePalette(colors, swatchCount))
+    palette = sortColorsDarkToLightRespectingHue(
+      generatePalette(colors, Math.min(swatchCount, 15)),
+    )
 
-    const totalHeight = h / 2
-    const startY = 0
     const margin = 20
     const padding = 10
     const availableWidth = w - 2 * margin
 
-    const maxSwatchesPerRow = Math.min(
-      palette.length,
-      Math.floor(availableWidth / (padding + 20)),
-    )
-
-    const rows = Math.ceil(palette.length / maxSwatchesPerRow)
-
     const swatchSize = Math.max(
       Math.min(
-        (availableWidth - (maxSwatchesPerRow - 1) * padding) /
-          maxSwatchesPerRow,
-        (totalHeight - (rows + 1) * padding) / rows,
+        (availableWidth - (palette.length - 1) * padding) / palette.length,
+        paletteBuffer.height - 2 * padding,
       ),
       10,
     )
 
     paletteBuffer.clear()
-    paletteBuffer.background(255)
+    paletteBuffer.rectMode(p.CORNER)
+    paletteBuffer.noStroke()
+    paletteBuffer.fill(chroma('gray').alpha(0.62).rgba())
+
+    const totalSwatchWidth =
+      palette.length * swatchSize + (palette.length - 1) * padding
+    const rectWidth = totalSwatchWidth + 2 * padding
+    const rectHeight = swatchSize + 2 * padding
+    const rectX = (w - rectWidth) / 2
+    const rectY = (paletteBuffer.height - rectHeight) / 2
+    paletteBuffer.rect(rectX, rectY, rectWidth, rectHeight)
+
+    const startX = rectX + padding
+    const y = rectY + padding
 
     palette.forEach((color, i) => {
-      const row = Math.floor(i / maxSwatchesPerRow)
-      const col = i % maxSwatchesPerRow
-      const x = margin + col * (swatchSize + padding)
-      const y = startY + padding + row * (swatchSize + padding)
-
-      paletteBuffer.noStroke()
+      const x = startX + i * (swatchSize + padding)
       paletteBuffer.fill(color.rgba())
       paletteBuffer.rect(x, y, swatchSize, swatchSize)
     })
-
-    paletteBuffer.stroke(200)
-    paletteBuffer.strokeWeight(1)
-    paletteBuffer.line(0, startY, w, startY)
 
     console.log('Done. Execution time:', msToTime(Date.now() - startTime))
     console.log(

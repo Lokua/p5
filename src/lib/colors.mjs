@@ -27,6 +27,40 @@ export const lokuaScales = {
     '#ee9374',
     '#aba9d3',
   ],
+  vanity: [
+    '#130c0d',
+    '#2f1f1b',
+    '#471f16',
+    '#3b2445',
+    '#4b4543',
+    '#70361d',
+    '#6747a7',
+    '#8f5153',
+    '#9c5028',
+    '#80686c',
+    '#6a808b',
+    '#bc724c',
+    '#d49c8a',
+    '#d5a171',
+    '#cfb4c4',
+  ],
+  amboyDrive: [
+    '#091117',
+    '#132434',
+    '#16271c',
+    '#233a4c',
+    '#2f401b',
+    '#46574f',
+    '#5b6e37',
+    '#8a9a44',
+    '#759aa9',
+    '#63a1d9',
+    '#9c9e85',
+    '#6dade2',
+    '#7dbdef',
+    '#89c9f6',
+    '#c4dfe4',
+  ],
 }
 
 export const d3ColorScales = {
@@ -306,9 +340,55 @@ function centroidsEqual(centroids1, centroids2) {
   return true
 }
 
-export function sortColorsLightToDark(colors) {
-  return colors.sort((a, b) => chroma(b).luminance() - chroma(a).luminance())
+export function sortColorsDarkToLightRespectingHue(colors) {
+  return colors.sort((a, b) => {
+    const colorA = chroma(a)
+    const colorB = chroma(b)
+
+    const luminanceA = colorA.luminance()
+    const luminanceB = colorB.luminance()
+
+    // Primary sort by luminance
+    if (luminanceA !== luminanceB) {
+      return luminanceA - luminanceB
+    }
+
+    // Secondary sort by hue
+    const hueA = colorA.get('hsl.h') || 0 // Handle achromatic colors
+    const hueB = colorB.get('hsl.h') || 0
+
+    return hueA - hueB
+  })
 }
-export function sortColorsDarkToLight(colors) {
-  return colors.sort((a, b) => chroma(a).luminance() - chroma(b).luminance())
+
+export function sortColorsDarkToLightRespectingHueWithTolerance(
+  colors,
+  hueTolerance = 0.05,
+) {
+  const sortedByLuminance = colors.slice().sort((a, b) => {
+    return chroma(a).luminance() - chroma(b).luminance()
+  })
+
+  // Then, group colors by similar luminance and sort each group by hue
+  const grouped = []
+  sortedByLuminance.forEach((color) => {
+    const lum = chroma(color).luminance()
+    // Find a group where luminance is within the tolerance
+    let group = grouped.find((g) => Math.abs(g.luminance - lum) <= hueTolerance)
+    if (!group) {
+      group = { luminance: lum, colors: [] }
+      grouped.push(group)
+    }
+    group.colors.push(color)
+  })
+
+  grouped.forEach((group) => {
+    group.colors.sort((a, b) => {
+      const hueA = chroma(a).get('hsl.h') || 0
+      const hueB = chroma(b).get('hsl.h') || 0
+      return hueA - hueB
+    })
+  })
+
+  return grouped.flatMap((group) => group.colors)
 }
