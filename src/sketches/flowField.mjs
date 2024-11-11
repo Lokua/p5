@@ -109,8 +109,8 @@ export default function (p) {
     particleBuffer = p.createGraphics(w, h)
     particleBuffer.colorMode(p.RGB, 255, 255, 255, 1)
 
-    updateFlowField()
-    obstacles.push(new Obstacle(center.x, center.y, 100, 100))
+    updateFlowField(controlPanel.get('noiseScale'))
+    initializeObstacles()
 
     return {
       canvas,
@@ -135,11 +135,7 @@ export default function (p) {
     p.background(0)
     particleBuffer.background(chroma('black').alpha(backgroundAlpha).rgba())
 
-    if (showObstacles) {
-      for (const obstacle of obstacles) {
-        obstacle.display()
-      }
-    }
+    // showObstacles && displayObstacles()
 
     if (particles.length < count) {
       while (particles.length < count) {
@@ -150,6 +146,7 @@ export default function (p) {
             for (const obstacle of obstacles) {
               if (obstacle.contains({ position })) {
                 position = null
+                break
               }
             }
           }
@@ -173,13 +170,14 @@ export default function (p) {
       particle.maxHistory = history
     })
 
-    useGridField && updateFlowField()
+    useGridField && updateFlowField(noiseScale)
 
     for (const particle of particles) {
       if (showObstacles) {
         for (const obstacle of obstacles) {
           if (obstacle.contains(particle)) {
-            particle.velocity.mult(-1)
+            // -1 gives that awesome jitter effect
+            particle.velocity.mult(-0.5)
           }
         }
       }
@@ -193,11 +191,12 @@ export default function (p) {
     }
 
     showParticles && p.image(particleBuffer, 0, 0, w, h)
+    showObstacles && displayObstacles()
     visualizeField && visualizeFlowField(noiseScale, useGridField)
     showSwatches && renderSwatches({ p, w, scales: [colorScale] })
   }
 
-  function updateFlowField() {
+  function updateFlowField(noiseScale = 0.1) {
     const zOffset = ah.getTotalBeatsElapsed()
 
     const totalGridWidth = cols * resolution
@@ -208,7 +207,6 @@ export default function (p) {
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
         const index = x + y * cols
-        const noiseScale = 0.1
 
         const gridPosX = x * resolution + xOffset + resolution / 2
         const gridPosY = y * resolution + yOffset + resolution / 2
@@ -222,6 +220,26 @@ export default function (p) {
         force.setMag(0.1)
         flowField[index] = force
       }
+    }
+  }
+
+  function initializeObstacles() {
+    const size = 100
+    // Center
+    obstacles.push(new Obstacle(center.x, center.y, size, size))
+    // Top left
+    obstacles.push(new Obstacle(center.x / 2, center.y / 2, size, size))
+    // Top right
+    obstacles.push(new Obstacle(center.x * 1.5, center.y / 2, size, size))
+    // Bottom left
+    obstacles.push(new Obstacle(center.x / 2, center.y * 1.5, size, size))
+    // Bottom right
+    obstacles.push(new Obstacle(center.x * 1.5, center.y * 1.5, size, size))
+  }
+
+  function displayObstacles() {
+    for (const obstacle of obstacles) {
+      obstacle.display()
     }
   }
 
@@ -242,7 +260,7 @@ export default function (p) {
 
       // Ensure indices are within bounds
       if (x < 0 || x >= cols || y < 0 || y >= rows) {
-        return p5.Vector.mult(p.createVector(0, 0), 0)
+        return p.createVector(0, 0)
       }
 
       const index = x + y * cols
@@ -351,7 +369,7 @@ export default function (p) {
 
       if (this.applyRandomForce) {
         const randomForce = p5.Vector.random2D()
-        randomForce.setMag(0.05)
+        randomForce.setMag(0.2)
         this.applyForce(randomForce)
       }
 
@@ -403,10 +421,18 @@ export default function (p) {
 
     edges() {
       if (this.edgeMode === 'wrap') {
-        this.position.x > w && (this.position.x = 0)
-        this.position.x < 0 && (this.position.x = w)
-        this.position.y > h && (this.position.y = 0)
-        this.position.y < 0 && (this.position.y = h)
+        if (this.position.x > w) {
+          this.position.x = 0
+        }
+        if (this.position.x < 0) {
+          this.position.x = w
+        }
+        if (this.position.y > h) {
+          this.position.y = 0
+        }
+        if (this.position.y < 0) {
+          this.position.y = h
+        }
       } else if (this.edgeMode === 'respawn') {
         if (!this.onScreen()) {
           this.position = p.createVector(p.random(w), p.random(h))
@@ -435,8 +461,8 @@ export default function (p) {
     }
 
     display() {
-      p.fill('black')
       p.noStroke()
+      p.fill(0, 0)
       p.rectMode(p.CENTER)
       p.rect(this.position.x, this.position.y, this.w, this.h)
     }

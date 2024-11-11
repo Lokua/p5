@@ -220,11 +220,13 @@ export function renderSwatches({
   )
   const size = Math.min(swatchSize, maxSwatchSize)
 
+  p.rectMode(p.CORNER)
+  p.noStroke()
+
   scales.forEach((scale, i) => {
     for (let j = 0; j < numSwatches; j++) {
       const color = scale(j / (numSwatches - 1))
       p.fill(p.color(color.rgba()))
-      p.noStroke()
       const x = margin + j * (size + margin)
       const y = margin + i * (size + margin)
       p.rect(x, y, size, size)
