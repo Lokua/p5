@@ -14,11 +14,14 @@ export default function (p) {
     pixelDensity: 6,
   }
   const [w, h] = [500, 500]
+  // eslint-disable-next-line no-unused-vars
   const center = p.createVector(w / 2, h / 2)
+  const obstacles = []
   const agents = []
-  const colorScale = chroma.scale(['white'])
-  const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 130 })
   let agentBuffer
+
+  const colorScale = chroma.scale('Spectral')
+  const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 130 })
 
   const controlPanel = createControlPanel({
     p,
@@ -49,12 +52,6 @@ export default function (p) {
       },
       {
         type: 'Select',
-        name: 'flowForceType',
-        value: 'y',
-        options: ['x', 'y', 'perlinNoise', 'radial', 'sinusoidal'],
-      },
-      {
-        type: 'Select',
         name: 'edgeMode',
         value: 'wrap',
         options: ['wrap', 'respawn'],
@@ -79,6 +76,11 @@ export default function (p) {
         name: 'applyRandomForce',
         value: false,
       },
+      {
+        type: 'Checkbox',
+        name: 'showObstacles',
+        value: false,
+      },
     ],
   })
 
@@ -91,15 +93,7 @@ export default function (p) {
     agentBuffer = p.createGraphics(w, h)
     agentBuffer.colorMode(p.RGB, 255, 255, 255, 1)
 
-    const { count, edgeMode } = controlPanel.values()
-    for (let i = 0; i < count; i++) {
-      agents.push(
-        new Agent({
-          position: p.createVector(p.random(w), p.random(h)),
-          edgeMode,
-        }),
-      )
-    }
+    obstacles.push(new Obstacle(center.x, center.y, 100, 100))
 
     return {
       canvas,
@@ -109,7 +103,6 @@ export default function (p) {
   function draw() {
     const {
       count,
-      flowForceType,
       showSwatches,
       visualizeField,
       backgroundAlpha,
@@ -117,12 +110,31 @@ export default function (p) {
       noiseScale,
       applyRandomForce,
       showAgents,
+      showObstacles,
     } = controlPanel.values()
+
     p.background(0)
     agentBuffer.background(chroma('black').alpha(backgroundAlpha).rgba())
 
+    if (showObstacles) {
+      for (const obstacle of obstacles) {
+        obstacle.display()
+      }
+    }
+
     if (agents.length < count) {
       while (agents.length < count) {
+        let position
+        while (!position) {
+          position = p.createVector(p.random(w), p.random(h))
+          if (showObstacles) {
+            for (const obstacle of obstacles) {
+              if (obstacle.contains({ position })) {
+                position = null
+              }
+            }
+          }
+        }
         agents.push(
           new Agent({
             position: p.createVector(p.random(w), p.random(h)),
@@ -141,78 +153,36 @@ export default function (p) {
     })
 
     for (const agent of agents) {
-      agent.applyForce(getFlowForce(agent.position, flowForceType, noiseScale))
+      if (showObstacles) {
+        for (const obstacle of obstacles) {
+          if (obstacle.contains(agent)) {
+            agent.velocity.mult(-1)
+          }
+        }
+      }
+      agent.applyForce(getFlowForce(agent.position, noiseScale))
       agent.update()
       agent.edges()
       agent.display()
     }
 
     showAgents && p.image(agentBuffer, 0, 0, w, h)
-    visualizeFlowField2(flowForceType, noiseScale)
-    visualizeField && visualizeFlowField(flowForceType, noiseScale)
+    visualizeField && visualizeFlowField(noiseScale)
     showSwatches && renderSwatches({ p, w, scales: [colorScale] })
   }
 
-  function getFlowForce(position, flowForceType, noiseScale) {
-    const zOffset = ah.getTotalBeatsElapsed() / 8
-    let angle
-
-    if (flowForceType === 'x') {
-      angle = p.map(position.x, 0, w, 0, p.TWO_PI)
-    } else if (flowForceType === 'y') {
-      angle = p.map(position.y, 0, h, 0, p.TWO_PI)
-    } else if (flowForceType === 'perlinNoise') {
-      const value = p.noise(
-        position.x * noiseScale,
-        position.y * noiseScale,
-        zOffset,
-      )
-      angle = p.map(value, 0, 1, 0, p.TWO_PI)
-    } else if (flowForceType === 'radial') {
-      angle = p.atan2(position.y - center.y, position.x - center.x)
-      angle += p.sin(zOffset)
-    } else if (flowForceType === 'sinusoidal') {
-      angle = p.sin(position.y / noiseScale + zOffset) * p.PI
-    }
-
+  function getFlowForce(position, noiseScale) {
+    const zOffset = ah.getTotalBeatsElapsed()
+    const x = position.x * noiseScale
+    const y = position.y * noiseScale
+    const value = p.noise(x, y, zOffset)
+    const angle = p.map(value, 0, 1, 0, p.TWO_PI)
     const force = p5.Vector.fromAngle(angle)
-    force.setMag(0.25)
+    force.setMag(0.1)
     return force
   }
 
-  function visualizeFlowField2(flowForceType, noiseScale) {
-    const useAngleBasedColor = true
-    const color = chroma('cyan').alpha(0.5).rgba()
-    const gridSize = 25
-    const gridSizeX = w / gridSize
-    const gridSizeY = h / gridSize
-
-    for (let i = 0; i < gridSize; i++) {
-      for (let j = 0; j < gridSize; j++) {
-        const x = i * gridSizeX + gridSizeX / 2
-        const y = j * gridSizeY + gridSizeY / 2
-
-        const pos = p.createVector(x, y)
-        const force = getFlowForce(pos, flowForceType, noiseScale)
-        const scaledForce = p5.Vector.mult(force, 50)
-
-        const theColor = useAngleBasedColor
-          ? chroma
-              .hsv(p.degrees(force.heading()) % 360, 100, 100)
-              .alpha(0.1)
-              .rgba()
-          : color
-
-        const end = p5.Vector.add(pos, scaledForce)
-
-        p.stroke(theColor)
-        p.strokeWeight(1)
-        p.line(pos.x, pos.y, end.x, end.y)
-      }
-    }
-  }
-
-  function visualizeFlowField(flowForceType, noiseScale) {
+  function visualizeFlowField(noiseScale) {
     const useAngleBasedColor = false
     const color = chroma('magenta').rgba()
     const gridSize = 10
@@ -225,8 +195,8 @@ export default function (p) {
         const y = j * gridSizeY + gridSizeY / 2
 
         const pos = p.createVector(x, y)
-        const force = getFlowForce(pos, flowForceType, noiseScale)
-        const scaledForce = p5.Vector.mult(force, 50)
+        const force = getFlowForce(pos, noiseScale)
+        const scaledForce = p5.Vector.mult(force, 100)
 
         const angle = force.heading()
         const angleOffset = p.radians(30)
@@ -267,14 +237,15 @@ export default function (p) {
       this.position = position.copy()
       this.velocity = p.createVector(0, 0)
       this.acceleration = p.createVector(0, 0)
-      this.maxSpeed = 3
+      this.maxSpeed = p.random(1, 5)
       this.color = colorScale(p.random())
       this.edgeMode = edgeMode
       this.useVelocityBasedColorScaling = false
       this.applyRandomForce = applyRandomForce
       this.opacity = opacity
-      this.diameter = p.random(0.25, 2)
+      this.diameter = p.random(0.25, 3)
       this.history = []
+      this.prev = this.position.copy()
     }
 
     applyForce(force) {
@@ -331,6 +302,30 @@ export default function (p) {
 
     onScreen() {
       return onScreen(this.position, w, h)
+    }
+  }
+
+  class Obstacle {
+    constructor(x, y, w, h) {
+      this.position = p.createVector(x, y)
+      this.w = w
+      this.h = h
+    }
+
+    display() {
+      p.fill('black')
+      p.noStroke()
+      p.rectMode(p.CENTER)
+      p.rect(this.position.x, this.position.y, this.w, this.h)
+    }
+
+    contains(agent) {
+      return (
+        agent.position.x > this.position.x - this.w / 2 &&
+        agent.position.x < this.position.x + this.w / 2 &&
+        agent.position.y > this.position.y - this.h / 2 &&
+        agent.position.y < this.position.y + this.h / 2
+      )
     }
   }
 
