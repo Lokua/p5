@@ -163,6 +163,7 @@ export default function (p) {
       agent.applyForce(getFlowForce(agent.position, noiseScale))
       agent.update()
       agent.edges()
+      // agent.isDead() && agent.reset()
       agent.display()
     }
 
@@ -245,7 +246,8 @@ export default function (p) {
       this.opacity = opacity
       this.diameter = p.random(0.25, 3)
       this.history = []
-      this.prev = this.position.copy()
+      this.previousPosition = this.position.copy()
+      this.lifespan = 255
     }
 
     applyForce(force) {
@@ -257,6 +259,7 @@ export default function (p) {
       this.velocity.limit(this.maxSpeed)
       this.position.add(this.velocity)
       this.acceleration.mult(0)
+      this.lifespan -= 2
 
       if (this.opacity < 1) {
         this.opacity = p.constrain(this.opacity + 0.01, 0, 1)
@@ -274,27 +277,53 @@ export default function (p) {
 
       if (this.useVelocityBasedColorScaling) {
         const speed = this.velocity.mag()
-        agentBuffer.fill(
-          colorScale(speed / this.maxSpeed)
-            .alpha(this.opacity)
-            .rgba(),
-        )
+        const color = colorScale(speed / this.maxSpeed)
+          .alpha(this.opacity)
+          .rgba()
+        agentBuffer.fill(color)
+        agentBuffer.stroke(color)
       } else {
-        agentBuffer.fill(this.color.alpha(this.opacity).rgba())
+        const color = this.color.alpha(this.opacity).rgba()
+        agentBuffer.fill(color)
+        agentBuffer.stroke(color)
       }
 
       agentBuffer.circle(this.position.x, this.position.y, this.diameter)
+      agentBuffer.line(
+        this.position.x,
+        this.position.y,
+        this.previousPosition.x,
+        this.previousPosition.y,
+      )
+      this.previousPosition = this.position.copy()
+    }
+
+    isDead() {
+      return this.lifespan < 0
     }
 
     edges() {
       if (this.edgeMode === 'wrap') {
-        this.position.x > w && (this.position.x = 0)
-        this.position.x < 0 && (this.position.x = w)
-        this.position.y > h && (this.position.y = 0)
-        this.position.y < 0 && (this.position.y = h)
+        if (this.position.x > w) {
+          this.position.x = 0
+          this.previousPosition.x = 0
+        }
+        if (this.position.x < 0) {
+          this.position.x = w
+          this.previousPosition.x = w
+        }
+        if (this.position.y > h) {
+          this.position.y = 0
+          this.previousPosition.y = 0
+        }
+        if (this.position.y < 0) {
+          this.position.y = h
+          this.previousPosition.y = h
+        }
       } else if (this.edgeMode === 'respawn') {
         if (!this.onScreen()) {
           this.position = p.createVector(p.random(w), p.random(h))
+          this.previousPosition = this.position.copy()
           this.opacity = 0
         }
       }
@@ -302,6 +331,13 @@ export default function (p) {
 
     onScreen() {
       return onScreen(this.position, w, h)
+    }
+
+    reset() {
+      this.position = p.createVector(p.random(w), p.random(h))
+      this.lifespan = 255
+      this.velocity.mult(0)
+      this.opacity = 0
     }
   }
 
