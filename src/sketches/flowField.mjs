@@ -14,11 +14,14 @@ export default function (p) {
     pixelDensity: 6,
   }
   const [w, h] = [500, 500]
-  // eslint-disable-next-line no-unused-vars
   const center = p.createVector(w / 2, h / 2)
   const obstacles = []
   const agents = []
   let agentBuffer
+  const resolution = 50
+  const cols = Math.floor(w / resolution)
+  const rows = Math.floor(h / resolution)
+  const flowField = []
 
   const colorScale = chroma.scale('Spectral')
   const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 130 })
@@ -73,12 +76,17 @@ export default function (p) {
       },
       {
         type: 'Checkbox',
-        name: 'applyRandomForce',
+        name: 'useGridField',
         value: false,
       },
       {
         type: 'Checkbox',
         name: 'showObstacles',
+        value: false,
+      },
+      {
+        type: 'Checkbox',
+        name: 'applyRandomForce',
         value: false,
       },
     ],
@@ -93,6 +101,7 @@ export default function (p) {
     agentBuffer = p.createGraphics(w, h)
     agentBuffer.colorMode(p.RGB, 255, 255, 255, 1)
 
+    updateFlowField()
     obstacles.push(new Obstacle(center.x, center.y, 100, 100))
 
     return {
@@ -111,6 +120,7 @@ export default function (p) {
       applyRandomForce,
       showAgents,
       showObstacles,
+      useGridField,
     } = controlPanel.values()
 
     p.background(0)
@@ -135,13 +145,7 @@ export default function (p) {
             }
           }
         }
-        agents.push(
-          new Agent({
-            position: p.createVector(p.random(w), p.random(h)),
-            edgeMode,
-            applyRandomForce,
-          }),
-        )
+        agents.push(new Agent({ position, edgeMode, applyRandomForce }))
       }
     } else if (agents.length > count) {
       agents.splice(count, agents.length - count)
@@ -152,6 +156,8 @@ export default function (p) {
       agent.applyRandomForce = applyRandomForce
     })
 
+    useGridField && updateFlowField()
+
     for (const agent of agents) {
       if (showObstacles) {
         for (const obstacle of obstacles) {
@@ -160,19 +166,71 @@ export default function (p) {
           }
         }
       }
-      agent.applyForce(getFlowForce(agent.position, noiseScale))
+
+      agent.applyForce(getFlowForce(agent.position, noiseScale, useGridField))
       agent.update()
       agent.edges()
-      // agent.isDead() && agent.reset()
       agent.display()
     }
 
     showAgents && p.image(agentBuffer, 0, 0, w, h)
-    visualizeField && visualizeFlowField(noiseScale)
+    visualizeField && visualizeFlowField(noiseScale, useGridField)
     showSwatches && renderSwatches({ p, w, scales: [colorScale] })
   }
 
-  function getFlowForce(position, noiseScale) {
+  function updateFlowField() {
+    const zOffset = ah.getTotalBeatsElapsed()
+
+    const totalGridWidth = cols * resolution
+    const totalGridHeight = rows * resolution
+    const xOffset = (w - totalGridWidth) / 2
+    const yOffset = (h - totalGridHeight) / 2
+
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const index = x + y * cols
+        const noiseScale = 0.1
+
+        const gridPosX = x * resolution + xOffset + resolution / 2
+        const gridPosY = y * resolution + yOffset + resolution / 2
+
+        const nx = (gridPosX - w / 2) * noiseScale
+        const ny = (gridPosY - h / 2) * noiseScale
+
+        const value = p.noise(nx, ny, zOffset)
+        const angle = p.map(value, 0, 1, 0, p.TWO_PI)
+        const force = p5.Vector.fromAngle(angle)
+        force.setMag(0.1)
+        flowField[index] = force
+      }
+    }
+  }
+
+  function getFlowForce(position, noiseScale, useGridField) {
+    if (useGridField) {
+      // Calculate offsets to center the grid
+      const totalGridWidth = cols * resolution
+      const totalGridHeight = rows * resolution
+      const xOffset = (w - totalGridWidth) / 2
+      const yOffset = (h - totalGridHeight) / 2
+
+      // Adjust position by subtracting offsets
+      const adjustedX = position.x - xOffset
+      const adjustedY = position.y - yOffset
+
+      const x = Math.floor(adjustedX / resolution)
+      const y = Math.floor(adjustedY / resolution)
+
+      // Ensure indices are within bounds
+      if (x < 0 || x >= cols || y < 0 || y >= rows) {
+        return p5.Vector.mult(p.createVector(0, 0), 0)
+      }
+
+      const index = x + y * cols
+      const force = flowField[index].copy()
+      return force
+    }
+
     const zOffset = ah.getTotalBeatsElapsed()
     const x = position.x * noiseScale
     const y = position.y * noiseScale
@@ -183,38 +241,42 @@ export default function (p) {
     return force
   }
 
-  function visualizeFlowField(noiseScale) {
+  function visualizeFlowField(noiseScale, useGridField) {
     const useAngleBasedColor = false
-    const color = chroma('magenta').rgba()
-    const gridSize = 10
-    const gridSizeX = w / gridSize
-    const gridSizeY = h / gridSize
+    const baseColor = chroma('magenta').rgba()
 
-    for (let i = 0; i < gridSize; i++) {
-      for (let j = 0; j < gridSize; j++) {
-        const x = i * gridSizeX + gridSizeX / 2
-        const y = j * gridSizeY + gridSizeY / 2
+    const totalGridWidth = cols * resolution
+    const totalGridHeight = rows * resolution
+    const xOffset = (w - totalGridWidth) / 2
+    const yOffset = (h - totalGridHeight) / 2
 
-        const pos = p.createVector(x, y)
-        const force = getFlowForce(pos, noiseScale)
-        const scaledForce = p5.Vector.mult(force, 100)
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const position = p.createVector(
+          x * resolution + xOffset + resolution / 2,
+          y * resolution + yOffset + resolution / 2,
+        )
+
+        const force = getFlowForce(position, noiseScale, useGridField)
+        const scaledForce = p5.Vector.mult(force, resolution * 2)
 
         const angle = force.heading()
         const angleOffset = p.radians(30)
         const arrowSize = 5
-        const theColor = useAngleBasedColor
-          ? chroma.hsv(p.degrees(angle) % 360, 100, 100).rgba()
-          : color
 
-        const arrowTip = p5.Vector.add(pos, scaledForce)
+        const color = useAngleBasedColor
+          ? chroma.hsv(p.degrees(angle) % 360, 100, 100).rgba()
+          : baseColor
+
+        const arrowTip = p5.Vector.add(position, scaledForce)
         const arrowBase = p5.Vector.sub(
           arrowTip,
           p5.Vector.mult(force, arrowSize),
         )
 
-        p.stroke(theColor)
+        p.stroke(color)
         p.strokeWeight(1)
-        p.line(pos.x, pos.y, arrowBase.x, arrowBase.y)
+        p.line(position.x, position.y, arrowBase.x, arrowBase.y)
 
         const x1 = arrowTip.x - arrowSize * p.cos(angle - angleOffset)
         const y1 = arrowTip.y - arrowSize * p.sin(angle - angleOffset)
@@ -222,7 +284,7 @@ export default function (p) {
         const y2 = arrowTip.y - arrowSize * p.sin(angle + angleOffset)
 
         p.noStroke()
-        p.fill(theColor)
+        p.fill(color)
         p.triangle(arrowTip.x, arrowTip.y, x1, y1, x2, y2)
       }
     }
