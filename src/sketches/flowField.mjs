@@ -16,8 +16,8 @@ export default function (p) {
   const [w, h] = [500, 500]
   const center = p.createVector(w / 2, h / 2)
   const obstacles = []
-  const agents = []
-  let agentBuffer
+  const particles = []
+  let particleBuffer
   const resolution = 50
   const cols = Math.floor(w / resolution)
   const rows = Math.floor(h / resolution)
@@ -61,7 +61,7 @@ export default function (p) {
       },
       {
         type: 'Checkbox',
-        name: 'showAgents',
+        name: 'showParticles',
         value: true,
       },
       {
@@ -98,8 +98,8 @@ export default function (p) {
     p.colorMode(p.RGB, 255, 255, 255, 1)
     p.randomSeed(39)
     p.noiseSeed(39)
-    agentBuffer = p.createGraphics(w, h)
-    agentBuffer.colorMode(p.RGB, 255, 255, 255, 1)
+    particleBuffer = p.createGraphics(w, h)
+    particleBuffer.colorMode(p.RGB, 255, 255, 255, 1)
 
     updateFlowField()
     obstacles.push(new Obstacle(center.x, center.y, 100, 100))
@@ -118,13 +118,13 @@ export default function (p) {
       edgeMode,
       noiseScale,
       applyRandomForce,
-      showAgents,
+      showParticles,
       showObstacles,
       useGridField,
     } = controlPanel.values()
 
     p.background(0)
-    agentBuffer.background(chroma('black').alpha(backgroundAlpha).rgba())
+    particleBuffer.background(chroma('black').alpha(backgroundAlpha).rgba())
 
     if (showObstacles) {
       for (const obstacle of obstacles) {
@@ -132,8 +132,8 @@ export default function (p) {
       }
     }
 
-    if (agents.length < count) {
-      while (agents.length < count) {
+    if (particles.length < count) {
+      while (particles.length < count) {
         let position
         while (!position) {
           position = p.createVector(p.random(w), p.random(h))
@@ -145,35 +145,37 @@ export default function (p) {
             }
           }
         }
-        agents.push(new Agent({ position, edgeMode, applyRandomForce }))
+        particles.push(new Particle({ position, edgeMode, applyRandomForce }))
       }
-    } else if (agents.length > count) {
-      agents.splice(count, agents.length - count)
+    } else if (particles.length > count) {
+      particles.splice(count, particles.length - count)
     }
 
-    agents.forEach((agent) => {
-      agent.edgeMode = edgeMode
-      agent.applyRandomForce = applyRandomForce
+    particles.forEach((particle) => {
+      particle.edgeMode = edgeMode
+      particle.applyRandomForce = applyRandomForce
     })
 
     useGridField && updateFlowField()
 
-    for (const agent of agents) {
+    for (const particle of particles) {
       if (showObstacles) {
         for (const obstacle of obstacles) {
-          if (obstacle.contains(agent)) {
-            agent.velocity.mult(-1)
+          if (obstacle.contains(particle)) {
+            particle.velocity.mult(-1)
           }
         }
       }
 
-      agent.applyForce(getFlowForce(agent.position, noiseScale, useGridField))
-      agent.update()
-      agent.edges()
-      agent.display()
+      particle.applyForce(
+        getFlowForce(particle.position, noiseScale, useGridField),
+      )
+      particle.update()
+      particle.edges()
+      particle.display()
     }
 
-    showAgents && p.image(agentBuffer, 0, 0, w, h)
+    showParticles && p.image(particleBuffer, 0, 0, w, h)
     visualizeField && visualizeFlowField(noiseScale, useGridField)
     showSwatches && renderSwatches({ p, w, scales: [colorScale] })
   }
@@ -290,7 +292,7 @@ export default function (p) {
     }
   }
 
-  class Agent {
+  class Particle {
     constructor({
       position,
       edgeMode = 'wrap',
@@ -335,23 +337,23 @@ export default function (p) {
     }
 
     display() {
-      agentBuffer.noStroke()
+      particleBuffer.noStroke()
 
       if (this.useVelocityBasedColorScaling) {
         const speed = this.velocity.mag()
         const color = colorScale(speed / this.maxSpeed)
           .alpha(this.opacity)
           .rgba()
-        agentBuffer.fill(color)
-        agentBuffer.stroke(color)
+        particleBuffer.fill(color)
+        particleBuffer.stroke(color)
       } else {
         const color = this.color.alpha(this.opacity).rgba()
-        agentBuffer.fill(color)
-        agentBuffer.stroke(color)
+        particleBuffer.fill(color)
+        particleBuffer.stroke(color)
       }
 
-      agentBuffer.circle(this.position.x, this.position.y, this.diameter)
-      agentBuffer.line(
+      particleBuffer.circle(this.position.x, this.position.y, this.diameter)
+      particleBuffer.line(
         this.position.x,
         this.position.y,
         this.previousPosition.x,
@@ -417,12 +419,12 @@ export default function (p) {
       p.rect(this.position.x, this.position.y, this.w, this.h)
     }
 
-    contains(agent) {
+    contains(particle) {
       return (
-        agent.position.x > this.position.x - this.w / 2 &&
-        agent.position.x < this.position.x + this.w / 2 &&
-        agent.position.y > this.position.y - this.h / 2 &&
-        agent.position.y < this.position.y + this.h / 2
+        particle.position.x > this.position.x - this.w / 2 &&
+        particle.position.x < this.position.x + this.w / 2 &&
+        particle.position.y > this.position.y - this.h / 2 &&
+        particle.position.y < this.position.y + this.h / 2
       )
     }
   }
