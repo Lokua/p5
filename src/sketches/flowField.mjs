@@ -54,6 +54,14 @@ export default function (p) {
         step: 0.0001,
       },
       {
+        type: 'Range',
+        name: 'history',
+        value: 4,
+        min: 0,
+        max: 20,
+        step: 1,
+      },
+      {
         type: 'Select',
         name: 'edgeMode',
         value: 'wrap',
@@ -121,6 +129,7 @@ export default function (p) {
       showParticles,
       showObstacles,
       useGridField,
+      history,
     } = controlPanel.values()
 
     p.background(0)
@@ -145,7 +154,14 @@ export default function (p) {
             }
           }
         }
-        particles.push(new Particle({ position, edgeMode, applyRandomForce }))
+        particles.push(
+          new Particle({
+            position,
+            edgeMode,
+            applyRandomForce,
+            maxHistory: history,
+          }),
+        )
       }
     } else if (particles.length > count) {
       particles.splice(count, particles.length - count)
@@ -154,6 +170,7 @@ export default function (p) {
     particles.forEach((particle) => {
       particle.edgeMode = edgeMode
       particle.applyRandomForce = applyRandomForce
+      particle.maxHistory = history
     })
 
     useGridField && updateFlowField()
@@ -298,6 +315,7 @@ export default function (p) {
       edgeMode = 'wrap',
       opacity = 0,
       applyRandomForce = false,
+      maxHistory = 5,
     }) {
       this.position = position.copy()
       this.velocity = p.createVector(0, 0)
@@ -310,7 +328,7 @@ export default function (p) {
       this.opacity = opacity
       this.diameter = p.random(0.25, 3)
       this.history = []
-      this.previousPosition = this.position.copy()
+      this.maxHistory = maxHistory
       this.lifespan = 255
     }
 
@@ -319,6 +337,8 @@ export default function (p) {
     }
 
     update() {
+      this.history.unshift(this.position.copy())
+
       this.velocity.add(this.acceleration)
       this.velocity.limit(this.maxSpeed)
       this.position.add(this.velocity)
@@ -334,11 +354,20 @@ export default function (p) {
         randomForce.setMag(0.05)
         this.applyForce(randomForce)
       }
+
+      const maxIndex = this.maxHistory - 1
+      if (this.history.length > maxIndex) {
+        while (this.history.length > maxIndex) {
+          this.history.pop()
+        }
+      }
     }
 
     display() {
       particleBuffer.noStroke()
 
+      // TODO: this is broken now that we have history
+      // Keeping this here to remind me it could be cool
       if (this.useVelocityBasedColorScaling) {
         const speed = this.velocity.mag()
         const color = colorScale(speed / this.maxSpeed)
@@ -352,14 +381,20 @@ export default function (p) {
         particleBuffer.stroke(color)
       }
 
+      let prev = this.position
+      for (const [index, position] of this.history.entries()) {
+        const distance = p.dist(position.x, position.y, prev.x, prev.y)
+        const threshold = Math.min(w, h) / 2
+        if (distance < threshold) {
+          const value = this.maxHistory - index
+          const opacity = p.map(value, 0, this.maxHistory, 0, this.opacity)
+          particleBuffer.stroke(this.color.alpha(opacity).rgba())
+          particleBuffer.line(prev.x, prev.y, position.x, position.y)
+        }
+        prev = position
+      }
+
       particleBuffer.circle(this.position.x, this.position.y, this.diameter)
-      particleBuffer.line(
-        this.position.x,
-        this.position.y,
-        this.previousPosition.x,
-        this.previousPosition.y,
-      )
-      this.previousPosition = this.position.copy()
     }
 
     isDead() {
@@ -368,26 +403,13 @@ export default function (p) {
 
     edges() {
       if (this.edgeMode === 'wrap') {
-        if (this.position.x > w) {
-          this.position.x = 0
-          this.previousPosition.x = 0
-        }
-        if (this.position.x < 0) {
-          this.position.x = w
-          this.previousPosition.x = w
-        }
-        if (this.position.y > h) {
-          this.position.y = 0
-          this.previousPosition.y = 0
-        }
-        if (this.position.y < 0) {
-          this.position.y = h
-          this.previousPosition.y = h
-        }
+        this.position.x > w && (this.position.x = 0)
+        this.position.x < 0 && (this.position.x = w)
+        this.position.y > h && (this.position.y = 0)
+        this.position.y < 0 && (this.position.y = h)
       } else if (this.edgeMode === 'respawn') {
         if (!this.onScreen()) {
           this.position = p.createVector(p.random(w), p.random(h))
-          this.previousPosition = this.position.copy()
           this.opacity = 0
         }
       }
