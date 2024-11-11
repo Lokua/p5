@@ -289,3 +289,7 @@ export function msToTime(duration) {
 
   return `${format(hours)}:${format(minutes)}:${format(seconds)}.${milliseconds}`
 }
+
+export function onScreen(v, w, h) {
+  return v.x >= 0 && v.x <= w && v.y >= 0 && v.y <= h
+}

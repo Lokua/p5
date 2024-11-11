@@ -206,6 +206,7 @@ export const chromaBrewerKeys = [
   'Pastel2',
   'Pastel1',
 ]
+
 export function renderSwatches({
   p,
   w,

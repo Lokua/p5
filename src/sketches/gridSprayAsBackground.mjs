@@ -35,6 +35,7 @@ export default function (p) {
   })
 
   const [w, h] = [500, 500]
+  const center = p.createVector(w / 2, h / 2)
 
   function setup() {
     controlPanel.init()
@@ -71,11 +72,11 @@ export default function (p) {
 
     circle({
       p,
-      x: w / 2,
-      y: h / 2,
+      x: center.x,
+      y: center.y,
       d: ah.anim8([1, 800, 1], 128),
       segments: 6,
-      fillStep: 3,
+      fillStep: 4,
       fillOrder: 'trbl',
       fillPattern: 'random',
       lineFn: (...args) => {
@@ -101,7 +102,7 @@ export default function (p) {
     d = 20,
     segments = 100,
     fillStep = 1,
-    fillOrder = 'allReversed',
+    fillOrder = 'trbl',
     fillPattern = 'spiral',
     lineFn,
     fillFn,
@@ -126,108 +127,81 @@ export default function (p) {
       const centerY = y
       const validPoints = []
 
+      const pushIfInPolygon = (x, y) =>
+        pointInPolygon(x, y, points) && validPoints.push({ x, y })
+
       if (fillOrder === 'tlbr') {
         for (let px = left; px <= right; px += fillStep) {
           for (let py = top; py <= bottom; py += fillStep) {
-            if (pointInPolygon(px, py, points)) {
-              validPoints.push({ x: px, y: py })
-            }
+            pushIfInPolygon(px, py)
           }
         }
       } else if (fillOrder === 'trbl') {
         for (let px = right; px >= left; px -= fillStep) {
           for (let py = top; py <= bottom; py += fillStep) {
-            if (pointInPolygon(px, py, points)) {
-              validPoints.push({ x: px, y: py })
-            }
+            pushIfInPolygon(px, py)
           }
         }
       } else if (fillOrder === 'brtl') {
         for (let px = right; px >= left; px -= fillStep) {
           for (let py = bottom; py >= top; py -= fillStep) {
-            if (pointInPolygon(px, py, points)) {
-              validPoints.push({ x: px, y: py })
-            }
+            pushIfInPolygon(px, py)
           }
         }
       } else if (fillOrder === 'bltr') {
         for (let px = left; px <= right; px += fillStep) {
           for (let py = bottom; py >= top; py -= fillStep) {
-            if (pointInPolygon(px, py, points)) {
-              validPoints.push({ x: px, y: py })
-            }
+            pushIfInPolygon(px, py)
           }
         }
-      } else if (fillOrder === 'all') {
+      } else if (fillOrder === 'inward') {
         // Top-Left quadrant: left to right, top to bottom
         for (let px = left; px <= (left + right) / 2; px += fillStep) {
           for (let py = top; py <= (top + bottom) / 2; py += fillStep) {
-            if (pointInPolygon(px, py, points)) {
-              validPoints.push({ x: px, y: py })
-            }
+            pushIfInPolygon(px, py)
           }
         }
-
         // Top-Right quadrant: right to left, top to bottom
         for (let px = right; px >= (left + right) / 2; px -= fillStep) {
           for (let py = top; py <= (top + bottom) / 2; py += fillStep) {
-            if (pointInPolygon(px, py, points)) {
-              validPoints.push({ x: px, y: py })
-            }
+            pushIfInPolygon(px, py)
           }
         }
-
         // Bottom-Left quadrant: left to right, bottom to top
         for (let px = left; px <= (left + right) / 2; px += fillStep) {
           for (let py = bottom; py >= (top + bottom) / 2; py -= fillStep) {
-            if (pointInPolygon(px, py, points)) {
-              validPoints.push({ x: px, y: py })
-            }
+            pushIfInPolygon(px, py)
           }
         }
-
         // Bottom-Right quadrant: right to left, bottom to top
         for (let px = right; px >= (left + right) / 2; px -= fillStep) {
           for (let py = bottom; py >= (top + bottom) / 2; py -= fillStep) {
-            if (pointInPolygon(px, py, points)) {
-              validPoints.push({ x: px, y: py })
-            }
+            pushIfInPolygon(px, py)
           }
         }
-      } else if (fillOrder === 'allReversed') {
+      } else if (fillOrder === 'outward') {
         // Top-Left quadrant: start from center and move to top-left corner
         for (let py = (top + bottom) / 2; py >= top; py -= fillStep) {
           for (let px = (left + right) / 2; px >= left; px -= fillStep) {
-            if (pointInPolygon(px, py, points)) {
-              validPoints.push({ x: px, y: py })
-            }
+            pushIfInPolygon(px, py)
           }
         }
-
         // Top-Right quadrant: start from center and move to top-right corner
         for (let py = (top + bottom) / 2; py >= top; py -= fillStep) {
           for (let px = (left + right) / 2; px <= right; px += fillStep) {
-            if (pointInPolygon(px, py, points)) {
-              validPoints.push({ x: px, y: py })
-            }
+            pushIfInPolygon(px, py)
           }
         }
-
         // Bottom-Left quadrant: start from center and move to bottom-left corner
         for (let py = (top + bottom) / 2; py <= bottom; py += fillStep) {
           for (let px = (left + right) / 2; px >= left; px -= fillStep) {
-            if (pointInPolygon(px, py, points)) {
-              validPoints.push({ x: px, y: py })
-            }
+            pushIfInPolygon(px, py)
           }
         }
-
         // Bottom-Right quadrant: start from center and move to bottom-right corner
         for (let py = (top + bottom) / 2; py <= bottom; py += fillStep) {
           for (let px = (left + right) / 2; px <= right; px += fillStep) {
-            if (pointInPolygon(px, py, points)) {
-              validPoints.push({ x: px, y: py })
-            }
+            pushIfInPolygon(px, py)
           }
         }
       }
