@@ -61,6 +61,11 @@ export default function (p) {
       },
       {
         type: 'Checkbox',
+        name: 'showAgents',
+        value: true,
+      },
+      {
+        type: 'Checkbox',
         name: 'showSwatches',
         value: false,
       },
@@ -111,6 +116,7 @@ export default function (p) {
       edgeMode,
       noiseScale,
       applyRandomForce,
+      showAgents,
     } = controlPanel.values()
     p.background(0)
     agentBuffer.background(chroma('black').alpha(backgroundAlpha).rgba())
@@ -141,8 +147,8 @@ export default function (p) {
       agent.display()
     }
 
-    p.image(agentBuffer, 0, 0, w, h)
-
+    showAgents && p.image(agentBuffer, 0, 0, w, h)
+    visualizeFlowField2(flowForceType, noiseScale)
     visualizeField && visualizeFlowField(flowForceType, noiseScale)
     showSwatches && renderSwatches({ p, w, scales: [colorScale] })
   }
@@ -174,10 +180,42 @@ export default function (p) {
     return force
   }
 
+  function visualizeFlowField2(flowForceType, noiseScale) {
+    const useAngleBasedColor = true
+    const color = chroma('cyan').alpha(0.5).rgba()
+    const gridSize = 25
+    const gridSizeX = w / gridSize
+    const gridSizeY = h / gridSize
+
+    for (let i = 0; i < gridSize; i++) {
+      for (let j = 0; j < gridSize; j++) {
+        const x = i * gridSizeX + gridSizeX / 2
+        const y = j * gridSizeY + gridSizeY / 2
+
+        const pos = p.createVector(x, y)
+        const force = getFlowForce(pos, flowForceType, noiseScale)
+        const scaledForce = p5.Vector.mult(force, 50)
+
+        const theColor = useAngleBasedColor
+          ? chroma
+              .hsv(p.degrees(force.heading()) % 360, 100, 100)
+              .alpha(0.1)
+              .rgba()
+          : color
+
+        const end = p5.Vector.add(pos, scaledForce)
+
+        p.stroke(theColor)
+        p.strokeWeight(1)
+        p.line(pos.x, pos.y, end.x, end.y)
+      }
+    }
+  }
+
   function visualizeFlowField(flowForceType, noiseScale) {
     const useAngleBasedColor = false
     const color = chroma('magenta').rgba()
-    const gridSize = 25
+    const gridSize = 10
     const gridSizeX = w / gridSize
     const gridSizeY = h / gridSize
 
@@ -235,7 +273,7 @@ export default function (p) {
       this.useVelocityBasedColorScaling = false
       this.applyRandomForce = applyRandomForce
       this.opacity = opacity
-      this.diameter = p.random(0.25, 1)
+      this.diameter = p.random(0.25, 2)
       this.history = []
     }
 
