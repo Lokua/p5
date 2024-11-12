@@ -60,7 +60,7 @@ export default function (p) {
         name: 'history',
         value: 4,
         min: 1,
-        max: 20,
+        max: 100,
         step: 1,
       },
       {
@@ -86,6 +86,19 @@ export default function (p) {
         options: ['wrap', 'respawn'],
       },
       {
+        type: 'Select',
+        name: 'forceMode',
+        value: 'grid',
+        options: [
+          'grid',
+          'algorithmic',
+          'combinedAdditive',
+          'combinedAveraged',
+          'combinedMultiplicative',
+          // TODO: combinedAverageWeighted
+        ],
+      },
+      {
         type: 'Checkbox',
         name: 'showParticles',
         value: true,
@@ -98,11 +111,6 @@ export default function (p) {
       {
         type: 'Checkbox',
         name: 'visualizeField',
-        value: false,
-      },
-      {
-        type: 'Checkbox',
-        name: 'useGridField',
         value: false,
       },
       {
@@ -143,12 +151,12 @@ export default function (p) {
       visualizeField,
       backgroundAlpha,
       edgeMode,
+      forceMode,
       noiseScale,
       forceMagnitude,
       applyRandomForce,
       showParticles,
       showObstacles,
-      useGridField,
       history,
     } = controlPanel.values()
 
@@ -182,7 +190,9 @@ export default function (p) {
       particles.splice(count, particles.length - count)
     }
 
-    useGridField && updateFlowField(noiseScale, forceMagnitude)
+    if (forceMode === 'grid') {
+      updateFlowField(noiseScale, forceMagnitude)
+    }
 
     for (const particle of particles) {
       particle.edgeMode = edgeMode
@@ -200,23 +210,31 @@ export default function (p) {
         }
       }
 
-      const combineForces = true
+      const combineForces = false
       if (combineForces) {
-        particle.applyForce(
-          p5.Vector.add(
-            getFlowForce(particle.position, noiseScale, true, forceMagnitude),
-            getFlowForce(particle.position, noiseScale, false, forceMagnitude),
-          ),
+        const force1 = getFlowForce(
+          particle.position,
+          noiseScale,
+          true,
+          forceMagnitude,
         )
+        const force2 = getFlowForce(
+          particle.position,
+          noiseScale,
+          false,
+          forceMagnitude,
+        )
+        const combinedForce = p5.Vector.mult(force1, force2.mag())
+        combinedForce.normalize().mult(force1.mag() + force2.mag())
+        particle.applyForce(combinedForce)
+        // particle.applyForce(
+        //   p5.Vector.add(
+        //     getFlowForce(particle.position, noiseScale, true, forceMagnitude),
+        //     getFlowForce(particle.position, noiseScale, false, forceMagnitude),
+        //   ),
+        // )
       } else {
-        particle.applyForce(
-          getFlowForce(
-            particle.position,
-            noiseScale,
-            useGridField,
-            forceMagnitude,
-          ),
-        )
+        particle.applyForce(getFlowForce(particle.position))
       }
       particle.update()
       particle.edges()
@@ -231,8 +249,7 @@ export default function (p) {
 
     showParticles && p.image(particleBuffer, 0, 0, w, h)
     showObstacles && displayObstacles()
-    visualizeField &&
-      visualizeFlowField(noiseScale, useGridField, forceMagnitude)
+    visualizeField && visualizeFlowField()
     showSwatches && renderSwatches({ p, w, scales: [colorScale] })
   }
 
@@ -241,8 +258,6 @@ export default function (p) {
   }
 
   function updateFlowField(noiseScale = 0.1, forceMagnitude = 0.1) {
-    const zOffset = getZOffset()
-
     const totalGridWidth = cols * resolution
     const totalGridHeight = rows * resolution
     const xOffset = (w - totalGridWidth) / 2
@@ -258,7 +273,7 @@ export default function (p) {
         const nx = (gridPosX - w / 2) * noiseScale
         const ny = (gridPosY - h / 2) * noiseScale
 
-        const value = p.noise(nx, ny, zOffset)
+        const value = p.noise(nx, ny, getZOffset())
         const angle = p.map(value, 0, 1, 0, p.TWO_PI)
         const force = p5.Vector.fromAngle(angle)
         force.setMag(forceMagnitude)
@@ -282,42 +297,56 @@ export default function (p) {
     }
   }
 
-  function getFlowForce(position, noiseScale, useGridField, forceMagnitude) {
-    if (useGridField) {
-      // Calculate offsets to center the grid
+  const forceModes = {
+    grid(position) {
       const totalGridWidth = cols * resolution
       const totalGridHeight = rows * resolution
       const xOffset = (w - totalGridWidth) / 2
       const yOffset = (h - totalGridHeight) / 2
-
-      // Adjust position by subtracting offsets
       const adjustedX = position.x - xOffset
       const adjustedY = position.y - yOffset
-
       const x = Math.floor(adjustedX / resolution)
       const y = Math.floor(adjustedY / resolution)
-
-      // Ensure indices are within bounds
       if (x < 0 || x >= cols || y < 0 || y >= rows) {
         return p.createVector(0, 0)
       }
-
       const index = x + y * cols
       const force = flowField[index].copy()
       return force
-    }
-
-    const zOffset = getZOffset()
-    const x = position.x * noiseScale
-    const y = position.y * noiseScale
-    const value = p.noise(x, y, zOffset)
-    const angle = p.map(value, 0, 1, 0, p.TWO_PI)
-    const force = p5.Vector.fromAngle(angle)
-    force.setMag(forceMagnitude)
-    return force
+    },
+    algorithmic(position) {
+      const noiseScale = controlPanel.get('noiseScale')
+      const x = position.x * noiseScale
+      const y = position.y * noiseScale
+      const value = p.noise(x, y, getZOffset())
+      const angle = p.map(value, 0, 1, 0, p.TWO_PI)
+      const force = p5.Vector.fromAngle(angle)
+      force.setMag(controlPanel.get('forceMagnitude'))
+      return force
+    },
+    combinedAdditive(position) {
+      const force1 = forceModes.grid(position)
+      const force2 = forceModes.algorithmic(position)
+      return p5.Vector.add(force1, force2)
+    },
+    combinedAveraged(position) {
+      const force1 = forceModes.grid(position)
+      const force2 = forceModes.algorithmic(position)
+      return p5.Vector.add(force1, force2).mult(0.5)
+    },
+    combinedMultiplicative(position) {
+      const force1 = forceModes.grid(position)
+      const force2 = forceModes.algorithmic(position)
+      const combinedForce = p5.Vector.mult(force1, force2.mag())
+      return combinedForce.normalize().mult(force1.mag() + force2.mag())
+    },
   }
 
-  function visualizeFlowField(noiseScale, useGridField, forceMagnitude) {
+  function getFlowForce(position) {
+    return forceModes[controlPanel.get('forceMode')](position)
+  }
+
+  function visualizeFlowField() {
     const useAngleBasedColor = false
     const baseColor = chroma('magenta').rgba()
 
@@ -333,12 +362,7 @@ export default function (p) {
           y * resolution + yOffset + resolution / 2,
         )
 
-        const force = getFlowForce(
-          position,
-          noiseScale,
-          useGridField,
-          forceMagnitude,
-        )
+        const force = getFlowForce(position)
         const scaledForce = p5.Vector.mult(force, resolution * 2)
 
         const angle = force.heading()
