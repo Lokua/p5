@@ -18,12 +18,14 @@ export default function (p) {
   const obstacles = []
   const particles = []
   let particleBuffer
-  const resolution = 50
+  const resolution = 20
   const cols = Math.floor(w / resolution)
   const rows = Math.floor(h / resolution)
   const flowField = []
 
-  const colorScale = chroma.scale('Spectral')
+  // const colorScale = chroma.scale('Set3')
+  // const colorScale = chroma.scale('Accent')
+  const colorScale = chroma.scale(['turquoise', 'yellow'])
   const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 130 })
 
   const controlPanel = createControlPanel({
@@ -50,16 +52,32 @@ export default function (p) {
         name: 'noiseScale',
         value: 0.0001,
         min: 0.0001,
-        max: 1,
+        max: 0.05,
         step: 0.0001,
       },
       {
         type: 'Range',
         name: 'history',
         value: 4,
-        min: 0,
+        min: 1,
         max: 20,
         step: 1,
+      },
+      {
+        type: 'Range',
+        name: 'forceMagnitude',
+        value: 0.1,
+        min: 0.01,
+        max: 1,
+        step: 0.001,
+      },
+      {
+        type: 'Range',
+        name: 'zOffsetMultiplier',
+        value: 0.01,
+        min: 0.001,
+        max: 1,
+        step: 0.001,
       },
       {
         type: 'Select',
@@ -109,7 +127,8 @@ export default function (p) {
     particleBuffer = p.createGraphics(w, h)
     particleBuffer.colorMode(p.RGB, 255, 255, 255, 1)
 
-    updateFlowField(controlPanel.get('noiseScale'))
+    const { noiseScale, forceMagnitude } = controlPanel.values()
+    updateFlowField(noiseScale, forceMagnitude)
     initializeObstacles()
 
     return {
@@ -125,6 +144,7 @@ export default function (p) {
       backgroundAlpha,
       edgeMode,
       noiseScale,
+      forceMagnitude,
       applyRandomForce,
       showParticles,
       showObstacles,
@@ -134,8 +154,6 @@ export default function (p) {
 
     p.background(0)
     particleBuffer.background(chroma('black').alpha(backgroundAlpha).rgba())
-
-    // showObstacles && displayObstacles()
 
     if (particles.length < count) {
       while (particles.length < count) {
@@ -164,40 +182,66 @@ export default function (p) {
       particles.splice(count, particles.length - count)
     }
 
-    particles.forEach((particle) => {
+    useGridField && updateFlowField(noiseScale, forceMagnitude)
+
+    for (const particle of particles) {
       particle.edgeMode = edgeMode
       particle.applyRandomForce = applyRandomForce
       particle.maxHistory = history
-    })
 
-    useGridField && updateFlowField(noiseScale)
-
-    for (const particle of particles) {
       if (showObstacles) {
         for (const obstacle of obstacles) {
           if (obstacle.contains(particle)) {
-            // -1 gives that awesome jitter effect
+            // -1 gives awesome jitter effect
+            // but bounce back is too much
             particle.velocity.mult(-0.5)
+            particle.markedForDeath = true
           }
         }
       }
 
-      particle.applyForce(
-        getFlowForce(particle.position, noiseScale, useGridField),
-      )
+      const combineForces = true
+      if (combineForces) {
+        particle.applyForce(
+          p5.Vector.add(
+            getFlowForce(particle.position, noiseScale, true, forceMagnitude),
+            getFlowForce(particle.position, noiseScale, false, forceMagnitude),
+          ),
+        )
+      } else {
+        particle.applyForce(
+          getFlowForce(
+            particle.position,
+            noiseScale,
+            useGridField,
+            forceMagnitude,
+          ),
+        )
+      }
       particle.update()
       particle.edges()
       particle.display()
     }
 
+    for (let i = particles.length - 1; i >= 0; i--) {
+      if (particles[i].isDead()) {
+        particles.splice(i, 1)
+      }
+    }
+
     showParticles && p.image(particleBuffer, 0, 0, w, h)
     showObstacles && displayObstacles()
-    visualizeField && visualizeFlowField(noiseScale, useGridField)
+    visualizeField &&
+      visualizeFlowField(noiseScale, useGridField, forceMagnitude)
     showSwatches && renderSwatches({ p, w, scales: [colorScale] })
   }
 
-  function updateFlowField(noiseScale = 0.1) {
-    const zOffset = ah.getTotalBeatsElapsed()
+  function getZOffset() {
+    return ah.getTotalBeatsElapsed() * controlPanel.get('zOffsetMultiplier')
+  }
+
+  function updateFlowField(noiseScale = 0.1, forceMagnitude = 0.1) {
+    const zOffset = getZOffset()
 
     const totalGridWidth = cols * resolution
     const totalGridHeight = rows * resolution
@@ -217,7 +261,7 @@ export default function (p) {
         const value = p.noise(nx, ny, zOffset)
         const angle = p.map(value, 0, 1, 0, p.TWO_PI)
         const force = p5.Vector.fromAngle(angle)
-        force.setMag(0.1)
+        force.setMag(forceMagnitude)
         flowField[index] = force
       }
     }
@@ -225,15 +269,10 @@ export default function (p) {
 
   function initializeObstacles() {
     const size = 100
-    // Center
     obstacles.push(new Obstacle(center.x, center.y, size, size))
-    // Top left
     obstacles.push(new Obstacle(center.x / 2, center.y / 2, size, size))
-    // Top right
     obstacles.push(new Obstacle(center.x * 1.5, center.y / 2, size, size))
-    // Bottom left
     obstacles.push(new Obstacle(center.x / 2, center.y * 1.5, size, size))
-    // Bottom right
     obstacles.push(new Obstacle(center.x * 1.5, center.y * 1.5, size, size))
   }
 
@@ -243,7 +282,7 @@ export default function (p) {
     }
   }
 
-  function getFlowForce(position, noiseScale, useGridField) {
+  function getFlowForce(position, noiseScale, useGridField, forceMagnitude) {
     if (useGridField) {
       // Calculate offsets to center the grid
       const totalGridWidth = cols * resolution
@@ -268,17 +307,17 @@ export default function (p) {
       return force
     }
 
-    const zOffset = ah.getTotalBeatsElapsed()
+    const zOffset = getZOffset()
     const x = position.x * noiseScale
     const y = position.y * noiseScale
     const value = p.noise(x, y, zOffset)
     const angle = p.map(value, 0, 1, 0, p.TWO_PI)
     const force = p5.Vector.fromAngle(angle)
-    force.setMag(0.1)
+    force.setMag(forceMagnitude)
     return force
   }
 
-  function visualizeFlowField(noiseScale, useGridField) {
+  function visualizeFlowField(noiseScale, useGridField, forceMagnitude) {
     const useAngleBasedColor = false
     const baseColor = chroma('magenta').rgba()
 
@@ -294,7 +333,12 @@ export default function (p) {
           y * resolution + yOffset + resolution / 2,
         )
 
-        const force = getFlowForce(position, noiseScale, useGridField)
+        const force = getFlowForce(
+          position,
+          noiseScale,
+          useGridField,
+          forceMagnitude,
+        )
         const scaledForce = p5.Vector.mult(force, resolution * 2)
 
         const angle = force.heading()
@@ -344,6 +388,7 @@ export default function (p) {
       this.useVelocityBasedColorScaling = false
       this.applyRandomForce = applyRandomForce
       this.opacity = opacity
+      this.maxOpacity = 0.9
       this.diameter = p.random(0.25, 3)
       this.history = []
       this.maxHistory = maxHistory
@@ -361,10 +406,9 @@ export default function (p) {
       this.velocity.limit(this.maxSpeed)
       this.position.add(this.velocity)
       this.acceleration.mult(0)
-      this.lifespan -= 2
 
-      if (this.opacity < 1) {
-        this.opacity = p.constrain(this.opacity + 0.01, 0, 1)
+      if (this.opacity < this.maxOpacity) {
+        this.opacity = p.constrain(this.opacity + 0.01, 0, this.maxOpacity)
       }
 
       if (this.applyRandomForce) {
@@ -382,6 +426,10 @@ export default function (p) {
     }
 
     display() {
+      if (this.isDead()) {
+        return
+      }
+
       particleBuffer.noStroke()
 
       // TODO: this is broken now that we have history
@@ -421,17 +469,26 @@ export default function (p) {
 
     edges() {
       if (this.edgeMode === 'wrap') {
+        let wrapped = false
         if (this.position.x > w) {
           this.position.x = 0
+          wrapped = true
         }
         if (this.position.x < 0) {
           this.position.x = w
+          wrapped = true
         }
         if (this.position.y > h) {
           this.position.y = 0
+          wrapped = true
         }
         if (this.position.y < 0) {
           this.position.y = h
+          wrapped = true
+        }
+
+        if (wrapped && this.markedForDeath) {
+          this.lifespan = -1
         }
       } else if (this.edgeMode === 'respawn') {
         if (!this.onScreen()) {

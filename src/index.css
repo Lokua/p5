@@ -303,7 +303,7 @@ select:focus {
 }
 
 .theme-black {
-  background-color: #000;
+  background-color: #111;
 
   #controls {
     background-color: #222;
