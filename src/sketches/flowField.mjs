@@ -80,6 +80,14 @@ export default function (p) {
         step: 0.001,
       },
       {
+        type: 'Range',
+        name: 'angleOffset',
+        value: 0,
+        min: 0,
+        max: 360,
+        step: 1,
+      },
+      {
         type: 'Select',
         name: 'edgeMode',
         value: 'wrap',
@@ -95,7 +103,6 @@ export default function (p) {
           'combinedAdditive',
           'combinedAveraged',
           'combinedMultiplicative',
-          // TODO: combinedAverageWeighted
         ],
       },
       {
@@ -152,8 +159,6 @@ export default function (p) {
       backgroundAlpha,
       edgeMode,
       forceMode,
-      noiseScale,
-      forceMagnitude,
       applyRandomForce,
       showParticles,
       showObstacles,
@@ -190,8 +195,8 @@ export default function (p) {
       particles.splice(count, particles.length - count)
     }
 
-    if (forceMode === 'grid') {
-      updateFlowField(noiseScale, forceMagnitude)
+    if (forceMode !== 'algorithmic') {
+      updateFlowField()
     }
 
     for (const particle of particles) {
@@ -210,32 +215,7 @@ export default function (p) {
         }
       }
 
-      const combineForces = false
-      if (combineForces) {
-        const force1 = getFlowForce(
-          particle.position,
-          noiseScale,
-          true,
-          forceMagnitude,
-        )
-        const force2 = getFlowForce(
-          particle.position,
-          noiseScale,
-          false,
-          forceMagnitude,
-        )
-        const combinedForce = p5.Vector.mult(force1, force2.mag())
-        combinedForce.normalize().mult(force1.mag() + force2.mag())
-        particle.applyForce(combinedForce)
-        // particle.applyForce(
-        //   p5.Vector.add(
-        //     getFlowForce(particle.position, noiseScale, true, forceMagnitude),
-        //     getFlowForce(particle.position, noiseScale, false, forceMagnitude),
-        //   ),
-        // )
-      } else {
-        particle.applyForce(getFlowForce(particle.position))
-      }
+      particle.applyForce(getFlowForce(particle.position))
       particle.update()
       particle.edges()
       particle.display()
@@ -257,7 +237,20 @@ export default function (p) {
     return ah.getTotalBeatsElapsed() * controlPanel.get('zOffsetMultiplier')
   }
 
-  function updateFlowField(noiseScale = 0.1, forceMagnitude = 0.1) {
+  function angleForPosition(position) {
+    const noiseScale = controlPanel.get('noiseScale')
+    const x = position.x * noiseScale
+    const y = position.y * noiseScale
+    const value = p.noise(x, y, getZOffset())
+    const angle =
+      p.map(value, 0, 1, 0, p.TWO_PI) +
+      p.sin(p.radians(controlPanel.get('angleOffset')))
+    const force = p5.Vector.fromAngle(angle)
+    force.setMag(controlPanel.get('forceMagnitude'))
+    return force
+  }
+
+  function updateFlowField() {
     const totalGridWidth = cols * resolution
     const totalGridHeight = rows * resolution
     const xOffset = (w - totalGridWidth) / 2
@@ -270,30 +263,13 @@ export default function (p) {
         const gridPosX = x * resolution + xOffset + resolution / 2
         const gridPosY = y * resolution + yOffset + resolution / 2
 
-        const nx = (gridPosX - w / 2) * noiseScale
-        const ny = (gridPosY - h / 2) * noiseScale
+        const force = angleForPosition({
+          x: gridPosX - w / 2,
+          y: gridPosY - h / 2,
+        })
 
-        const value = p.noise(nx, ny, getZOffset())
-        const angle = p.map(value, 0, 1, 0, p.TWO_PI)
-        const force = p5.Vector.fromAngle(angle)
-        force.setMag(forceMagnitude)
         flowField[index] = force
       }
-    }
-  }
-
-  function initializeObstacles() {
-    const size = 100
-    obstacles.push(new Obstacle(center.x, center.y, size, size))
-    obstacles.push(new Obstacle(center.x / 2, center.y / 2, size, size))
-    obstacles.push(new Obstacle(center.x * 1.5, center.y / 2, size, size))
-    obstacles.push(new Obstacle(center.x / 2, center.y * 1.5, size, size))
-    obstacles.push(new Obstacle(center.x * 1.5, center.y * 1.5, size, size))
-  }
-
-  function displayObstacles() {
-    for (const obstacle of obstacles) {
-      obstacle.display()
     }
   }
 
@@ -314,16 +290,7 @@ export default function (p) {
       const force = flowField[index].copy()
       return force
     },
-    algorithmic(position) {
-      const noiseScale = controlPanel.get('noiseScale')
-      const x = position.x * noiseScale
-      const y = position.y * noiseScale
-      const value = p.noise(x, y, getZOffset())
-      const angle = p.map(value, 0, 1, 0, p.TWO_PI)
-      const force = p5.Vector.fromAngle(angle)
-      force.setMag(controlPanel.get('forceMagnitude'))
-      return force
-    },
+    algorithmic: angleForPosition,
     combinedAdditive(position) {
       const force1 = forceModes.grid(position)
       const force2 = forceModes.algorithmic(position)
@@ -392,6 +359,21 @@ export default function (p) {
         p.fill(color)
         p.triangle(arrowTip.x, arrowTip.y, x1, y1, x2, y2)
       }
+    }
+  }
+
+  function initializeObstacles() {
+    const size = 100
+    obstacles.push(new Obstacle(center.x, center.y, size, size))
+    obstacles.push(new Obstacle(center.x / 2, center.y / 2, size, size))
+    obstacles.push(new Obstacle(center.x * 1.5, center.y / 2, size, size))
+    obstacles.push(new Obstacle(center.x / 2, center.y * 1.5, size, size))
+    obstacles.push(new Obstacle(center.x * 1.5, center.y * 1.5, size, size))
+  }
+
+  function displayObstacles() {
+    for (const obstacle of obstacles) {
+      obstacle.display()
     }
   }
 
