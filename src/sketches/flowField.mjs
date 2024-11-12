@@ -17,7 +17,7 @@ export default function (p) {
   const center = p.createVector(w / 2, h / 2)
   const obstacles = []
   const particles = []
-  const attractors = []
+  let blackHole
   let particleBuffer
   const resolution = 20
   const cols = Math.floor(w / resolution)
@@ -87,6 +87,14 @@ export default function (p) {
         step: 1,
       },
       {
+        type: 'Range',
+        name: 'blackHoleAttractorStrength',
+        value: 1000,
+        min: 1,
+        max: 10_000,
+        step: 1,
+      },
+      {
         type: 'Select',
         name: 'edgeMode',
         value: 'wrap',
@@ -125,7 +133,7 @@ export default function (p) {
       },
       {
         type: 'Checkbox',
-        name: 'showAttractors',
+        name: 'showBlackHoleAttractor',
         value: false,
       },
       {
@@ -145,10 +153,15 @@ export default function (p) {
     particleBuffer = p.createGraphics(w, h)
     particleBuffer.colorMode(p.RGB, 255, 255, 255, 1)
 
-    const { noiseScale, forceMagnitude } = controlPanel.values()
+    const { noiseScale, forceMagnitude, blackHoleAttractorStrength } =
+      controlPanel.values()
+
     updateFlowField(noiseScale, forceMagnitude)
     initializeObstacles()
-    initializeAttractors()
+    blackHole = new BlackHoleAttractor(
+      p.createVector(center.x, center.y),
+      blackHoleAttractorStrength,
+    )
 
     return {
       canvas,
@@ -160,13 +173,14 @@ export default function (p) {
       count,
       showSwatches,
       visualizeField,
+      blackHoleAttractorStrength,
       backgroundAlpha,
       edgeMode,
       forceMode,
       applyRandomForce,
       showParticles,
       showObstacles,
-      showAttractors,
+      showBlackHoleAttractor,
       history,
     } = controlPanel.values()
 
@@ -185,12 +199,10 @@ export default function (p) {
                 break
               }
             }
-            if (position && showAttractors) {
-              for (const attractor of attractors) {
-                if (attractor.contains({ position })) {
-                  position = null
-                  break
-                }
+            if (position && showBlackHoleAttractor) {
+              if (blackHole.contains({ position })) {
+                position = null
+                break
               }
             }
           }
@@ -228,22 +240,20 @@ export default function (p) {
 
       const applyAttractorDirect = false
       const flowForce = getFlowForce(particle.position)
-      const totalAttractorForce = p.createVector(0, 0)
-      if (showAttractors) {
-        for (const attractor of attractors) {
-          const attractorForce = attractor.getForce(particle)
-          if (applyAttractorDirect) {
-            particle.applyForce(attractorForce)
-          } else {
-            totalAttractorForce.add(attractorForce)
-          }
-          if (attractor.contains(particle)) {
-            particle.velocity.mult(-1)
-            particle.dieOnWrap = true
-          }
+      const attractorForce = p.createVector(0, 0)
+      if (showBlackHoleAttractor) {
+        blackHole.strengh = blackHoleAttractorStrength
+        if (applyAttractorDirect) {
+          particle.applyForce(blackHole.getForce(particle))
+        } else {
+          attractorForce.add(blackHole.getForce(particle))
+        }
+        if (blackHole.contains(particle)) {
+          particle.velocity.mult(-1)
+          particle.dieOnWrap = true
         }
       }
-      const combinedForce = p5.Vector.add(flowForce, totalAttractorForce)
+      const combinedForce = p5.Vector.add(flowForce, attractorForce)
 
       particle.applyForce(combinedForce)
       particle.update()
@@ -266,8 +276,8 @@ export default function (p) {
     if (visualizeField) {
       visualizeFlowField()
     }
-    if (showAttractors) {
-      displayAttractors()
+    if (showBlackHoleAttractor) {
+      blackHole.display()
     }
     if (showSwatches) {
       renderSwatches({ p, w, scales: [colorScale] })
@@ -406,30 +416,9 @@ export default function (p) {
     obstacles.push(new Obstacle(center.x * 1.5, center.y * 1.5, size, size))
   }
 
-  function initializeAttractors() {
-    const { x, y } = center
-    const zone = 2000
-    const centerAttractor = true
-
-    if (centerAttractor) {
-      attractors.push(new Attractor(p.createVector(x, y), zone))
-    } else {
-      attractors.push(new Attractor(p.createVector(x, y / 2), zone))
-      attractors.push(new Attractor(p.createVector(x, y * 1.5), zone))
-      attractors.push(new Attractor(p.createVector(x / 2, y), zone))
-      attractors.push(new Attractor(p.createVector(x * 1.5, y), zone))
-    }
-  }
-
   function displayObstacles() {
     for (const obstacle of obstacles) {
       obstacle.display()
-    }
-  }
-
-  function displayAttractors() {
-    for (const attractor of attractors) {
-      attractor.display()
     }
   }
 
@@ -586,7 +575,7 @@ export default function (p) {
     }
   }
 
-  class Attractor {
+  class BlackHoleAttractor {
     constructor(position, strength = 1.5) {
       this.position = position
       this.strength = strength
