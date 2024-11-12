@@ -17,15 +17,14 @@ export default function (p) {
   const center = p.createVector(w / 2, h / 2)
   const obstacles = []
   const particles = []
+  const attractors = []
   let particleBuffer
   const resolution = 20
   const cols = Math.floor(w / resolution)
   const rows = Math.floor(h / resolution)
   const flowField = []
 
-  // const colorScale = chroma.scale('Set3')
-  // const colorScale = chroma.scale('Accent')
-  const colorScale = chroma.scale(['turquoise', 'yellow'])
+  const colorScale = chroma.scale(['navy', 'turquoise', 'purple', 'yellow'])
   const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 130 })
 
   const controlPanel = createControlPanel({
@@ -49,19 +48,19 @@ export default function (p) {
       },
       {
         type: 'Range',
-        name: 'noiseScale',
-        value: 0.0001,
-        min: 0.0001,
-        max: 0.05,
-        step: 0.0001,
-      },
-      {
-        type: 'Range',
         name: 'history',
         value: 4,
         min: 1,
         max: 100,
         step: 1,
+      },
+      {
+        type: 'Range',
+        name: 'noiseScale',
+        value: 0.0001,
+        min: 0.0001,
+        max: 0.05,
+        step: 0.0001,
       },
       {
         type: 'Range',
@@ -102,7 +101,6 @@ export default function (p) {
           'algorithmic',
           'combinedAdditive',
           'combinedAveraged',
-          'combinedMultiplicative',
         ],
       },
       {
@@ -127,6 +125,11 @@ export default function (p) {
       },
       {
         type: 'Checkbox',
+        name: 'showAttractors',
+        value: false,
+      },
+      {
+        type: 'Checkbox',
         name: 'applyRandomForce',
         value: false,
       },
@@ -145,6 +148,7 @@ export default function (p) {
     const { noiseScale, forceMagnitude } = controlPanel.values()
     updateFlowField(noiseScale, forceMagnitude)
     initializeObstacles()
+    initializeAttractors()
 
     return {
       canvas,
@@ -162,6 +166,7 @@ export default function (p) {
       applyRandomForce,
       showParticles,
       showObstacles,
+      showAttractors,
       history,
     } = controlPanel.values()
 
@@ -178,6 +183,14 @@ export default function (p) {
               if (obstacle.contains({ position })) {
                 position = null
                 break
+              }
+            }
+            if (position && showAttractors) {
+              for (const attractor of attractors) {
+                if (attractor.contains({ position })) {
+                  position = null
+                  break
+                }
               }
             }
           }
@@ -207,15 +220,32 @@ export default function (p) {
       if (showObstacles) {
         for (const obstacle of obstacles) {
           if (obstacle.contains(particle)) {
-            // -1 gives awesome jitter effect
-            // but bounce back is too much
             particle.velocity.mult(-0.5)
-            particle.markedForDeath = true
+            particle.dieOnWrap = true
           }
         }
       }
 
-      particle.applyForce(getFlowForce(particle.position))
+      const applyAttractorDirect = false
+      const flowForce = getFlowForce(particle.position)
+      const totalAttractorForce = p.createVector(0, 0)
+      if (showAttractors) {
+        for (const attractor of attractors) {
+          const attractorForce = attractor.getForce(particle)
+          if (applyAttractorDirect) {
+            particle.applyForce(attractorForce)
+          } else {
+            totalAttractorForce.add(attractorForce)
+          }
+          if (attractor.contains(particle)) {
+            particle.velocity.mult(-1)
+            particle.dieOnWrap = true
+          }
+        }
+      }
+      const combinedForce = p5.Vector.add(flowForce, totalAttractorForce)
+
+      particle.applyForce(combinedForce)
       particle.update()
       particle.edges()
       particle.display()
@@ -227,10 +257,21 @@ export default function (p) {
       }
     }
 
-    showParticles && p.image(particleBuffer, 0, 0, w, h)
-    showObstacles && displayObstacles()
-    visualizeField && visualizeFlowField()
-    showSwatches && renderSwatches({ p, w, scales: [colorScale] })
+    if (showParticles) {
+      p.image(particleBuffer, 0, 0, w, h)
+    }
+    if (showObstacles) {
+      displayObstacles()
+    }
+    if (visualizeField) {
+      visualizeFlowField()
+    }
+    if (showAttractors) {
+      displayAttractors()
+    }
+    if (showSwatches) {
+      renderSwatches({ p, w, scales: [colorScale] })
+    }
   }
 
   function getZOffset() {
@@ -301,12 +342,6 @@ export default function (p) {
       const force2 = forceModes.algorithmic(position)
       return p5.Vector.add(force1, force2).mult(0.5)
     },
-    combinedMultiplicative(position) {
-      const force1 = forceModes.grid(position)
-      const force2 = forceModes.algorithmic(position)
-      const combinedForce = p5.Vector.mult(force1, force2.mag())
-      return combinedForce.normalize().mult(force1.mag() + force2.mag())
-    },
   }
 
   function getFlowForce(position) {
@@ -364,16 +399,37 @@ export default function (p) {
 
   function initializeObstacles() {
     const size = 100
-    obstacles.push(new Obstacle(center.x, center.y, size, size))
+    // obstacles.push(new Obstacle(center.x, center.y, size, size))
     obstacles.push(new Obstacle(center.x / 2, center.y / 2, size, size))
     obstacles.push(new Obstacle(center.x * 1.5, center.y / 2, size, size))
     obstacles.push(new Obstacle(center.x / 2, center.y * 1.5, size, size))
     obstacles.push(new Obstacle(center.x * 1.5, center.y * 1.5, size, size))
   }
 
+  function initializeAttractors() {
+    const { x, y } = center
+    const zone = 2000
+    const centerAttractor = true
+
+    if (centerAttractor) {
+      attractors.push(new Attractor(p.createVector(x, y), zone))
+    } else {
+      attractors.push(new Attractor(p.createVector(x, y / 2), zone))
+      attractors.push(new Attractor(p.createVector(x, y * 1.5), zone))
+      attractors.push(new Attractor(p.createVector(x / 2, y), zone))
+      attractors.push(new Attractor(p.createVector(x * 1.5, y), zone))
+    }
+  }
+
   function displayObstacles() {
     for (const obstacle of obstacles) {
       obstacle.display()
+    }
+  }
+
+  function displayAttractors() {
+    for (const attractor of attractors) {
+      attractor.display()
     }
   }
 
@@ -399,6 +455,7 @@ export default function (p) {
       this.history = []
       this.maxHistory = maxHistory
       this.lifespan = 255
+      this.dieOnWrap = false
     }
 
     applyForce(force) {
@@ -436,22 +493,9 @@ export default function (p) {
         return
       }
 
-      particleBuffer.noStroke()
-
-      // TODO: this is broken now that we have history
-      // Keeping this here to remind me it could be cool
-      if (this.useVelocityBasedColorScaling) {
-        const speed = this.velocity.mag()
-        const color = colorScale(speed / this.maxSpeed)
-          .alpha(this.opacity)
-          .rgba()
-        particleBuffer.fill(color)
-        particleBuffer.stroke(color)
-      } else {
-        const color = this.color.alpha(this.opacity).rgba()
-        particleBuffer.fill(color)
-        particleBuffer.stroke(color)
-      }
+      const baseColor = this.dieOnWrap
+        ? chroma.mix(this.color, 'magenta', 0.2)
+        : this.color
 
       let prev = this.position
       for (const [index, position] of this.history.entries()) {
@@ -460,12 +504,15 @@ export default function (p) {
         if (distance < threshold) {
           const value = this.maxHistory - index
           const opacity = p.map(value, 0, this.maxHistory, 0, this.opacity)
-          particleBuffer.stroke(this.color.alpha(opacity).rgba())
+          particleBuffer.stroke(baseColor.alpha(opacity).rgba())
           particleBuffer.line(prev.x, prev.y, position.x, position.y)
         }
         prev = position
       }
 
+      const color = baseColor.alpha(this.opacity).rgba()
+      particleBuffer.fill(color)
+      particleBuffer.stroke(color)
       particleBuffer.circle(this.position.x, this.position.y, this.diameter)
     }
 
@@ -476,6 +523,7 @@ export default function (p) {
     edges() {
       if (this.edgeMode === 'wrap') {
         let wrapped = false
+
         if (this.position.x > w) {
           this.position.x = 0
           wrapped = true
@@ -493,7 +541,7 @@ export default function (p) {
           wrapped = true
         }
 
-        if (wrapped && this.markedForDeath) {
+        if (wrapped && this.dieOnWrap) {
           this.lifespan = -1
         }
       } else if (this.edgeMode === 'respawn') {
@@ -522,14 +570,12 @@ export default function (p) {
       this.w = w
       this.h = h
     }
-
     display() {
       p.noStroke()
-      p.fill(0, 0)
+      p.fill(50, 0.3)
       p.rectMode(p.CENTER)
       p.rect(this.position.x, this.position.y, this.w, this.h)
     }
-
     contains(particle) {
       return (
         particle.position.x > this.position.x - this.w / 2 &&
@@ -537,6 +583,38 @@ export default function (p) {
         particle.position.y > this.position.y - this.h / 2 &&
         particle.position.y < this.position.y + this.h / 2
       )
+    }
+  }
+
+  class Attractor {
+    constructor(position, strength = 1.5) {
+      this.position = position
+      this.strength = strength
+      this.zone = 100
+    }
+    getForce(particle) {
+      const force = p5.Vector.sub(this.position, particle.position)
+      const distance = force.mag()
+      force.normalize()
+      const strengh = this.strength / distance ** 2
+      force.mult(strengh)
+      return force
+    }
+    display() {
+      p.noStroke()
+      for (let i = this.zone; i > 0; i -= this.zone / 10) {
+        p.fill(0, p.map(i, 0, this.zone, 1, 0))
+        p.circle(this.position.x, this.position.y, i)
+      }
+    }
+    contains(particle) {
+      const distance = p.dist(
+        particle.position.x,
+        particle.position.y,
+        this.position.x,
+        this.position.y,
+      )
+      return distance < this.zone / 2
     }
   }
 
