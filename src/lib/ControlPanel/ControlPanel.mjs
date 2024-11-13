@@ -11,6 +11,7 @@ export default class ControlPanel {
     attemptReload = true,
     autoRedraw = true,
     onChange = null,
+    compact = false,
   }) {
     this.p = p
     this.id = id
@@ -22,6 +23,7 @@ export default class ControlPanel {
     this.attemptReload = attemptReload
     this.autoRedraw = autoRedraw
     this.onChange = onChange
+    this.compact = compact
 
     if (this.attemptReload && !this.id) {
       throw new Error('Cannot attemptReload without an id.')
@@ -51,6 +53,14 @@ export default class ControlPanel {
       logInfo('[ControlPanel] restoring from localStorage')
       this.localStorageKey = `@lokua/p5/controlPanel/${this.id}`
       this.#reloadControls()
+    }
+    if (this.compact) {
+      const elements = Array.from(
+        this.#getElement().querySelectorAll('.control'),
+      )
+      elements.forEach((element) => {
+        element.classList.add('control-compact')
+      })
     }
   }
 

@@ -8,6 +8,7 @@ export default class Control {
     hasLabelValue = true,
     type = 'default',
     disabled = false,
+    display = null,
   }) {
     this.id = `${name}--${Date.now()}`
     this.name = name
@@ -16,12 +17,15 @@ export default class Control {
     this.hasLabelValue = hasLabelValue
     this.type = type
     this.disabled = disabled
+    this.display = display
   }
 
   html(children, containerAttributes = '') {
     const labelValue = this.hasLabelValue ? `<span>${this.value}</span>` : ''
     const label = this.hasLabel
-      ? `<label for="${this.id}">${this.name} ${labelValue}</label>`
+      ? `<label for="${this.id}">
+          ${this.display ? this.display : this.name} ${labelValue}
+        </label>`
       : ''
     return `
       <div 
