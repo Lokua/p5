@@ -78,6 +78,7 @@ export default function (p) {
     }
   }
 
+  const frameRates = []
   function draw() {
     const {
       count,
@@ -190,9 +191,12 @@ export default function (p) {
       renderSwatches({ p, w, scales: [colorScale] })
     }
 
-    logAtInterval(1000, () => {
-      console.log(p.frameRate())
-    })
+    frameRates.push(p.frameRate())
+    if (p.frameCount === 600) {
+      const averageRate =
+        frameRates.reduce((sum, x) => sum + x, 0) / frameRates.length
+      console.log('averageRate:', averageRate)
+    }
   }
 
   function getZOffset() {
