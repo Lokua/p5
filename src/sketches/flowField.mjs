@@ -17,6 +17,7 @@ export default function (p) {
   const center = p.createVector(w / 2, h / 2)
   const obstacles = []
   const particles = []
+  const attractors = []
   let blackHole
   let particleBuffer
   const resolution = 20
@@ -88,11 +89,19 @@ export default function (p) {
       },
       {
         type: 'Range',
-        name: 'blackHoleAttractorStrength',
+        name: 'blackHoleStrength',
         value: 1000,
         min: 1,
         max: 10_000,
         step: 1,
+      },
+      {
+        type: 'Range',
+        name: 'attractorStrength',
+        value: 1000,
+        min: 0.1,
+        max: 100,
+        step: 0.1,
       },
       {
         type: 'Select',
@@ -118,6 +127,11 @@ export default function (p) {
       },
       {
         type: 'Checkbox',
+        name: 'applyRandomForce',
+        value: false,
+      },
+      {
+        type: 'Checkbox',
         name: 'showSwatches',
         value: false,
       },
@@ -133,12 +147,12 @@ export default function (p) {
       },
       {
         type: 'Checkbox',
-        name: 'showBlackHoleAttractor',
+        name: 'showBlackHole',
         value: false,
       },
       {
         type: 'Checkbox',
-        name: 'applyRandomForce',
+        name: 'showAttractors',
         value: false,
       },
     ],
@@ -153,14 +167,15 @@ export default function (p) {
     particleBuffer = p.createGraphics(w, h)
     particleBuffer.colorMode(p.RGB, 255, 255, 255, 1)
 
-    const { noiseScale, forceMagnitude, blackHoleAttractorStrength } =
-      controlPanel.values()
+    const { blackHoleStrength } = controlPanel.values()
 
-    updateFlowField(noiseScale, forceMagnitude)
+    updateFlowField()
     initializeObstacles()
+    updateAttractors()
+
     blackHole = new BlackHoleAttractor(
       p.createVector(center.x, center.y),
-      blackHoleAttractorStrength,
+      blackHoleStrength,
     )
 
     return {
@@ -173,14 +188,15 @@ export default function (p) {
       count,
       showSwatches,
       visualizeField,
-      blackHoleAttractorStrength,
+      blackHoleStrength,
       backgroundAlpha,
       edgeMode,
       forceMode,
       applyRandomForce,
       showParticles,
       showObstacles,
-      showBlackHoleAttractor,
+      showBlackHole,
+      showAttractors,
       history,
     } = controlPanel.values()
 
@@ -199,10 +215,9 @@ export default function (p) {
                 break
               }
             }
-            if (position && showBlackHoleAttractor) {
+            if (position && showBlackHole) {
               if (blackHole.contains({ position })) {
                 position = null
-                break
               }
             }
           }
@@ -238,24 +253,21 @@ export default function (p) {
         }
       }
 
-      const applyAttractorDirect = false
-      const flowForce = getFlowForce(particle.position)
-      const attractorForce = p.createVector(0, 0)
-      if (showBlackHoleAttractor) {
-        blackHole.strengh = blackHoleAttractorStrength
-        if (applyAttractorDirect) {
-          particle.applyForce(blackHole.getForce(particle))
-        } else {
-          attractorForce.add(blackHole.getForce(particle))
-        }
+      const force = getFlowForce(particle.position)
+      if (showBlackHole) {
+        blackHole.strengh = blackHoleStrength
+        force.add(blackHole.getForce(particle))
         if (blackHole.contains(particle)) {
           particle.velocity.mult(-1)
           particle.dieOnWrap = true
         }
       }
-      const combinedForce = p5.Vector.add(flowForce, attractorForce)
-
-      particle.applyForce(combinedForce)
+      if (showAttractors) {
+        for (const attractor of attractors) {
+          force.add(attractor.getForce(particle))
+        }
+      }
+      particle.applyForce(force)
       particle.update()
       particle.edges()
       particle.display()
@@ -271,13 +283,18 @@ export default function (p) {
       p.image(particleBuffer, 0, 0, w, h)
     }
     if (showObstacles) {
-      displayObstacles()
+      for (const obstacle of obstacles) {
+        obstacle.display()
+      }
     }
     if (visualizeField) {
       visualizeFlowField()
     }
-    if (showBlackHoleAttractor) {
+    if (showBlackHole) {
       blackHole.display()
+    }
+    if (showAttractors) {
+      updateAttractors()
     }
     if (showSwatches) {
       renderSwatches({ p, w, scales: [colorScale] })
@@ -416,9 +433,23 @@ export default function (p) {
     obstacles.push(new Obstacle(center.x * 1.5, center.y * 1.5, size, size))
   }
 
-  function displayObstacles() {
-    for (const obstacle of obstacles) {
-      obstacle.display()
+  function updateAttractors() {
+    const strength = controlPanel.get('attractorStrength')
+    const grid = 4
+    const spacingX = w / (grid + 1)
+    const spacingY = h / (grid + 1)
+    let index = 0
+    for (let i = 0; i < grid; i++) {
+      for (let j = 0; j < grid; j++) {
+        const x = (i + 1) * spacingX
+        const y = (j + 1) * spacingY
+        const v = p.createVector(x, y)
+        attractors[index] =
+          attractors[index] || new Attractor(v, strength, 'repel')
+        attractors[index].position = v
+        attractors[index].display()
+        index++
+      }
     }
   }
 
@@ -503,6 +534,10 @@ export default function (p) {
       particleBuffer.fill(color)
       particleBuffer.stroke(color)
       particleBuffer.circle(this.position.x, this.position.y, this.diameter)
+    }
+
+    die() {
+      this.lifespan = -1
     }
 
     isDead() {
@@ -596,6 +631,54 @@ export default function (p) {
         p.circle(this.position.x, this.position.y, i)
       }
     }
+    contains(particle) {
+      const distance = p.dist(
+        particle.position.x,
+        particle.position.y,
+        this.position.x,
+        this.position.y,
+      )
+      return distance < this.zone / 2
+    }
+  }
+
+  class Attractor {
+    constructor(position, strength = 1.5, mode = 'hybrid') {
+      this.position = position
+      this.strength = strength
+      this.zone = 20
+      this.mode = mode
+    }
+
+    getForce(particle) {
+      const force = p5.Vector.sub(this.position, particle.position)
+      const distance = force.mag()
+      let strength = this.strength / distance ** 2
+
+      if (this.mode === 'hybrid') {
+        if (distance < this.zone) {
+          strength *= -1
+        }
+      } else if (this.mode === 'repel') {
+        strength *= -1
+      }
+
+      return force.normalize().mult(strength)
+    }
+
+    display() {
+      p.noStroke()
+      if (this.mode === 'repel') {
+        for (let i = this.zone; i > 0; i -= this.zone / 10) {
+          p.fill(50, p.map(i, 0, this.zone, 0.7, 0.1))
+          p.circle(this.position.x, this.position.y, i)
+        }
+      } else {
+        p.fill(50, 0.5)
+        p.circle(this.position.x, this.position.y, this.zone)
+      }
+    }
+
     contains(particle) {
       const distance = p.dist(
         particle.position.x,
