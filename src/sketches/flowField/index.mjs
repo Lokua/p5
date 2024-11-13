@@ -107,7 +107,45 @@ export default function (p) {
       if (activeCount >= count) {
         break
       }
-      if (!particle.active) {
+      if (particle.active) {
+        particle.edgeMode = edgeMode
+        particle.applyRandomForce = applyRandomForce
+        particle.maxHistory = history
+
+        if (showObstacles) {
+          for (const obstacle of obstacles) {
+            if (obstacle.contains(particle)) {
+              particle.velocity.mult(-0.5)
+              particle.dieOnWrap = true
+            }
+          }
+        }
+
+        const force = getFlowForce(particle.position)
+        if (showBlackHole) {
+          blackHole.strength = blackHoleStrength
+          force.add(blackHole.getForce(particle))
+          if (blackHole.contains(particle)) {
+            particle.velocity.mult(-1)
+            particle.dieOnWrap = true
+          }
+        }
+        if (showAttractors) {
+          for (const attractor of attractors) {
+            force.add(attractor.getForce(particle))
+          }
+        }
+        particle.applyForce(force)
+        particle.update()
+        particle.edges()
+        particle.display()
+
+        if (particle.isDead()) {
+          particle.active = false
+        } else {
+          activeCount++
+        }
+      } else if (activeCount < count) {
         let position
 
         while (!position) {
@@ -129,53 +167,6 @@ export default function (p) {
         particle.active = true
         activeCount++
       }
-    }
-
-    activeCount = 0
-    for (const particle of particles) {
-      if (!particle.active) {
-        continue
-      }
-      if (activeCount >= count) {
-        break
-      }
-      particle.edgeMode = edgeMode
-      particle.applyRandomForce = applyRandomForce
-      particle.maxHistory = history
-
-      if (showObstacles) {
-        for (const obstacle of obstacles) {
-          if (obstacle.contains(particle)) {
-            particle.velocity.mult(-0.5)
-            particle.dieOnWrap = true
-          }
-        }
-      }
-
-      const force = getFlowForce(particle.position)
-      if (showBlackHole) {
-        blackHole.strength = blackHoleStrength
-        force.add(blackHole.getForce(particle))
-        if (blackHole.contains(particle)) {
-          particle.velocity.mult(-1)
-          particle.dieOnWrap = true
-        }
-      }
-      if (showAttractors) {
-        for (const attractor of attractors) {
-          force.add(attractor.getForce(particle))
-        }
-      }
-      particle.applyForce(force)
-      particle.update()
-      particle.edges()
-      particle.display()
-
-      if (particle.isDead()) {
-        particle.active = false
-      }
-
-      activeCount++
     }
 
     if (showParticles) {
