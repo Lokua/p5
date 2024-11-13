@@ -10,6 +10,7 @@ export default class Particle {
     buffer,
     w,
     h,
+    vectorPool,
     colorScale,
     position,
     edgeMode = 'wrap',
@@ -22,10 +23,11 @@ export default class Particle {
     this.buffer = buffer
     this.w = w
     this.h = h
+    this.vectorPool = vectorPool
     this.colorScale = colorScale
-    this.position = position.copy()
-    this.velocity = p.createVector(0, 0)
-    this.acceleration = p.createVector(0, 0)
+    this.position = position
+    this.velocity = vectorPool.get()
+    this.acceleration = vectorPool.get()
     this.maxSpeed = p.random(1, 5)
     this.color = colorScale(p.random())
     this.edgeMode = edgeMode
@@ -57,15 +59,14 @@ export default class Particle {
     }
 
     if (this.applyRandomForce) {
-      const randomForce = p5.Vector.random2D()
-      randomForce.setMag(0.2)
-      this.applyForce(randomForce)
+      this.applyForce(p5.Vector.random2D().setMag(0.2))
     }
 
     const maxIndex = this.maxHistory - 1
     if (this.history.length > maxIndex) {
       while (this.history.length > maxIndex) {
-        this.history.pop()
+        const oldPosition = this.history.pop()
+        this.vectorPool.release(oldPosition)
       }
     }
   }
@@ -146,11 +147,21 @@ export default class Particle {
   }
 
   reset(position) {
-    this.position = position.copy()
+    this.position.set(position)
     this.velocity.mult(0)
     this.acceleration.mult(0)
     this.lifespan = 255
     this.dieOnWrap = false
+    this.history = []
+  }
+
+  releaseVectors() {
+    this.vectorPool.release(this.position)
+    this.vectorPool.release(this.velocity)
+    this.vectorPool.release(this.acceleration)
+    this.history.forEach((position) => {
+      this.vectorPool.release(position)
+    })
     this.history = []
   }
 

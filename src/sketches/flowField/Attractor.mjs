@@ -2,8 +2,9 @@
  * @param {import('p5')} p
  */
 export default class Attractor {
-  constructor(p, position, strength = 1.5, mode = 'hybrid') {
+  constructor(p, position, strength = 1.5, mode = 'hybrid', vectorPool) {
     this.p = p
+    this.vectorPool = vectorPool
     this.position = position
     this.strength = strength
     this.zone = 20
@@ -11,7 +12,11 @@ export default class Attractor {
   }
 
   getForce(particle) {
-    const force = p5.Vector.sub(this.position, particle.position)
+    const force = this.vectorPool
+      .get()
+      .set(this.position)
+      .sub(particle.position)
+
     const distance = force.mag()
     let strength = this.strength / distance ** 2
 

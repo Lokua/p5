@@ -2,15 +2,19 @@
  * @param {import('p5')} p
  */
 export default class BlackHoleAttractor {
-  constructor(p, position, strength = 1.5) {
+  constructor(p, position, strength = 1.5, vectorPool) {
     this.p = p
+    this.vectorPool = vectorPool
     this.position = position
     this.strength = strength
     this.zone = 100
   }
 
   getForce(particle) {
-    const force = p5.Vector.sub(this.position, particle.position)
+    const force = this.vectorPool
+      .get()
+      .set(this.position)
+      .sub(particle.position)
     const distance = force.mag()
     force.normalize()
     const strengh = this.strength / distance ** 2

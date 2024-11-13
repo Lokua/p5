@@ -1,7 +1,7 @@
 import chroma from 'chroma-js'
 import AnimationHelper from '../../lib/AnimationHelper.mjs'
 import { renderSwatches } from '../../lib/colors.mjs'
-import { logAtInterval, getAverageFrameRate, profile } from '../../util.mjs'
+import { logAtInterval, getAverageFrameRate } from '../../util.mjs'
 
 import createControlPanel from './createControlPanel.mjs'
 import Particle from './Particle.mjs'
@@ -30,6 +30,17 @@ export default function (p) {
   const rows = Math.floor(h / resolution)
   const flowField = []
 
+  const vectorPool = {
+    vectors: [],
+    get() {
+      return this.vectors.pop() || p.createVector(0, 0)
+    },
+    release(vector) {
+      vector.set(0, 0)
+      this.vectors.push(vector)
+    },
+  }
+
   const colorScale = chroma.scale(['navy', 'turquoise', 'purple', 'yellow'])
   const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 130 })
   const controlPanel = createControlPanel(p, metadata)
@@ -54,6 +65,7 @@ export default function (p) {
       p,
       p.createVector(center.x, center.y),
       blackHoleStrength,
+      vectorPool,
     )
 
     for (let i = 0; i < 10_001; i++) {
@@ -63,6 +75,7 @@ export default function (p) {
           buffer: particleBuffer,
           w,
           h,
+          vectorPool,
           colorScale,
           position: p.createVector(p.random(w), p.random(h)),
           edgeMode,
@@ -120,21 +133,34 @@ export default function (p) {
           }
         }
 
-        const force = getFlowForce(particle.position)
+        const force = vectorPool.get()
+        getFlowForce(particle.position, force)
+
         if (showBlackHole) {
           blackHole.strength = blackHoleStrength
-          force.add(blackHole.getForce(particle))
+          const blackHoleForce = vectorPool.get()
+          blackHole.getForce(particle, blackHoleForce)
+          force.add(blackHoleForce)
+          vectorPool.release(blackHoleForce)
+
           if (blackHole.contains(particle)) {
             particle.velocity.mult(-1)
             particle.dieOnWrap = true
           }
         }
+
         if (showAttractors) {
           for (const attractor of attractors) {
-            force.add(attractor.getForce(particle))
+            const attractorForce = vectorPool.get()
+            attractor.getForce(particle, attractorForce)
+            force.add(attractorForce)
+            vectorPool.release(attractorForce)
           }
         }
+
         particle.applyForce(force)
+        vectorPool.release(force)
+
         particle.update()
         particle.edges()
         particle.display()
@@ -148,17 +174,23 @@ export default function (p) {
         let position
 
         while (!position) {
-          position = p.createVector(p.random(w), p.random(h))
-          if (position && showBlackHole && blackHole.contains({ position })) {
-            position = null
+          const testPosition = vectorPool.get().set(p.random(w), p.random(h))
+          let isValid = true
+          if (showBlackHole && blackHole.contains({ position: testPosition })) {
+            isValid = false
           }
-          if (position && showObstacles) {
+          if (isValid && showObstacles) {
             for (const obstacle of obstacles) {
-              if (obstacle.contains({ position })) {
-                position = null
+              if (obstacle.contains({ position: testPosition })) {
+                isValid = false
                 break
               }
             }
+          }
+          if (isValid) {
+            position = testPosition
+          } else {
+            vectorPool.release(testPosition)
           }
         }
 
@@ -189,14 +221,17 @@ export default function (p) {
       renderSwatches({ p, w, scales: [colorScale] })
     }
 
-    getAverageFrameRate(p, 30 * 30)
+    getAverageFrameRate(p, 600)
+    logAtInterval(1000, () => {
+      console.log(vectorPool.vectors.length)
+    })
   }
 
   function getZOffset() {
     return ah.getTotalBeatsElapsed() * controlPanel.get('zOffsetMultiplier')
   }
 
-  function angleForPosition(position) {
+  function angleForPosition(position, outputVector) {
     const noiseScale = controlPanel.get('noiseScale')
     const x = position.x * noiseScale
     const y = position.y * noiseScale
@@ -204,9 +239,9 @@ export default function (p) {
     const angle =
       p.map(value, 0, 1, 0, p.TWO_PI) +
       p.sin(p.radians(controlPanel.get('angleOffset')))
-    const force = p5.Vector.fromAngle(angle)
-    force.setMag(controlPanel.get('forceMagnitude'))
-    return force
+    outputVector.set(p.cos(angle), p.sin(angle))
+    outputVector.setMag(controlPanel.get('forceMagnitude'))
+    return outputVector
   }
 
   function updateFlowField() {
@@ -215,25 +250,34 @@ export default function (p) {
     const xOffset = (w - totalGridWidth) / 2
     const yOffset = (h - totalGridHeight) / 2
 
+    // Clear existing flow field vectors
+    for (let i = 0; i < flowField.length; i++) {
+      if (flowField[i]) {
+        vectorPool.release(flowField[i])
+        flowField[i] = null
+      }
+    }
+
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
         const index = x + y * cols
-
         const gridPosX = x * resolution + xOffset + resolution / 2
         const gridPosY = y * resolution + yOffset + resolution / 2
 
-        const force = angleForPosition({
-          x: gridPosX - w / 2,
-          y: gridPosY - h / 2,
-        })
+        const position = vectorPool.get()
+        position.set(gridPosX - w / 2, gridPosY - h / 2)
+
+        const force = vectorPool.get()
+        angleForPosition(position, force)
 
         flowField[index] = force
+        vectorPool.release(position)
       }
     }
   }
 
   const forceModes = {
-    grid(position) {
+    grid(position, outputVector) {
       const totalGridWidth = cols * resolution
       const totalGridHeight = rows * resolution
       const xOffset = (w - totalGridWidth) / 2
@@ -243,25 +287,35 @@ export default function (p) {
       const x = Math.floor(adjustedX / resolution)
       const y = Math.floor(adjustedY / resolution)
       if (x < 0 || x >= cols || y < 0 || y >= rows) {
-        return p.createVector(0, 0)
+        return outputVector.set(0, 0)
       }
       const index = x + y * cols
-      const force = flowField[index].copy()
-      return force
+      return outputVector.set(flowField[index].x, flowField[index].y)
     },
     algorithmic: angleForPosition,
-    combinedAdditive(position) {
-      const force1 = forceModes.grid(position)
-      const force2 = forceModes.algorithmic(position)
-      return p5.Vector.add(force1, force2)
+    combinedAdditive(position, outputVector) {
+      const force1 = vectorPool.get()
+      const force2 = vectorPool.get()
+      forceModes.grid(position, force1)
+      forceModes.algorithmic(position, force2)
+      outputVector.set(force1.x + force2.x, force1.y + force2.y)
+      vectorPool.release(force1)
+      vectorPool.release(force2)
+      return outputVector
     },
-    combinedAveraged(position) {
-      return forceModes.combinedAdditive(position).mult(0.5)
+    combinedAveraged(position, outputVector) {
+      forceModes.combinedAdditive(position, outputVector)
+      outputVector.mult(0.5)
+      return outputVector
     },
   }
 
-  function getFlowForce(position) {
-    return forceModes[controlPanel.get('forceMode')](position)
+  function getFlowForce(
+    position,
+    outputVector,
+    mode = controlPanel.get('forceMode'),
+  ) {
+    return forceModes[mode](position, outputVector)
   }
 
   function visualizeFlowField() {
@@ -275,13 +329,15 @@ export default function (p) {
 
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
-        const position = p.createVector(
+        const position = vectorPool.get()
+        position.set(
           x * resolution + xOffset + resolution / 2,
           y * resolution + yOffset + resolution / 2,
         )
 
-        const force = getFlowForce(position)
-        const scaledForce = p5.Vector.mult(force, resolution * 2)
+        const force = vectorPool.get()
+        getFlowForce(position, force)
+        const scaledForce = force.copy().mult(resolution * 2)
 
         const angle = force.heading()
         const angleOffset = p.radians(30)
@@ -309,6 +365,9 @@ export default function (p) {
         p.noStroke()
         p.fill(color)
         p.triangle(arrowTip.x, arrowTip.y, x1, y1, x2, y2)
+
+        vectorPool.release(position)
+        vectorPool.release(force)
       }
     }
   }
@@ -331,9 +390,10 @@ export default function (p) {
       for (let j = 0; j < grid; j++) {
         const x = (i + 1) * spacingX
         const y = (j + 1) * spacingY
-        const v = p.createVector(x, y)
+        const v = vectorPool.get().set(x, y)
         attractors[index] =
-          attractors[index] || new Attractor(p, v, strength, 'repel')
+          attractors[index] ||
+          new Attractor(p, v, strength, 'repel', vectorPool)
         attractors[index].position = v
         attractors[index].display()
         index++
