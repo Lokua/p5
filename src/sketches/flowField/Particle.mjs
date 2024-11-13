@@ -1,6 +1,9 @@
 import chroma from 'chroma-js'
 import { onScreen } from '../../util.mjs'
 
+/**
+ * @param {import('p5')} p
+ */
 export default class Particle {
   constructor({
     p,

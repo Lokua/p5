@@ -293,3 +293,15 @@ export function msToTime(duration) {
 export function onScreen(v, w, h) {
   return v.x >= 0 && v.x <= w && v.y >= 0 && v.y <= h
 }
+
+export function logAtInterval(interval, callback) {
+  if (!logAtInterval.lastLogTime) {
+    logAtInterval.lastLogTime = Date.now()
+  }
+
+  const currentTime = Date.now()
+  if (currentTime - logAtInterval.lastLogTime > interval) {
+    callback()
+    logAtInterval.lastLogTime = currentTime
+  }
+}

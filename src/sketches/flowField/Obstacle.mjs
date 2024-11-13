@@ -1,3 +1,6 @@
+/**
+ * @param {import('p5')} p
+ */
 export default class Obstacle {
   constructor(p, x, y, w, h) {
     this.p = p
