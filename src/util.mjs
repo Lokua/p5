@@ -104,27 +104,6 @@ export function primes(n) {
   return array
 }
 
-// default 2 and 4 will create a grid like:
-// +-------+
-// | X   X |
-// |   X   |
-// | X   X |
-// +-------+
-export function createQuintants(w, h, a = 2, b = 4) {
-  return [
-    // center
-    [w / a, h / a],
-    // top left
-    [w / b, h / b],
-    // top-right
-    [w / a + w / b, h / b],
-    // bottom left
-    [w / b, h / a + h / b],
-    // bottom right
-    [w / a + w / b, h / a + h / b],
-  ]
-}
-
 export function setAlpha(color, alpha) {
   const copy = color.levels.slice()
   copy[3] = alpha
@@ -303,5 +282,64 @@ export function logAtInterval(interval, callback) {
   if (currentTime - logAtInterval.lastLogTime > interval) {
     callback()
     logAtInterval.lastLogTime = currentTime
+  }
+}
+
+export function getAverageFrameRate(
+  p,
+  atFrameCount,
+  callback = (x) => {
+    console.log('Average frame rate:', x)
+  },
+) {
+  getAverageFrameRate.frameRates = getAverageFrameRate.frameRates || []
+  getAverageFrameRate.frameRates.push(p.frameRate())
+  if (p.frameCount === atFrameCount) {
+    callback(average(getAverageFrameRate.frameRates))
+  }
+}
+
+export function profile(id = uuid(), limit = Infinity, average = false) {
+  let callCount = 0
+  let totalMs = 0
+  let called = false
+  let startTime = null
+
+  function start() {
+    startTime = performance.now()
+  }
+
+  function end(
+    callback = (report) => {
+      console.log(report)
+    },
+  ) {
+    const ms = performance.now() - startTime
+    totalMs += ms
+    callCount++
+
+    const time = average ? totalMs / callCount : ms
+    const report = {
+      id,
+      ms: Number(time.toFixed(3)),
+      time: msToTime(time),
+      µs: Math.round(time * 1000),
+      ns: Math.round(time * 1_000_000),
+      // z so the less readable one shows up at the end in
+      // console logs
+      z_ms: time,
+    }
+
+    if (average && !called && callCount >= limit) {
+      callback(report)
+      called = true
+    } else if (!average && callCount <= limit) {
+      callback(report)
+    }
+  }
+
+  return {
+    start,
+    end,
   }
 }

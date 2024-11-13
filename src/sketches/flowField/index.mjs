@@ -1,8 +1,7 @@
-/*eslint no-unused-vars: ["error", { "varsIgnorePattern": "logAtInterval" }]*/
 import chroma from 'chroma-js'
 import AnimationHelper from '../../lib/AnimationHelper.mjs'
 import { renderSwatches } from '../../lib/colors.mjs'
-import { logAtInterval } from '../../util.mjs'
+import { logAtInterval, getAverageFrameRate, profile } from '../../util.mjs'
 
 import createControlPanel from './createControlPanel.mjs'
 import Particle from './Particle.mjs'
@@ -78,7 +77,6 @@ export default function (p) {
     }
   }
 
-  const frameRates = []
   function draw() {
     const {
       count,
@@ -191,12 +189,7 @@ export default function (p) {
       renderSwatches({ p, w, scales: [colorScale] })
     }
 
-    frameRates.push(p.frameRate())
-    if (p.frameCount === 600) {
-      const averageRate =
-        frameRates.reduce((sum, x) => sum + x, 0) / frameRates.length
-      console.log('averageRate:', averageRate)
-    }
+    getAverageFrameRate(p, 30 * 30)
   }
 
   function getZOffset() {

@@ -12,6 +12,13 @@ export default [
       curly: 'error',
       'object-shorthand': 'error',
       'prefer-const': 'error',
+      'no-unused-vars': [
+        'error',
+        {
+          varsIgnorePattern: 'logAtInterval|getAverageFrameRate|profile',
+        },
+      ],
+
       'no-use-before-define': [
         'error',
         {
