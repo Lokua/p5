@@ -10,8 +10,9 @@ export default (p, metadata) =>
         type: 'Range',
         name: 'count',
         value: 100,
-        min: 1,
+        min: 5,
         max: 10_000,
+        step: 5,
       },
       {
         type: 'Range',

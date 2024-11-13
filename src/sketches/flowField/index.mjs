@@ -44,7 +44,8 @@ export default function (p) {
     particleBuffer = p.createGraphics(w, h)
     particleBuffer.colorMode(p.RGB, 255, 255, 255, 1)
 
-    const { blackHoleStrength } = controlPanel.values()
+    const { blackHoleStrength, edgeMode, applyRandomForce, history } =
+      controlPanel.values()
 
     updateFlowField()
     initializeObstacles()
@@ -55,6 +56,22 @@ export default function (p) {
       p.createVector(center.x, center.y),
       blackHoleStrength,
     )
+
+    for (let i = 0; i < 10_001; i++) {
+      particles.push(
+        new Particle({
+          p,
+          buffer: particleBuffer,
+          w,
+          h,
+          colorScale,
+          position: p.createVector(p.random(w), p.random(h)),
+          edgeMode,
+          applyRandomForce,
+          maxHistory: history,
+        }),
+      )
+    }
 
     return {
       canvas,
@@ -81,48 +98,47 @@ export default function (p) {
     p.background(0)
     particleBuffer.background(chroma('black').alpha(backgroundAlpha).rgba())
 
-    if (particles.length < count) {
-      while (particles.length < count) {
+    if (forceMode !== 'algorithmic') {
+      updateFlowField()
+    }
+
+    let activeCount = 0
+    for (const particle of particles) {
+      if (activeCount >= count) {
+        break
+      }
+      if (!particle.active) {
         let position
+
         while (!position) {
           position = p.createVector(p.random(w), p.random(h))
-          if (showObstacles) {
+          if (position && showBlackHole && blackHole.contains({ position })) {
+            position = null
+          }
+          if (position && showObstacles) {
             for (const obstacle of obstacles) {
               if (obstacle.contains({ position })) {
                 position = null
                 break
               }
             }
-            if (position && showBlackHole) {
-              if (blackHole.contains({ position })) {
-                position = null
-              }
-            }
           }
         }
-        particles.push(
-          new Particle({
-            p,
-            buffer: particleBuffer,
-            w,
-            h,
-            colorScale,
-            position,
-            edgeMode,
-            applyRandomForce,
-            maxHistory: history,
-          }),
-        )
+
+        particle.reset(position)
+        particle.active = true
+        activeCount++
       }
-    } else if (particles.length > count) {
-      particles.splice(count, particles.length - count)
     }
 
-    if (forceMode !== 'algorithmic') {
-      updateFlowField()
-    }
-
+    activeCount = 0
     for (const particle of particles) {
+      if (!particle.active) {
+        continue
+      }
+      if (activeCount >= count) {
+        break
+      }
       particle.edgeMode = edgeMode
       particle.applyRandomForce = applyRandomForce
       particle.maxHistory = history
@@ -154,12 +170,12 @@ export default function (p) {
       particle.update()
       particle.edges()
       particle.display()
-    }
 
-    for (let i = particles.length - 1; i >= 0; i--) {
-      if (particles[i].isDead()) {
-        particles.splice(i, 1)
+      if (particle.isDead()) {
+        particle.active = false
       }
+
+      activeCount++
     }
 
     if (showParticles) {
@@ -182,6 +198,10 @@ export default function (p) {
     if (showSwatches) {
       renderSwatches({ p, w, scales: [colorScale] })
     }
+
+    logAtInterval(1000, () => {
+      console.log(p.frameRate())
+    })
   }
 
   function getZOffset() {
@@ -248,9 +268,7 @@ export default function (p) {
       return p5.Vector.add(force1, force2)
     },
     combinedAveraged(position) {
-      const force1 = forceModes.grid(position)
-      const force2 = forceModes.algorithmic(position)
-      return p5.Vector.add(force1, force2).mult(0.5)
+      return forceModes.combinedAdditive(position).mult(0.5)
     },
   }
 

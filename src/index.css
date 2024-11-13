@@ -177,8 +177,8 @@ input[type='range'] {
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   background: #4caf50;
   border-radius: 50%;
   cursor: pointer;

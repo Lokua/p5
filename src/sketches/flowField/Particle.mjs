@@ -16,6 +16,7 @@ export default class Particle {
     opacity = 0,
     applyRandomForce = false,
     maxHistory = 5,
+    active = false,
   }) {
     this.p = p
     this.buffer = buffer
@@ -36,6 +37,7 @@ export default class Particle {
     this.maxHistory = maxHistory
     this.lifespan = 255
     this.dieOnWrap = false
+    this.active = active
   }
 
   applyForce(force) {
@@ -143,11 +145,13 @@ export default class Particle {
     return onScreen(this.position, this.w, this.h)
   }
 
-  reset() {
-    this.#assignRandomPosition()
-    this.lifespan = 255
+  reset(position) {
+    this.position = position.copy()
     this.velocity.mult(0)
-    this.opacity = 0
+    this.acceleration.mult(0)
+    this.lifespan = 255
+    this.dieOnWrap = false
+    this.history = []
   }
 
   #assignRandomPosition() {
