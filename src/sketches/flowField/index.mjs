@@ -99,7 +99,7 @@ export default function (p) {
     const {
       count,
       showSwatches,
-      visualizeField,
+      showField,
       blackHoleStrength,
       backgroundAlpha,
       edgeMode,
@@ -122,58 +122,24 @@ export default function (p) {
     let activeCount = 0
     for (const particle of particles) {
       if (activeCount >= count) {
-        particle.active = false
         break
       }
 
       if (particle.active) {
-        particle.edgeMode = edgeMode
-        particle.applyRandomForce = applyRandomForce
-        particle.maxHistory = history
-
-        if (showObstacles) {
-          for (const obstacle of obstacles) {
-            if (obstacle.contains(particle)) {
-              particle.velocity.mult(-0.5)
-              particle.dieOnWrap = true
-            }
-          }
-        }
-
-        const force = vectorPool.get()
-        getFlowForce(particle.position, force)
-
-        if (showBlackHole) {
-          blackHole.strength = blackHoleStrength
-          const blackHoleForce = vectorPool.get()
-          blackHole.getForce(particle, blackHoleForce)
-          force.add(blackHoleForce)
-          vectorPool.release(blackHoleForce)
-
-          if (blackHole.contains(particle)) {
-            particle.velocity.mult(-1)
-            particle.dieOnWrap = true
-          }
-        }
-
-        if (showAttractors) {
-          for (const attractor of attractors) {
-            const attractorForce = vectorPool.get()
-            attractor.getForce(particle, attractorForce)
-            force.add(attractorForce)
-            vectorPool.release(attractorForce)
-          }
-        }
-
-        particle.applyForce(force)
-        vectorPool.release(force)
-
-        particle.update()
-        particle.edges()
-        particle.display()
+        updateActiveParticle({
+          particle,
+          edgeMode,
+          applyRandomForce,
+          showObstacles,
+          showBlackHole,
+          blackHoleStrength,
+          showAttractors,
+          history,
+        })
 
         if (particle.isDead()) {
           particle.active = false
+          activeCount--
         } else {
           activeCount++
         }
@@ -187,6 +153,26 @@ export default function (p) {
       }
     }
 
+    renderFeatures({
+      showParticles,
+      showObstacles,
+      showField,
+      showBlackHole,
+      showAttractors,
+      showSwatches,
+    })
+
+    getAverageFrameRate(p, 600)
+  }
+
+  function renderFeatures({
+    showParticles,
+    showObstacles,
+    showField,
+    showBlackHole,
+    showAttractors,
+    showSwatches,
+  }) {
     if (showParticles) {
       p.image(particleBuffer, 0, 0, w, h)
     }
@@ -195,7 +181,7 @@ export default function (p) {
         obstacle.display()
       }
     }
-    if (visualizeField) {
+    if (showField) {
       visualizeFlowField()
     }
     if (showBlackHole) {
@@ -207,33 +193,80 @@ export default function (p) {
     if (showSwatches) {
       renderSwatches({ p, w, scales: [colorScale] })
     }
+  }
 
-    getAverageFrameRate(p, 600)
+  function updateActiveParticle({
+    particle,
+    edgeMode,
+    applyRandomForce,
+    showObstacles,
+    showBlackHole,
+    blackHoleStrength,
+    showAttractors,
+    history,
+  }) {
+    particle.edgeMode = edgeMode
+    particle.applyRandomForce = applyRandomForce
+    particle.maxHistory = history
 
-    logAtInterval(5000, () => {
-      const oversize = particles.filter(
-        (p) => p.active && p.history.length > p.maxHistory,
-      )
-      if (oversize.length > 0) {
-        console.log('Particles with oversized history:', oversize.length)
-      }
-      const activeCount = particles.filter((p) => p.active).length
-      console.log(
-        'Particle vectors:',
-        particles.reduce(
-          (sum, p) => sum + (p.active ? p.history.length + 3 : 0),
-          0,
-        ),
-        'Pool size:',
-        vectorPool.vectors.length,
-        'showBlackHole:',
-        showBlackHole,
-        'Active particles:',
-        activeCount,
-        'Target count:',
-        count,
-      )
+    if (showObstacles) {
+      applyObstacles(particle)
+    }
+
+    applyForces({
+      particle,
+      showBlackHole,
+      blackHoleStrength,
+      showAttractors,
     })
+
+    particle.update()
+    particle.edges()
+    particle.display()
+  }
+
+  function applyForces({
+    particle,
+    showBlackHole,
+    blackHoleStrength,
+    showAttractors,
+  }) {
+    const force = vectorPool.get()
+    getFlowForce(particle.position, force)
+
+    if (showBlackHole) {
+      blackHole.strength = blackHoleStrength
+      const blackHoleForce = vectorPool.get()
+      blackHole.getForce(particle, blackHoleForce)
+      force.add(blackHoleForce)
+      vectorPool.release(blackHoleForce)
+
+      if (blackHole.contains(particle)) {
+        particle.velocity.mult(-1)
+        particle.dieOnWrap = true
+      }
+    }
+
+    if (showAttractors) {
+      for (const attractor of attractors) {
+        const attractorForce = vectorPool.get()
+        attractor.getForce(particle, attractorForce)
+        force.add(attractorForce)
+        vectorPool.release(attractorForce)
+      }
+    }
+
+    particle.applyForce(force)
+    vectorPool.release(force)
+  }
+
+  function applyObstacles(particle) {
+    for (const obstacle of obstacles) {
+      if (obstacle.contains(particle)) {
+        particle.velocity.mult(-0.5)
+        particle.dieOnWrap = true
+      }
+    }
   }
 
   function reanimateParticle({ particle, showBlackHole, showObstacles }) {

@@ -117,7 +117,7 @@ export default (p, metadata) =>
       },
       {
         type: 'Checkbox',
-        name: 'visualizeField',
+        name: 'showField',
         value: false,
       },
       {
