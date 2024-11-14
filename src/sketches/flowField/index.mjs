@@ -122,6 +122,7 @@ export default function (p) {
     let activeCount = 0
     for (const particle of particles) {
       if (activeCount >= count) {
+        particle.active = false
         break
       }
 
@@ -137,10 +138,7 @@ export default function (p) {
           history,
         })
 
-        if (particle.isDead()) {
-          particle.active = false
-          activeCount--
-        } else {
+        if (particle.active) {
           activeCount++
         }
       } else if (activeCount < count) {
@@ -162,7 +160,7 @@ export default function (p) {
       showSwatches,
     })
 
-    getAverageFrameRate(p, 600)
+    getAverageFrameRate(p, 900, true)
   }
 
   function renderFeatures({
@@ -209,9 +207,10 @@ export default function (p) {
     particle.applyRandomForce = applyRandomForce
     particle.maxHistory = history
 
-    if (showObstacles) {
-      applyObstacles(particle)
-    }
+    applyObstacles({
+      particle,
+      showObstacles,
+    })
 
     applyForces({
       particle,
@@ -243,7 +242,7 @@ export default function (p) {
 
       if (blackHole.contains(particle)) {
         particle.velocity.mult(-1)
-        particle.dieOnWrap = true
+        particle.marked = true
       }
     }
 
@@ -260,11 +259,13 @@ export default function (p) {
     vectorPool.release(force)
   }
 
-  function applyObstacles(particle) {
-    for (const obstacle of obstacles) {
-      if (obstacle.contains(particle)) {
-        particle.velocity.mult(-0.5)
-        particle.dieOnWrap = true
+  function applyObstacles({ particle, showObstacles }) {
+    if (showObstacles) {
+      for (const obstacle of obstacles) {
+        if (obstacle.contains(particle)) {
+          particle.velocity.mult(-0.5)
+          particle.marked = true
+        }
       }
     }
   }
@@ -292,7 +293,6 @@ export default function (p) {
       }
     }
     particle.reset(position)
-    particle.active = true
     vectorPool.release(position)
   }
 

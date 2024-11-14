@@ -291,15 +291,21 @@ export function logAtInterval(interval, callback) {
 
 export function getAverageFrameRate(
   p,
-  atFrameCount,
-  callback = (x) => {
-    console.log('Average frame rate:', x)
-  },
+  frames,
+  once = false,
+  callback = (x) => console.log('Average frame rate:', x),
 ) {
-  getAverageFrameRate.frameRates = getAverageFrameRate.frameRates || []
-  getAverageFrameRate.frameRates.push(p.frameRate())
-  if (p.frameCount === atFrameCount) {
-    callback(average(getAverageFrameRate.frameRates))
+  if (getAverageFrameRate.done) {
+    return
+  }
+  getAverageFrameRate.totalFrameRate = getAverageFrameRate.totalFrameRate || 0
+  getAverageFrameRate.totalFrameRate += p.frameRate()
+  if (p.frameCount % frames === 0) {
+    callback(getAverageFrameRate.totalFrameRate / frames)
+    getAverageFrameRate.totalFrameRate = 0
+    if (once) {
+      getAverageFrameRate.done = true
+    }
   }
 }
 

@@ -40,6 +40,7 @@ export default class Particle {
     this.lifespan = 255
     this.dieOnWrap = false
     this.active = active
+    this.marked = false
   }
 
   applyForce(force) {
@@ -72,11 +73,12 @@ export default class Particle {
   }
 
   display() {
-    if (this.isDead()) {
+    if (!this.active) {
+      // TODO: validate this doesn't happen as it shouldn't!
       return
     }
 
-    const baseColor = this.dieOnWrap
+    const baseColor = this.marked
       ? chroma.mix(this.color, 'magenta', 0.2)
       : this.color
 
@@ -102,14 +104,6 @@ export default class Particle {
     this.buffer.circle(this.position.x, this.position.y, this.diameter)
   }
 
-  die() {
-    this.lifespan = -1
-  }
-
-  isDead() {
-    return this.lifespan < 0
-  }
-
   edges() {
     if (this.edgeMode === 'wrap') {
       let wrapped = false
@@ -131,8 +125,8 @@ export default class Particle {
         wrapped = true
       }
 
-      if (wrapped && this.dieOnWrap) {
-        this.lifespan = -1
+      if (wrapped && this.marked) {
+        this.active = false
       }
     } else if (this.edgeMode === 'respawn') {
       if (!this.onScreen()) {
@@ -150,18 +144,8 @@ export default class Particle {
     this.position.set(position)
     this.velocity.mult(0)
     this.acceleration.mult(0)
-    this.lifespan = 255
-    this.dieOnWrap = false
-    this.history.forEach((vector) => {
-      this.vectorPool.release(vector)
-    })
-    this.history = []
-  }
-
-  releaseVectors() {
-    this.vectorPool.release(this.position)
-    this.vectorPool.release(this.velocity)
-    this.vectorPool.release(this.acceleration)
+    this.active = true
+    this.marked = false
     this.history.forEach((vector) => {
       this.vectorPool.release(vector)
     })
