@@ -74,7 +74,6 @@ export default class Particle {
 
   display() {
     if (!this.active) {
-      // TODO: validate this doesn't happen as it shouldn't!
       return
     }
 
@@ -144,6 +143,7 @@ export default class Particle {
     this.position.set(position)
     this.velocity.mult(0)
     this.acceleration.mult(0)
+    this.color = this.colorScale(this.p.random())
     this.active = true
     this.marked = false
     this.history.forEach((vector) => {

@@ -160,7 +160,7 @@ export default function (p) {
       showSwatches,
     })
 
-    getAverageFrameRate(p, 900, true)
+    getAverageFrameRate(p, 900)
   }
 
   function renderFeatures({
@@ -252,6 +252,10 @@ export default function (p) {
         attractor.getForce(particle, attractorForce)
         force.add(attractorForce)
         vectorPool.release(attractorForce)
+
+        if (attractor.contains(particle)) {
+          particle.color = attractor.color
+        }
       }
     }
 
@@ -302,14 +306,15 @@ export default function (p) {
 
   function angleForPosition(position, outputVector) {
     const noiseScale = controlPanel.get('noiseScale')
+    const angleOffset = controlPanel.get('angleOffset')
+    const forceMagnitude = controlPanel.get('forceMagnitude')
     const x = position.x * noiseScale
     const y = position.y * noiseScale
-    const value = p.noise(x, y, getZOffset())
     const angle =
-      p.map(value, 0, 1, 0, p.TWO_PI) +
-      p.sin(p.radians(controlPanel.get('angleOffset')))
+      p.map(p.noise(x, y, getZOffset()), 0, 1, 0, p.TWO_PI) +
+      p.sin(p.radians(angleOffset))
     outputVector.set(p.cos(angle), p.sin(angle))
-    outputVector.setMag(controlPanel.get('forceMagnitude'))
+    outputVector.setMag(forceMagnitude)
     return outputVector
   }
 
@@ -325,18 +330,13 @@ export default function (p) {
         const gridPosX = x * resolution + xOffset + resolution / 2
         const gridPosY = y * resolution + yOffset + resolution / 2
 
-        // Initialize vector if it doesn't exist
         if (!flowField[index]) {
           flowField[index] = p.createVector()
         }
 
-        // Use a temporary position vector from pool just for the calculation
         const position = vectorPool.get()
         position.set(gridPosX - w / 2, gridPosY - h / 2)
-
-        // Update the existing flowField vector
         angleForPosition(position, flowField[index])
-
         vectorPool.release(position)
       }
     }
@@ -448,22 +448,41 @@ export default function (p) {
 
   function updateAttractors() {
     const strength = controlPanel.get('attractorStrength')
-    const grid = 4
-    const spacingX = w / (grid + 1)
-    const spacingY = h / (grid + 1)
-    let index = 0
-    for (let i = 0; i < grid; i++) {
-      for (let j = 0; j < grid; j++) {
-        const x = (i + 1) * spacingX
-        const y = (j + 1) * spacingY
-        const v = vectorPool.get().set(x, y)
-        attractors[index] =
-          attractors[index] ||
-          new Attractor(p, v, strength, 'repel', vectorPool)
-        attractors[index].position = v
-        attractors[index].display()
-        index++
+    const attractorCount = 3
+
+    updateAttractors.velocities =
+      updateAttractors.velocities ||
+      Array(attractorCount)
+        .fill()
+        .map(() => vectorPool.get().set(0, 0))
+
+    for (let i = 0; i < attractorCount; i++) {
+      if (!attractors[i]) {
+        const initialPosition = vectorPool.get().set(p.random(w), p.random(h))
+        attractors[i] = new Attractor({
+          p,
+          w,
+          h,
+          colorScale,
+          position: initialPosition,
+          strength,
+          mode: 'hybrid',
+          vectorPool,
+        })
       }
+
+      const target = vectorPool
+        .get()
+        .set(p.random(-1, 1), p.random(-1, 1))
+        .normalize()
+        .mult(2)
+
+      updateAttractors.velocities[i].add(target).limit(5)
+      attractors[i].position.add(updateAttractors.velocities[i])
+      attractors[i].edges()
+      attractors[i].display()
+
+      vectorPool.release(target)
     }
   }
 
