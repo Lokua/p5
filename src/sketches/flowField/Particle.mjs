@@ -1,10 +1,10 @@
 import chroma from 'chroma-js'
-import { onScreen } from '../../util.mjs'
+import BaseParticle from './BaseParticle.mjs'
 
 /**
  * @param {import('p5')} p
  */
-export default class Particle {
+export default class Particle extends BaseParticle {
   constructor({
     p,
     buffer,
@@ -19,18 +19,18 @@ export default class Particle {
     maxHistory = 5,
     active = false,
   }) {
-    this.p = p
-    this.buffer = buffer
-    this.w = w
-    this.h = h
-    this.vectorPool = vectorPool
+    super({
+      p,
+      buffer,
+      w,
+      h,
+      vectorPool,
+      position,
+      edgeMode,
+      active,
+    })
     this.colorScale = colorScale
-    this.position = position
-    this.velocity = vectorPool.get()
-    this.acceleration = vectorPool.get()
-    this.maxSpeed = p.random(1, 5)
     this.color = colorScale(p.random())
-    this.edgeMode = edgeMode
     this.applyRandomForce = applyRandomForce
     this.opacity = opacity
     this.maxOpacity = 0.9
@@ -38,22 +38,13 @@ export default class Particle {
     this.history = []
     this.maxHistory = maxHistory
     this.lifespan = 255
-    this.dieOnWrap = false
-    this.active = active
     this.marked = false
-  }
-
-  applyForce(force) {
-    this.acceleration.add(force)
   }
 
   update() {
     this.history.unshift(this.vectorPool.get().set(this.position))
 
-    this.velocity.add(this.acceleration)
-    this.velocity.limit(this.maxSpeed)
-    this.position.add(this.velocity)
-    this.acceleration.mult(0)
+    super.update()
 
     if (this.opacity < this.maxOpacity) {
       this.opacity = this.p.constrain(this.opacity + 0.01, 0, this.maxOpacity)
@@ -127,35 +118,18 @@ export default class Particle {
       if (wrapped && this.marked) {
         this.active = false
       }
-    } else if (this.edgeMode === 'respawn') {
-      if (!this.onScreen()) {
-        this.#assignRandomPosition()
-        this.opacity = 0
-      }
+    } else {
+      super.edges()
     }
   }
 
-  onScreen() {
-    return onScreen(this.position, this.w, this.h)
-  }
-
   reset(position) {
-    this.position.set(position)
-    this.velocity.mult(0)
-    this.acceleration.mult(0)
+    super.reset(position)
     this.color = this.colorScale(this.p.random())
-    this.active = true
     this.marked = false
     this.history.forEach((vector) => {
       this.vectorPool.release(vector)
     })
     this.history = []
-  }
-
-  #assignRandomPosition() {
-    this.position = this.p.createVector(
-      this.p.random(this.w),
-      this.p.random(this.h),
-    )
   }
 }
