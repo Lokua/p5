@@ -47,7 +47,7 @@ export default class Particle {
   }
 
   update() {
-    this.history.unshift(this.position.copy())
+    this.history.unshift(this.vectorPool.get().set(this.position))
 
     this.velocity.add(this.acceleration)
     this.velocity.limit(this.maxSpeed)
@@ -152,6 +152,9 @@ export default class Particle {
     this.acceleration.mult(0)
     this.lifespan = 255
     this.dieOnWrap = false
+    this.history.forEach((vector) => {
+      this.vectorPool.release(vector)
+    })
     this.history = []
   }
 
@@ -159,8 +162,8 @@ export default class Particle {
     this.vectorPool.release(this.position)
     this.vectorPool.release(this.velocity)
     this.vectorPool.release(this.acceleration)
-    this.history.forEach((position) => {
-      this.vectorPool.release(position)
+    this.history.forEach((vector) => {
+      this.vectorPool.release(vector)
     })
     this.history = []
   }

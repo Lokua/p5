@@ -11,13 +11,10 @@ export default class Attractor {
     this.mode = mode
   }
 
-  getForce(particle) {
-    const force = this.vectorPool
-      .get()
-      .set(this.position)
-      .sub(particle.position)
+  getForce(particle, outputVector) {
+    outputVector.set(this.position).sub(particle.position)
 
-    const distance = force.mag()
+    const distance = outputVector.mag()
     let strength = this.strength / distance ** 2
 
     if (this.mode === 'hybrid') {
@@ -28,7 +25,7 @@ export default class Attractor {
       strength *= -1
     }
 
-    return force.normalize().mult(strength)
+    return outputVector.normalize().mult(strength)
   }
 
   display() {

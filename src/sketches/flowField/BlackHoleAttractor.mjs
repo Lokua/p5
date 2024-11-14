@@ -10,16 +10,13 @@ export default class BlackHoleAttractor {
     this.zone = 100
   }
 
-  getForce(particle) {
-    const force = this.vectorPool
-      .get()
-      .set(this.position)
-      .sub(particle.position)
-    const distance = force.mag()
-    force.normalize()
-    const strengh = this.strength / distance ** 2
-    force.mult(strengh)
-    return force
+  getForce(particle, outputVector) {
+    outputVector.set(this.position).sub(particle.position)
+    const distance = outputVector.mag()
+    outputVector.normalize()
+    const strength = this.strength / distance ** 2
+    outputVector.mult(strength)
+    return outputVector
   }
 
   display() {

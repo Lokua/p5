@@ -33,9 +33,14 @@ export default function (p) {
   const vectorPool = {
     vectors: [],
     get() {
-      return this.vectors.pop() || p.createVector(0, 0)
+      const vector = this.vectors.pop() || p.createVector(0, 0)
+      vector._debugId = Math.random()
+      return vector
     },
     release(vector) {
+      if (!vector._debugId) {
+        console.warn('Releasing vector with no debug ID')
+      }
       vector.set(0, 0)
       this.vectors.push(vector)
     },
@@ -117,8 +122,10 @@ export default function (p) {
     let activeCount = 0
     for (const particle of particles) {
       if (activeCount >= count) {
+        particle.active = false
         break
       }
+
       if (particle.active) {
         particle.edgeMode = edgeMode
         particle.applyRandomForce = applyRandomForce
@@ -171,31 +178,11 @@ export default function (p) {
           activeCount++
         }
       } else if (activeCount < count) {
-        let position
-
-        while (!position) {
-          const testPosition = vectorPool.get().set(p.random(w), p.random(h))
-          let isValid = true
-          if (showBlackHole && blackHole.contains({ position: testPosition })) {
-            isValid = false
-          }
-          if (isValid && showObstacles) {
-            for (const obstacle of obstacles) {
-              if (obstacle.contains({ position: testPosition })) {
-                isValid = false
-                break
-              }
-            }
-          }
-          if (isValid) {
-            position = testPosition
-          } else {
-            vectorPool.release(testPosition)
-          }
-        }
-
-        particle.reset(position)
-        particle.active = true
+        reanimateParticle({
+          particle,
+          showBlackHole,
+          showObstacles,
+        })
         activeCount++
       }
     }
@@ -222,9 +209,58 @@ export default function (p) {
     }
 
     getAverageFrameRate(p, 600)
-    logAtInterval(1000, () => {
-      console.log(vectorPool.vectors.length)
+
+    logAtInterval(5000, () => {
+      const oversize = particles.filter(
+        (p) => p.active && p.history.length > p.maxHistory,
+      )
+      if (oversize.length > 0) {
+        console.log('Particles with oversized history:', oversize.length)
+      }
+      const activeCount = particles.filter((p) => p.active).length
+      console.log(
+        'Particle vectors:',
+        particles.reduce(
+          (sum, p) => sum + (p.active ? p.history.length + 3 : 0),
+          0,
+        ),
+        'Pool size:',
+        vectorPool.vectors.length,
+        'showBlackHole:',
+        showBlackHole,
+        'Active particles:',
+        activeCount,
+        'Target count:',
+        count,
+      )
     })
+  }
+
+  function reanimateParticle({ particle, showBlackHole, showObstacles }) {
+    let position
+    while (!position) {
+      const testPosition = vectorPool.get().set(p.random(w), p.random(h))
+      let isValid = true
+      if (showBlackHole && blackHole.contains({ position: testPosition })) {
+        isValid = false
+      }
+      if (isValid && showObstacles) {
+        for (const obstacle of obstacles) {
+          if (obstacle.contains({ position: testPosition })) {
+            isValid = false
+            break
+          }
+        }
+      }
+      if (isValid) {
+        position = testPosition
+      } else {
+        vectorPool.release(testPosition)
+      }
+    }
+    particle.reset(position)
+    particle.active = true
+    vectorPool.release(position)
   }
 
   function getZOffset() {
@@ -250,27 +286,24 @@ export default function (p) {
     const xOffset = (w - totalGridWidth) / 2
     const yOffset = (h - totalGridHeight) / 2
 
-    // Clear existing flow field vectors
-    for (let i = 0; i < flowField.length; i++) {
-      if (flowField[i]) {
-        vectorPool.release(flowField[i])
-        flowField[i] = null
-      }
-    }
-
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
         const index = x + y * cols
         const gridPosX = x * resolution + xOffset + resolution / 2
         const gridPosY = y * resolution + yOffset + resolution / 2
 
+        // Initialize vector if it doesn't exist
+        if (!flowField[index]) {
+          flowField[index] = p.createVector()
+        }
+
+        // Use a temporary position vector from pool just for the calculation
         const position = vectorPool.get()
         position.set(gridPosX - w / 2, gridPosY - h / 2)
 
-        const force = vectorPool.get()
-        angleForPosition(position, force)
+        // Update the existing flowField vector
+        angleForPosition(position, flowField[index])
 
-        flowField[index] = force
         vectorPool.release(position)
       }
     }

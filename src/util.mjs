@@ -273,15 +273,19 @@ export function onScreen(v, w, h) {
   return v.x >= 0 && v.x <= w && v.y >= 0 && v.y <= h
 }
 
+const intervalStates = new Map()
 export function logAtInterval(interval, callback) {
-  if (!logAtInterval.lastLogTime) {
-    logAtInterval.lastLogTime = Date.now()
+  const key = callback.toString()
+  let state = intervalStates.get(key)
+  if (!state) {
+    state = { lastLogTime: 0 }
+    intervalStates.set(key, state)
   }
 
   const currentTime = Date.now()
-  if (currentTime - logAtInterval.lastLogTime > interval) {
+  if (currentTime - state.lastLogTime > interval) {
     callback()
-    logAtInterval.lastLogTime = currentTime
+    state.lastLogTime = currentTime
   }
 }
 
