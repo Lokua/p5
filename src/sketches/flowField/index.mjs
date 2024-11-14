@@ -47,6 +47,7 @@ export default function (p) {
   }
 
   const colorScale = chroma.scale(['navy', 'turquoise', 'purple', 'yellow'])
+  const attractorColorScale = chroma.scale(['white'])
   const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 130 })
   const controlPanel = createControlPanel(p, metadata)
 
@@ -189,7 +190,7 @@ export default function (p) {
       updateAttractors()
     }
     if (showSwatches) {
-      renderSwatches({ p, w, scales: [colorScale] })
+      renderSwatches({ p, w, scales: [colorScale, attractorColorScale] })
     }
   }
 
@@ -463,7 +464,7 @@ export default function (p) {
           p,
           w,
           h,
-          colorScale,
+          colorScale: attractorColorScale,
           position: initialPosition,
           strength,
           mode: 'hybrid',

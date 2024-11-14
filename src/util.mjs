@@ -295,16 +295,15 @@ export function getAverageFrameRate(
   once = false,
   callback = (x) => console.log('Average frame rate:', x),
 ) {
-  if (getAverageFrameRate.done) {
-    return
-  }
-  getAverageFrameRate.totalFrameRate = getAverageFrameRate.totalFrameRate || 0
-  getAverageFrameRate.totalFrameRate += p.frameRate()
-  if (p.frameCount % frames === 0) {
-    callback(getAverageFrameRate.totalFrameRate / frames)
-    getAverageFrameRate.totalFrameRate = 0
-    if (once) {
-      getAverageFrameRate.done = true
+  if (!getAverageFrameRate.done) {
+    getAverageFrameRate.total = getAverageFrameRate.total || 0
+    getAverageFrameRate.total += p.frameRate()
+    if (p.frameCount % frames === 0) {
+      callback(Number((getAverageFrameRate.total / frames).toFixed(2)))
+      getAverageFrameRate.total = 0
+      if (once) {
+        getAverageFrameRate.done = true
+      }
     }
   }
 }

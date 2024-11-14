@@ -18,7 +18,7 @@ export default class Attractor {
     this.vectorPool = vectorPool
     this.position = position
     this.strength = strength
-    this.zone = 50
+    this.zone = 25
     this.mode = mode
     this.maxSpeed = 2
     this.color = colorScale(p.random())
@@ -27,7 +27,8 @@ export default class Attractor {
   getForce(particle, outputVector) {
     outputVector.set(this.position).sub(particle.position)
 
-    const distance = outputVector.mag()
+    // prevent division by zero
+    const distance = Math.max(outputVector.mag(), 0.0001)
     let strength = this.strength / distance ** 2
 
     if (this.mode === 'hybrid') {
@@ -36,17 +37,6 @@ export default class Attractor {
       }
     } else if (this.mode === 'repel') {
       strength *= -1
-    }
-
-    // Dafuq? Is this because distance is 0?
-    if (!Number.isFinite(strength)) {
-      console.warn('[Attractor#getForce] `strength` is not finite:', {
-        strength,
-        particle,
-        outputVector,
-        distance,
-        this: this,
-      })
     }
 
     return outputVector.normalize().mult(strength)
