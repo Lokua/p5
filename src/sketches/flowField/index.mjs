@@ -55,8 +55,11 @@ export default function (p) {
     controlPanel.init()
     const canvas = p.createCanvas(w, h)
     p.colorMode(p.RGB, 255, 255, 255, 1)
-    p.randomSeed(39)
-    p.noiseSeed(39)
+
+    const seed = 39
+    p.randomSeed(seed)
+    p.noiseSeed(seed)
+
     particleBuffer = p.createGraphics(w, h)
     particleBuffer.colorMode(p.RGB, 255, 255, 255, 1)
 
@@ -260,15 +263,14 @@ export default function (p) {
   function findValidPosition() {
     let position
 
-    while (!position) {
+    do {
       const testPosition = vectorPool.get().set(p.random(w), p.random(h))
-
       if (isPositionValid(testPosition)) {
         position = testPosition
       } else {
         vectorPool.release(testPosition)
       }
-    }
+    } while (!position)
 
     return position
   }

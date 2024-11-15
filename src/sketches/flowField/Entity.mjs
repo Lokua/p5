@@ -1,37 +1,49 @@
+import EntityTypes from './EntityTypes.mjs'
+
 export default class Entity {
+  static entityTypes = [EntityTypes.DEFAULT]
+
   constructor() {
     /**
-     * @type {Map<Entity, (entity: Entity) => void>}
+     * @type {Map<EntityType, Function[]>}
      */
     this.interactionHandlers = new Map()
   }
 
   /**
-   * @param {Entity[]} entityTypes
-   * @param {(entity: Entity) => void} handler
+   * @param {EntityType[]} entityTypes
+   * @param {(entity: Entity, ...args: any[]) => void} handler
    */
   addInteraction(entityTypes, handler) {
-    entityTypes.forEach((type) => {
-      this.interactionHandlers.set(type, handler)
-    })
+    for (const type of entityTypes) {
+      if (!this.interactionHandlers.has(type)) {
+        this.interactionHandlers.set(type, [])
+      }
+      this.interactionHandlers.get(type).push(handler)
+    }
   }
 
   /**
-   * @param {Entity[]} entityTypes
+   * @param {EntityType[]} entityTypes
    */
   removeInteraction(entityTypes) {
-    entityTypes.forEach((type) => {
+    for (const type of entityTypes) {
       this.interactionHandlers.delete(type)
-    })
+    }
   }
 
   /**
    * @param {Entity} entity
+   * @param {...any} args
    */
   interactWith(entity, ...args) {
-    const handler = this.interactionHandlers.get(entity.constructor)
-    if (handler) {
-      handler.call(this, entity, ...args)
+    for (const type of entity.constructor.entityTypes) {
+      const handlers = this.interactionHandlers.get(type)
+      if (handlers) {
+        for (const handler of handlers) {
+          handler.call(this, entity, ...args)
+        }
+      }
     }
   }
 }

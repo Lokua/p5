@@ -1,10 +1,13 @@
 import Entity from './Entity.mjs'
-import FlowParticle from './FlowParticle.mjs'
+import EntityTypes from './EntityTypes.mjs'
 
-/**
- * @param {import('p5')} p
- */
 export default class Obstacle extends Entity {
+  static entityTypes = [EntityTypes.OBSTACLE]
+
+  /**
+   * @param {Object} options
+   * @param {import('p5')} options.p
+   */
   constructor({ p, buffer = p, x, y, w, h }) {
     super()
     this.p = p
@@ -12,7 +15,7 @@ export default class Obstacle extends Entity {
     this.position = p.createVector(x, y)
     this.w = w
     this.h = h
-    this.addInteraction([FlowParticle], this.attemptToTrapParticle)
+    this.addInteraction([EntityTypes.PARTICLE], this.attemptToTrapParticle)
   }
 
   display() {

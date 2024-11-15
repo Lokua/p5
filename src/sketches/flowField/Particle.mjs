@@ -1,5 +1,6 @@
 import { onScreen } from '../../util.mjs'
 import Entity from './Entity.mjs'
+import EntityTypes from './EntityTypes.mjs'
 
 export default class Particle extends Entity {
   static EdgeMode = {
@@ -7,6 +8,8 @@ export default class Particle extends Entity {
     BOUND: 'BOUND',
     RESPAWN: 'RESPAWN',
   }
+
+  static entityTypes = [EntityTypes.PARTICLE]
 
   /**
    * @typedef {Object} VectorPool
@@ -49,6 +52,12 @@ export default class Particle extends Entity {
     this.maxSpeed = maxSpeed || p.random(1, 5)
     this.edgeMode = edgeMode
     this.active = active
+  }
+
+  configure(updates) {
+    for (const [key, value] of Object.entries(updates)) {
+      this[key] = value
+    }
   }
 
   applyForce(force) {

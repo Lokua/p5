@@ -1,6 +1,6 @@
 import { inheritStaticProperties } from '../../util.mjs'
+import EntityTypes from './EntityTypes.mjs'
 import Attractor from './Attractor.mjs'
-import FlowParticle from './FlowParticle.mjs'
 
 /**
  * @param {import('p5')} p
@@ -9,6 +9,8 @@ export default class Wanderer extends Attractor {
   static {
     inheritStaticProperties(this, Attractor)
   }
+
+  static entityTypes = [EntityTypes.PARTICLE, EntityTypes.ATTRACTOR]
 
   constructor({ p, colorScale, ...rest }) {
     super({
@@ -19,15 +21,13 @@ export default class Wanderer extends Attractor {
     })
 
     this.color = colorScale(p.random())
-
-    this.addInteraction([FlowParticle], this.infectParticle)
+    this.addInteraction([EntityTypes.PARTICLE], this.infectParticle)
   }
 
   update() {
     const force = this.vectorPool
       .get()
       .set(this.p.random(-1, 1), this.p.random(-1, 1))
-      .normalize()
       .mult(this.strength)
 
     this.applyForce(force)

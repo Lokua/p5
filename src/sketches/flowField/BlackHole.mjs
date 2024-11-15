@@ -1,6 +1,6 @@
 import { inheritStaticProperties } from '../../util.mjs'
+import EntityTypes from './EntityTypes.mjs'
 import Attractor from './Attractor.mjs'
-import FlowParticle from './FlowParticle.mjs'
 
 /**
  * @param {import('p5')} p
@@ -10,9 +10,11 @@ export default class BlackHole extends Attractor {
     inheritStaticProperties(this, Attractor)
   }
 
+  static entityTypes = [EntityTypes.ATTRACTOR]
+
   constructor(...args) {
     super(...args)
-    this.addInteraction([FlowParticle], this.pullParticle)
+    this.addInteraction([EntityTypes.PARTICLE], this.pullParticle)
   }
 
   display() {
