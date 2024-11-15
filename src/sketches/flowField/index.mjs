@@ -141,11 +141,7 @@ export default function (p) {
           activeCount++
         }
       } else if (activeCount < count) {
-        reanimateParticle({
-          particle,
-          showBlackHole,
-          showObstacles,
-        })
+        reanimateParticle(particle)
         activeCount++
       }
     }
@@ -234,27 +230,12 @@ export default function (p) {
 
     if (showBlackHole) {
       blackHole.strength = blackHoleStrength
-      const blackHoleForce = vectorPool.get()
-      blackHole.applyForceTo(particle, blackHoleForce)
-      force.add(blackHoleForce)
-      vectorPool.release(blackHoleForce)
-
-      if (blackHole.contains(particle)) {
-        particle.velocity.mult(-1)
-        particle.marked = true
-      }
+      blackHole.interactWith(particle, force)
     }
 
     if (showAttractors) {
       for (const attractor of attractors) {
-        const attractorForce = vectorPool.get()
-        attractor.applyForceTo(particle, attractorForce)
-        force.add(attractorForce)
-        vectorPool.release(attractorForce)
-
-        if (attractor.contains(particle)) {
-          particle.color = attractor.color
-        }
+        attractor.interactWith(particle, force)
       }
     }
 
@@ -265,38 +246,46 @@ export default function (p) {
   function applyObstacles({ particle, showObstacles }) {
     if (showObstacles) {
       for (const obstacle of obstacles) {
-        if (obstacle.contains(particle)) {
-          particle.velocity.mult(-0.5)
-          particle.marked = true
-        }
+        obstacle.interactWith(particle)
       }
     }
   }
 
-  function reanimateParticle({ particle, showBlackHole, showObstacles }) {
+  function reanimateParticle(particle) {
+    const position = findValidPosition()
+    particle.reset(position)
+    vectorPool.release(position)
+  }
+
+  function findValidPosition() {
     let position
+
     while (!position) {
       const testPosition = vectorPool.get().set(p.random(w), p.random(h))
-      let isValid = true
-      if (showBlackHole && blackHole.contains({ position: testPosition })) {
-        isValid = false
-      }
-      if (isValid && showObstacles) {
-        for (const obstacle of obstacles) {
-          if (obstacle.contains({ position: testPosition })) {
-            isValid = false
-            break
-          }
-        }
-      }
-      if (isValid) {
+
+      if (isPositionValid(testPosition)) {
         position = testPosition
       } else {
         vectorPool.release(testPosition)
       }
     }
-    particle.reset(position)
-    vectorPool.release(position)
+
+    return position
+  }
+
+  function isPositionValid(position) {
+    const showBlackHole = controlPanel.get('showBlackHole')
+    const showObstacles = controlPanel.get('showObstacles')
+
+    if (showBlackHole && blackHole.contains({ position })) {
+      return false
+    }
+
+    if (showObstacles) {
+      return !obstacles.some((obstacle) => obstacle.contains({ position }))
+    }
+
+    return true
   }
 
   function getZOffset() {
@@ -307,13 +296,17 @@ export default function (p) {
     const noiseScale = controlPanel.get('noiseScale')
     const angleOffset = controlPanel.get('angleOffset')
     const forceMagnitude = controlPanel.get('forceMagnitude')
+
     const x = position.x * noiseScale
     const y = position.y * noiseScale
+
     const angle =
       p.map(p.noise(x, y, getZOffset()), 0, 1, 0, p.TWO_PI) +
       p.sin(p.radians(angleOffset))
+
     outputVector.set(p.cos(angle), p.sin(angle))
     outputVector.setMag(forceMagnitude)
+
     return outputVector
   }
 

@@ -1,5 +1,6 @@
-import Attractor from './Attractor.mjs'
 import { inheritStaticProperties } from '../../util.mjs'
+import Attractor from './Attractor.mjs'
+import FlowParticle from './FlowParticle.mjs'
 
 /**
  * @param {import('p5')} p
@@ -18,6 +19,8 @@ export default class Wanderer extends Attractor {
     })
 
     this.color = colorScale(p.random())
+
+    this.addInteraction([FlowParticle], this.infectParticle)
   }
 
   update() {
@@ -38,6 +41,17 @@ export default class Wanderer extends Attractor {
       const alpha = this.p.map(i, 0, this.radius, 0.7, 0.1)
       this.buffer.fill(this.color.alpha(alpha).rgba())
       this.buffer.circle(this.position.x, this.position.y, i)
+    }
+  }
+
+  infectParticle(particle, force) {
+    const attractorForce = this.vectorPool.get()
+    this.applyForceTo(particle, attractorForce)
+    force.add(attractorForce)
+    this.vectorPool.release(attractorForce)
+
+    if (this.contains(particle)) {
+      particle.color = this.color
     }
   }
 }

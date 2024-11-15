@@ -9,12 +9,16 @@ export default class Particle extends Entity {
   }
 
   /**
+   * @typedef {Object} VectorPool
+   * @property {() => import('p5').Vector} get
+   * @property {(v: import('p5').Vector) => void} release
+   *
    * @param {Object} options
    * @param {import('p5')} options.p
    * @param {import('p5')} [options.buffer]
    * @param {number} [options.w]
    * @param {number} [options.h]
-   * @param {{ get: () => import('p5').Vector }} [options.vectorPool]
+   * @param {VectorPool} [options.vectorPool]
    * @param {import('p5').Vector} [options.position]
    * @param {Particle.EdgeMode} [options.edgeMode]
    * @param {boolean} [options.active]

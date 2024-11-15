@@ -28,10 +28,10 @@ export default class Entity {
   /**
    * @param {Entity} entity
    */
-  interactWith(entity) {
+  interactWith(entity, ...args) {
     const handler = this.interactionHandlers.get(entity.constructor)
     if (handler) {
-      handler.call(this, entity)
+      handler.call(this, entity, ...args)
     }
   }
 }

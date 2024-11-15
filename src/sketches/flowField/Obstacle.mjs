@@ -1,4 +1,6 @@
 import Entity from './Entity.mjs'
+import FlowParticle from './FlowParticle.mjs'
+
 /**
  * @param {import('p5')} p
  */
@@ -10,6 +12,7 @@ export default class Obstacle extends Entity {
     this.position = p.createVector(x, y)
     this.w = w
     this.h = h
+    this.addInteraction([FlowParticle], this.attemptToTrapParticle)
   }
 
   display() {
@@ -26,5 +29,12 @@ export default class Obstacle extends Entity {
       particle.position.y > this.position.y - this.h / 2 &&
       particle.position.y < this.position.y + this.h / 2
     )
+  }
+
+  attemptToTrapParticle(particle) {
+    if (this.contains(particle)) {
+      particle.velocity.mult(-0.5)
+      particle.marked = true
+    }
   }
 }
