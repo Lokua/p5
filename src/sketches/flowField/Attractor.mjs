@@ -1,69 +1,36 @@
+import Particle from './Particle.mjs'
+import { inheritStaticProperties } from '../../util.mjs'
+
 /**
  * @param {import('p5')} p
  */
-export default class Attractor {
+export default class Attractor extends Particle {
+  static {
+    inheritStaticProperties(this, Particle)
+  }
+
+  static Mode = {
+    ATTRACT: 'ATTRACT',
+    REPEL: 'REPEL',
+    HYBRID: 'HYBRID',
+  }
+
   constructor({
-    p,
-    w,
-    h,
-    colorScale,
-    position,
+    edgeMode = Attractor.EdgeMode.BOUND,
+    mode = Attractor.Mode.ATTRACT,
     strength = 1.5,
-    mode = 'hybrid',
-    vectorPool,
+    radius = 25,
+    ...rest
   }) {
-    this.p = p
-    this.w = w
-    this.h = h
-    this.vectorPool = vectorPool
-    this.position = position
-    this.strength = strength
-    this.zone = 25
+    super({
+      edgeMode,
+      maxSpeed: 2,
+      ...rest,
+    })
+
     this.mode = mode
-    this.maxSpeed = 2
-    this.color = colorScale(p.random())
-  }
-
-  getForce(particle, outputVector) {
-    outputVector.set(this.position).sub(particle.position)
-
-    // prevent division by zero
-    const distance = Math.max(outputVector.mag(), 0.0001)
-    let strength = this.strength / distance ** 2
-
-    if (this.mode === 'hybrid') {
-      if (distance < this.zone) {
-        strength *= -1
-      }
-    } else if (this.mode === 'repel') {
-      strength *= -1
-    }
-
-    return outputVector.normalize().mult(strength)
-  }
-
-  display() {
-    this.p.noStroke()
-    for (let i = this.zone; i > 0; i -= this.zone / 10) {
-      const alpha = this.p.map(i, 0, this.zone, 0.7, 0.1)
-      this.p.fill(this.color.alpha(alpha).rgba())
-      this.p.circle(this.position.x, this.position.y, i)
-    }
-  }
-
-  edges() {
-    if (this.position.x > this.w) {
-      this.position.x = this.w
-    }
-    if (this.position.x < 0) {
-      this.position.x = 0
-    }
-    if (this.position.y > this.h) {
-      this.position.y = this.h
-    }
-    if (this.position.y < 0) {
-      this.position.y = 0
-    }
+    this.strength = strength
+    this.radius = radius
   }
 
   contains(particle) {
@@ -73,6 +40,28 @@ export default class Attractor {
       this.position.x,
       this.position.y,
     )
-    return distance < this.zone / 2
+    return distance < this.radius
+  }
+
+  applyForceTo(particle, outputVector) {
+    outputVector.set(this.position).sub(particle.position)
+    const distance = Math.max(outputVector.mag(), 0.0001)
+    let strength = this.strength / distance ** 2
+
+    if (this.mode === Attractor.Mode.HYBRID) {
+      if (distance < this.radius) {
+        strength *= -1
+      }
+    } else if (this.mode === Attractor.Mode.REPEL) {
+      strength *= -1
+    }
+
+    return outputVector.normalize().mult(strength)
+  }
+
+  display() {
+    this.buffer.noStroke()
+    this.buffer.fill(255, 0, 0, 100)
+    this.buffer.circle(this.position.x, this.position.y, this.radius * 2)
   }
 }

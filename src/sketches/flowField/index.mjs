@@ -4,10 +4,10 @@ import { renderSwatches } from '../../lib/colors.mjs'
 import { logAtInterval, getAverageFrameRate } from '../../util.mjs'
 
 import createControlPanel from './createControlPanel.mjs'
-import Particle from './Particle.mjs'
+import FlowParticle from './FlowParticle.mjs'
 import Obstacle from './Obstacle.mjs'
-import BlackHoleAttractor from './BlackHoleAttractor.mjs'
-import Attractor from './Attractor.mjs'
+import BlackHole from './BlackHole.mjs'
+import Wanderer from './Wanderer.mjs'
 
 /**
  * @param {import('p5')} p
@@ -22,9 +22,9 @@ export default function (p) {
   const center = p.createVector(w / 2, h / 2)
   const obstacles = []
   const particles = []
+  let particleBuffer
   const attractors = []
   let blackHole
-  let particleBuffer
   const resolution = 20
   const cols = Math.floor(w / resolution)
   const rows = Math.floor(h / resolution)
@@ -39,7 +39,7 @@ export default function (p) {
     },
     release(vector) {
       if (!vector._debugId) {
-        console.warn('Releasing vector with no debug ID')
+        console.warn('Releasing vector not created from this pool!')
       }
       vector.set(0, 0)
       this.vectors.push(vector)
@@ -67,20 +67,18 @@ export default function (p) {
     initializeObstacles()
     updateAttractors()
 
-    blackHole = new BlackHoleAttractor(
+    blackHole = new BlackHole({
       p,
-      p.createVector(center.x, center.y),
-      blackHoleStrength,
       vectorPool,
-    )
+      position: p.createVector(center.x, center.y),
+      strength: blackHoleStrength,
+    })
 
     for (let i = 0; i < 10_001; i++) {
       particles.push(
-        new Particle({
+        new FlowParticle({
           p,
           buffer: particleBuffer,
-          w,
-          h,
           vectorPool,
           colorScale,
           position: p.createVector(p.random(w), p.random(h)),
@@ -232,12 +230,12 @@ export default function (p) {
     showAttractors,
   }) {
     const force = vectorPool.get()
-    getFlowForce(particle.position, force)
+    applyFlowForceTo(particle.position, force)
 
     if (showBlackHole) {
       blackHole.strength = blackHoleStrength
       const blackHoleForce = vectorPool.get()
-      blackHole.getForce(particle, blackHoleForce)
+      blackHole.applyForceTo(particle, blackHoleForce)
       force.add(blackHoleForce)
       vectorPool.release(blackHoleForce)
 
@@ -250,7 +248,7 @@ export default function (p) {
     if (showAttractors) {
       for (const attractor of attractors) {
         const attractorForce = vectorPool.get()
-        attractor.getForce(particle, attractorForce)
+        attractor.applyForceTo(particle, attractorForce)
         force.add(attractorForce)
         vectorPool.release(attractorForce)
 
@@ -377,7 +375,7 @@ export default function (p) {
     },
   }
 
-  function getFlowForce(
+  function applyFlowForceTo(
     position,
     outputVector,
     mode = controlPanel.get('forceMode'),
@@ -402,8 +400,7 @@ export default function (p) {
           y * resolution + yOffset + resolution / 2,
         )
 
-        const force = vectorPool.get()
-        getFlowForce(position, force)
+        const force = applyFlowForceTo(position, vectorPool.get())
         const scaledForce = force.copy().mult(resolution * 2)
 
         const angle = force.heading()
@@ -441,49 +438,64 @@ export default function (p) {
 
   function initializeObstacles() {
     const size = 100
-    obstacles.push(new Obstacle(p, center.x / 2, center.y / 2, size, size))
-    obstacles.push(new Obstacle(p, center.x * 1.5, center.y / 2, size, size))
-    obstacles.push(new Obstacle(p, center.x / 2, center.y * 1.5, size, size))
-    obstacles.push(new Obstacle(p, center.x * 1.5, center.y * 1.5, size, size))
+    obstacles.push(
+      new Obstacle({
+        p,
+        x: center.x / 2,
+        y: center.y / 2,
+        w: size,
+        h: size,
+      }),
+    )
+    obstacles.push(
+      new Obstacle({
+        p,
+        x: center.x * 1.5,
+        y: center.y / 2,
+        w: size,
+        h: size,
+      }),
+    )
+    obstacles.push(
+      new Obstacle({
+        p,
+        x: center.x / 2,
+        y: center.y * 1.5,
+        w: size,
+        h: size,
+      }),
+    )
+    obstacles.push(
+      new Obstacle({
+        p,
+        x: center.x * 1.5,
+        y: center.y * 1.5,
+        w: size,
+        h: size,
+      }),
+    )
   }
 
   function updateAttractors() {
     const strength = controlPanel.get('attractorStrength')
     const attractorCount = 3
 
-    updateAttractors.velocities =
-      updateAttractors.velocities ||
-      Array(attractorCount)
-        .fill()
-        .map(() => vectorPool.get().set(0, 0))
-
-    for (let i = 0; i < attractorCount; i++) {
-      if (!attractors[i]) {
-        const initialPosition = vectorPool.get().set(p.random(w), p.random(h))
-        attractors[i] = new Attractor({
+    while (attractors.length < attractorCount) {
+      attractors.push(
+        new Wanderer({
           p,
-          w,
-          h,
           colorScale: attractorColorScale,
-          position: initialPosition,
+          position: vectorPool.get().set(p.random(w), p.random(h)),
           strength,
-          mode: 'hybrid',
           vectorPool,
-        })
-      }
+        }),
+      )
+    }
 
-      const target = vectorPool
-        .get()
-        .set(p.random(-1, 1), p.random(-1, 1))
-        .normalize()
-        .mult(2)
-
-      updateAttractors.velocities[i].add(target).limit(5)
-      attractors[i].position.add(updateAttractors.velocities[i])
-      attractors[i].edges()
-      attractors[i].display()
-
-      vectorPool.release(target)
+    for (const attractor of attractors) {
+      attractor.update()
+      attractor.edges()
+      attractor.display()
     }
   }
 

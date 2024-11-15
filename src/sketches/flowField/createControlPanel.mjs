@@ -1,4 +1,5 @@
 import { createControlPanel } from '../../lib/ControlPanel/index.mjs'
+import Particle from './FlowParticle.mjs'
 
 export default (p, metadata) =>
   createControlPanel({
@@ -87,7 +88,7 @@ export default (p, metadata) =>
         type: 'Select',
         name: 'edgeMode',
         value: 'wrap',
-        options: ['wrap', 'respawn'],
+        options: Object.values(Particle.EdgeMode),
       },
       {
         type: 'Select',

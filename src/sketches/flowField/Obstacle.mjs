@@ -1,19 +1,22 @@
+import Entity from './Entity.mjs'
 /**
  * @param {import('p5')} p
  */
-export default class Obstacle {
-  constructor(p, x, y, w, h) {
+export default class Obstacle extends Entity {
+  constructor({ p, buffer = p, x, y, w, h }) {
+    super()
     this.p = p
+    this.buffer = buffer
     this.position = p.createVector(x, y)
     this.w = w
     this.h = h
   }
 
   display() {
-    this.p.noStroke()
-    this.p.fill(50, 0.3)
-    this.p.rectMode(this.p.CENTER)
-    this.p.rect(this.position.x, this.position.y, this.w, this.h)
+    this.buffer.noStroke()
+    this.buffer.fill(50, 0.3)
+    this.buffer.rectMode(this.p.CENTER)
+    this.buffer.rect(this.position.x, this.position.y, this.w, this.h)
   }
 
   contains(particle) {

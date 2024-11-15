@@ -352,3 +352,20 @@ export function profile(id = uuid(), limit = Infinity, average = false) {
     end,
   }
 }
+
+export function inheritStaticProperties(childClass, parentClass) {
+  Object.entries(Object.getOwnPropertyDescriptors(parentClass))
+    .filter(([key, descriptor]) => {
+      return (
+        key !== 'prototype' &&
+        key !== 'name' &&
+        key !== 'length' &&
+        !descriptor.get &&
+        !descriptor.set &&
+        typeof parentClass[key] !== 'function'
+      )
+    })
+    .forEach(([key]) => {
+      childClass[key] = parentClass[key]
+    })
+}

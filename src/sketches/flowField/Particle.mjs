@@ -1,135 +1,101 @@
-import chroma from 'chroma-js'
-import BaseParticle from './BaseParticle.mjs'
+import { onScreen } from '../../util.mjs'
+import Entity from './Entity.mjs'
 
-/**
- * @param {import('p5')} p
- */
-export default class Particle extends BaseParticle {
+export default class Particle extends Entity {
+  static EdgeMode = {
+    WRAP: 'WRAP',
+    BOUND: 'BOUND',
+    RESPAWN: 'RESPAWN',
+  }
+
+  /**
+   * @param {Object} options
+   * @param {import('p5')} options.p
+   * @param {import('p5')} [options.buffer]
+   * @param {number} [options.w]
+   * @param {number} [options.h]
+   * @param {{ get: () => import('p5').Vector }} [options.vectorPool]
+   * @param {import('p5').Vector} [options.position]
+   * @param {Particle.EdgeMode} [options.edgeMode]
+   * @param {boolean} [options.active]
+   * @param {number} [options.maxSpeed]
+   */
   constructor({
     p,
-    buffer,
-    w,
-    h,
+    buffer = p,
+    w = p.width,
+    h = p.height,
     vectorPool,
-    colorScale,
     position,
-    edgeMode = 'wrap',
-    opacity = 0,
-    applyRandomForce = false,
-    maxHistory = 5,
+    edgeMode = Particle.EdgeMode.WRAP,
     active = false,
+    maxSpeed,
   }) {
-    super({
-      p,
-      buffer,
-      w,
-      h,
-      vectorPool,
-      position,
-      edgeMode,
-      active,
-    })
-    this.colorScale = colorScale
-    this.color = colorScale(p.random())
-    this.applyRandomForce = applyRandomForce
-    this.opacity = opacity
-    this.maxOpacity = 0.9
-    this.diameter = p.random(0.25, 3)
-    this.history = []
-    this.maxHistory = maxHistory
-    this.lifespan = 255
-    this.marked = false
+    super()
+    this.p = p
+    this.buffer = buffer
+    this.w = w
+    this.h = h
+    this.vectorPool = vectorPool || {
+      get: () => p.createVector(0, 0),
+    }
+    this.position = position
+    this.velocity = vectorPool.get()
+    this.acceleration = vectorPool.get()
+    this.maxSpeed = maxSpeed || p.random(1, 5)
+    this.edgeMode = edgeMode
+    this.active = active
+  }
+
+  applyForce(force) {
+    this.acceleration.add(force)
   }
 
   update() {
-    this.history.unshift(this.vectorPool.get().set(this.position))
-
-    super.update()
-
-    if (this.opacity < this.maxOpacity) {
-      this.opacity = this.p.constrain(this.opacity + 0.01, 0, this.maxOpacity)
-    }
-
-    if (this.applyRandomForce) {
-      this.applyForce(p5.Vector.random2D().setMag(0.2))
-    }
-
-    const maxIndex = this.maxHistory - 1
-    if (this.history.length > maxIndex) {
-      while (this.history.length > maxIndex) {
-        const oldPosition = this.history.pop()
-        this.vectorPool.release(oldPosition)
-      }
-    }
+    this.velocity.add(this.acceleration)
+    this.velocity.limit(this.maxSpeed)
+    this.position.add(this.velocity)
+    this.acceleration.mult(0)
   }
 
   display() {
-    if (!this.active) {
-      return
+    if (this.active) {
+      this.buffer.noFill()
+      this.buffer.stroke('red')
+      this.buffer.point(this.position.x, this.position.y)
     }
-
-    const baseColor = this.marked
-      ? chroma.mix(this.color, 'magenta', 0.2)
-      : this.color
-
-    let prev = this.position
-
-    for (const [index, position] of this.history.entries()) {
-      const distance = this.p.dist(position.x, position.y, prev.x, prev.y)
-      const threshold = Math.min(this.w, this.h) / 2
-
-      if (distance < threshold) {
-        const value = this.maxHistory - index
-        const opacity = this.p.map(value, 0, this.maxHistory, 0, this.opacity)
-        this.buffer.stroke(baseColor.alpha(opacity).rgba())
-        this.buffer.line(prev.x, prev.y, position.x, position.y)
-      }
-
-      prev = position
-    }
-
-    const color = baseColor.alpha(this.opacity).rgba()
-    this.buffer.fill(color)
-    this.buffer.stroke(color)
-    this.buffer.circle(this.position.x, this.position.y, this.diameter)
   }
 
   edges() {
-    if (this.edgeMode === 'wrap') {
-      let wrapped = false
-
-      if (this.position.x > this.w) {
-        this.position.x = 0
-        wrapped = true
+    if (this.edgeMode === Particle.EdgeMode.WRAP) {
+      this.position.x > this.w && (this.position.x = 0)
+      this.position.x < 0 && (this.position.x = this.w)
+      this.position.y > this.h && (this.position.y = 0)
+      this.position.y < 0 && (this.position.y = this.h)
+    } else if (this.edgeMode === Particle.EdgeMode.BOUND) {
+      this.position.x = this.p.constrain(this.position.x, 0, this.w)
+      this.position.y = this.p.constrain(this.position.y, 0, this.h)
+    } else if (this.edgeMode === Particle.EdgeMode.RESPAWN) {
+      if (!this.onScreen()) {
+        this.#assignRandomPosition()
       }
-      if (this.position.x < 0) {
-        this.position.x = this.w
-        wrapped = true
-      }
-      if (this.position.y > this.h) {
-        this.position.y = 0
-        wrapped = true
-      }
-      if (this.position.y < 0) {
-        this.position.y = this.h
-        wrapped = true
-      }
-
-      if (wrapped && this.marked) {
-        this.active = false
-      }
-    } else {
-      super.edges()
     }
   }
 
+  onScreen() {
+    return onScreen(this.position, this.w, this.h)
+  }
+
   reset(position) {
-    super.reset(position)
-    this.color = this.colorScale(this.p.random())
-    this.marked = false
-    this.history.forEach((vector) => {
-      this.vectorPool.release(vector)
-    })
-    this.history = []
+    this.position.set(position)
+    this.velocity.mult(0)
+    this.acceleration.mult(0)
+    this.active = true
+  }
+
+  #assignRandomPosition() {
+    this.position = this.vectorPool
+      .get()
+      .set(this.p.random(this.w), this.p.random(this.h))
   }
 }
