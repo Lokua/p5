@@ -77,11 +77,19 @@ export default (p, metadata) =>
       },
       {
         type: 'Range',
+        name: 'attractorCount',
+        display: 'attrCount',
+        value: 1,
+        min: 1,
+        max: 10,
+      },
+      {
+        type: 'Range',
         name: 'attractorStrength',
         display: 'attrStrength',
-        value: 1000,
+        value: 100,
         min: 0.1,
-        max: 100,
+        max: 1000,
         step: 0.1,
       },
       {

@@ -9,13 +9,13 @@ export default [
       },
     },
     rules: {
-      curly: 'error',
+      curly: 'warn',
       'object-shorthand': 'error',
       'prefer-const': 'error',
       'no-unused-vars': [
         'error',
         {
-          varsIgnorePattern: 'logAtInterval|getAverageFrameRate|profile',
+          varsIgnorePattern: 'callAtInterval|getAverageFrameRate|profile',
         },
       ],
 

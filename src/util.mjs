@@ -274,7 +274,7 @@ export function onScreen(v, w, h) {
 }
 
 const intervalStates = new Map()
-export function logAtInterval(interval, callback) {
+export function callAtInterval(interval, callback) {
   const key = callback.toString()
   let state = intervalStates.get(key)
   if (!state) {

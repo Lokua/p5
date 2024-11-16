@@ -2,9 +2,6 @@ import { inheritStaticProperties } from '../../util.mjs'
 import EntityTypes from './EntityTypes.mjs'
 import Particle from './Particle.mjs'
 
-/**
- * @param {import('p5')} p
- */
 export default class Attractor extends Particle {
   static {
     inheritStaticProperties(this, Particle)

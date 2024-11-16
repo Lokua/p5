@@ -1,4 +1,4 @@
-import { onScreen } from '../../util.mjs'
+import { callAtInterval, onScreen } from '../../util.mjs'
 import Entity from './Entity.mjs'
 import EntityTypes from './EntityTypes.mjs'
 
@@ -54,21 +54,23 @@ export default class Particle extends Entity {
     this.active = active
   }
 
-  configure(updates) {
-    for (const [key, value] of Object.entries(updates)) {
-      this[key] = value
-    }
+  updateState(updates) {
+    Object.assign(this, updates)
   }
 
   applyForce(force) {
     this.acceleration.add(force)
   }
 
-  update() {
+  updatePhysics() {
     this.velocity.add(this.acceleration)
     this.velocity.limit(this.maxSpeed)
     this.position.add(this.velocity)
     this.acceleration.mult(0)
+  }
+
+  update() {
+    this.updatePhysics()
   }
 
   display() {
@@ -86,17 +88,19 @@ export default class Particle extends Entity {
       this.position.y > this.h && (this.position.y = 0)
       this.position.y < 0 && (this.position.y = this.h)
     } else if (this.edgeMode === Particle.EdgeMode.BOUND) {
+      if (this.position.x <= 0 || this.position.x >= this.p.width) {
+        this.velocity.x *= -1
+      }
+      if (this.position.y <= 0 || this.position.y >= this.p.height) {
+        this.velocity.y *= -1
+      }
       this.position.x = this.p.constrain(this.position.x, 0, this.w)
       this.position.y = this.p.constrain(this.position.y, 0, this.h)
     } else if (this.edgeMode === Particle.EdgeMode.RESPAWN) {
-      if (!this.onScreen()) {
+      if (!onScreen(this.position, this.w, this.h)) {
         this.#assignRandomPosition()
       }
     }
-  }
-
-  onScreen() {
-    return onScreen(this.position, this.w, this.h)
   }
 
   reset(position) {
@@ -104,6 +108,13 @@ export default class Particle extends Entity {
     this.velocity.mult(0)
     this.acceleration.mult(0)
     this.active = true
+  }
+
+  destroy() {
+    this.active = false
+    this.vectorPool.release(this.position)
+    this.vectorPool.release(this.acceleration)
+    this.vectorPool.release(this.velocity)
   }
 
   #assignRandomPosition() {

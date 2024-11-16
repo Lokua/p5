@@ -2,9 +2,6 @@ import { inheritStaticProperties } from '../../util.mjs'
 import EntityTypes from './EntityTypes.mjs'
 import Attractor from './Attractor.mjs'
 
-/**
- * @param {import('p5')} p
- */
 export default class BlackHole extends Attractor {
   static {
     inheritStaticProperties(this, Attractor)
@@ -25,10 +22,10 @@ export default class BlackHole extends Attractor {
     }
   }
 
-  pullParticle(particle, force) {
+  pullParticle(particle, outputForce) {
     const blackHoleForce = this.vectorPool.get()
     this.applyForceTo(particle, blackHoleForce)
-    force.add(blackHoleForce)
+    outputForce.add(blackHoleForce)
     this.vectorPool.release(blackHoleForce)
 
     if (this.contains(particle)) {

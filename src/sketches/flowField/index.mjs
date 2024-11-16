@@ -1,13 +1,13 @@
 import chroma from 'chroma-js'
 import AnimationHelper from '../../lib/AnimationHelper.mjs'
 import { renderSwatches } from '../../lib/colors.mjs'
-import { logAtInterval, getAverageFrameRate } from '../../util.mjs'
+import { callAtInterval, getAverageFrameRate } from '../../util.mjs'
 
 import createControlPanel from './createControlPanel.mjs'
 import FlowParticle from './FlowParticle.mjs'
 import Obstacle from './Obstacle.mjs'
 import BlackHole from './BlackHole.mjs'
-import Wanderer from './Wanderer.mjs'
+import Pollinator from './Pollinator.mjs'
 
 /**
  * @param {import('p5')} p
@@ -135,7 +135,6 @@ export default function (p) {
           applyRandomForce,
           showObstacles,
           showBlackHole,
-          blackHoleStrength,
           showAttractors,
           history,
         })
@@ -154,6 +153,7 @@ export default function (p) {
       showObstacles,
       showField,
       showBlackHole,
+      blackHoleStrength,
       showAttractors,
       showSwatches,
     })
@@ -166,6 +166,7 @@ export default function (p) {
     showObstacles,
     showField,
     showBlackHole,
+    blackHoleStrength,
     showAttractors,
     showSwatches,
   }) {
@@ -177,14 +178,15 @@ export default function (p) {
         obstacle.display()
       }
     }
-    if (showField) {
-      visualizeFlowField()
-    }
     if (showBlackHole) {
+      blackHole.strength = blackHoleStrength
       blackHole.display()
     }
     if (showAttractors) {
       updateAttractors()
+    }
+    if (showField) {
+      visualizeFlowField()
     }
     if (showSwatches) {
       renderSwatches({ p, w, scales: [colorScale, attractorColorScale] })
@@ -197,7 +199,6 @@ export default function (p) {
     applyRandomForce,
     showObstacles,
     showBlackHole,
-    blackHoleStrength,
     showAttractors,
     history,
   }) {
@@ -213,7 +214,6 @@ export default function (p) {
     applyForces({
       particle,
       showBlackHole,
-      blackHoleStrength,
       showAttractors,
     })
 
@@ -222,17 +222,11 @@ export default function (p) {
     particle.display()
   }
 
-  function applyForces({
-    particle,
-    showBlackHole,
-    blackHoleStrength,
-    showAttractors,
-  }) {
+  function applyForces({ particle, showBlackHole, showAttractors }) {
     const force = vectorPool.get()
     applyFlowForceTo(particle.position, force)
 
     if (showBlackHole) {
-      blackHole.strength = blackHoleStrength
       blackHole.interactWith(particle, force)
     }
 
@@ -378,6 +372,88 @@ export default function (p) {
     return forceModes[mode](position, outputVector)
   }
 
+  function initializeObstacles() {
+    const size = 100
+    obstacles.push(
+      new Obstacle({
+        p,
+        x: center.x / 2,
+        y: center.y / 2,
+        w: size,
+        h: size,
+      }),
+    )
+    obstacles.push(
+      new Obstacle({
+        p,
+        x: center.x * 1.5,
+        y: center.y / 2,
+        w: size,
+        h: size,
+      }),
+    )
+    obstacles.push(
+      new Obstacle({
+        p,
+        x: center.x / 2,
+        y: center.y * 1.5,
+        w: size,
+        h: size,
+      }),
+    )
+    obstacles.push(
+      new Obstacle({
+        p,
+        x: center.x * 1.5,
+        y: center.y * 1.5,
+        w: size,
+        h: size,
+      }),
+    )
+  }
+
+  function updateAttractors() {
+    const strength = controlPanel.get('attractorStrength')
+    const count = controlPanel.get('attractorCount')
+
+    createOrRemoveAttractors(count, strength)
+
+    for (const attractor of attractors) {
+      attractor.updateState({ strength })
+      attractor.update()
+      attractor.edges()
+      attractor.display()
+    }
+  }
+
+  function createOrRemoveAttractors(count, strength) {
+    if (attractors.length < count) {
+      addAttractors(count, strength)
+    } else if (attractors.length > count) {
+      removeAttractors(count)
+    }
+  }
+
+  function addAttractors(count, strength) {
+    while (attractors.length < count) {
+      attractors.push(
+        new Pollinator({
+          p,
+          colorScale: attractorColorScale,
+          position: vectorPool.get().set(p.random(w), p.random(h)),
+          strength,
+          vectorPool,
+        }),
+      )
+    }
+  }
+
+  function removeAttractors(count) {
+    while (attractors.length > count) {
+      attractors.pop().destroy()
+    }
+  }
+
   function visualizeFlowField() {
     const useAngleBasedColor = false
     const baseColor = chroma('magenta').rgba()
@@ -428,69 +504,6 @@ export default function (p) {
         vectorPool.release(position)
         vectorPool.release(force)
       }
-    }
-  }
-
-  function initializeObstacles() {
-    const size = 100
-    obstacles.push(
-      new Obstacle({
-        p,
-        x: center.x / 2,
-        y: center.y / 2,
-        w: size,
-        h: size,
-      }),
-    )
-    obstacles.push(
-      new Obstacle({
-        p,
-        x: center.x * 1.5,
-        y: center.y / 2,
-        w: size,
-        h: size,
-      }),
-    )
-    obstacles.push(
-      new Obstacle({
-        p,
-        x: center.x / 2,
-        y: center.y * 1.5,
-        w: size,
-        h: size,
-      }),
-    )
-    obstacles.push(
-      new Obstacle({
-        p,
-        x: center.x * 1.5,
-        y: center.y * 1.5,
-        w: size,
-        h: size,
-      }),
-    )
-  }
-
-  function updateAttractors() {
-    const strength = controlPanel.get('attractorStrength')
-    const attractorCount = 3
-
-    while (attractors.length < attractorCount) {
-      attractors.push(
-        new Wanderer({
-          p,
-          colorScale: attractorColorScale,
-          position: vectorPool.get().set(p.random(w), p.random(h)),
-          strength,
-          vectorPool,
-        }),
-      )
-    }
-
-    for (const attractor of attractors) {
-      attractor.update()
-      attractor.edges()
-      attractor.display()
     }
   }
 
