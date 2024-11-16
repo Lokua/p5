@@ -1,7 +1,7 @@
 /**
  * @typedef {keyof typeof EntityTypes} EntityType
  */
-export default {
+const EntityTypes = {
   DEFAULT: 'DEFAULT',
   PARTICLE: 'PARTICLE',
   FLOW_PARTICLE: 'FLOW_PARTICLE',
@@ -9,3 +9,5 @@ export default {
   POLLINATOR: 'POLLINATOR',
   OBSTACLE: 'OBSTACLE',
 }
+
+export default EntityTypes

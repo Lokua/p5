@@ -43,7 +43,7 @@ export default function (p) {
     p.colorMode(p.RGB, 255, 255, 255, 1)
 
     // const seed = 39
-    const seed = 908345
+    const seed = 66
     p.randomSeed(seed)
     p.noiseSeed(seed)
 

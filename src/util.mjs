@@ -273,6 +273,15 @@ export function onScreen(v, w, h) {
   return v.x >= 0 && v.x <= w && v.y >= 0 && v.y <= h
 }
 
+export function isPointInRect(point, rect) {
+  return (
+    point.x > rect.position.x - rect.w / 2 &&
+    point.x < rect.position.x + rect.w / 2 &&
+    point.y > rect.position.y - rect.h / 2 &&
+    point.y < rect.position.y + rect.h / 2
+  )
+}
+
 const intervalStates = new Map()
 export function callAtInterval(interval, callback) {
   const key = callback.toString()

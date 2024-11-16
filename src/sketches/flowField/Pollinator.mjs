@@ -1,5 +1,6 @@
 import { callAtInterval, inheritStaticProperties } from '../../util.mjs'
 import EntityTypes from './EntityTypes.mjs'
+import Quirks from './Quirks.mjs'
 import Attractor from './Attractor.mjs'
 
 export default class Pollinator extends Attractor {
@@ -40,11 +41,14 @@ export default class Pollinator extends Attractor {
   }
 
   display() {
-    if (this.hasQuirk('xRay')) {
-      this.buffer.noFill()
-      this.buffer.strokeWeight(1)
-      this.buffer.stroke(this.color.alpha(0.62).rgba())
-      this.buffer.circle(this.position.x, this.position.y, this.diameter - 4)
+    if (this.hasQuirk(Quirks.X_RAY)) {
+      for (let i = this.diameter; i > 0; i -= this.diameter / 4) {
+        const alpha = this.p.map(i, 0, this.diameter, 0.7, 0.1)
+        const color = this.color.saturate(1).alpha(alpha).rgba()
+        this.buffer.noStroke()
+        this.buffer.fill(color)
+        this.buffer.circle(this.position.x, this.position.y, i)
+      }
     } else {
       for (let i = this.diameter; i > 0; i -= this.diameter / 10) {
         const alpha = this.p.map(i, 0, this.diameter, 0.7, 0.1)
@@ -79,7 +83,7 @@ export default class Pollinator extends Attractor {
   avoidNeighbor(otherPollinator, outputForce) {
     outputForce.set(this.position).sub(otherPollinator.position)
     const distance = Math.max(outputForce.mag(), 0.0001)
-    const strength = (-this.strength * 10) / (distance * distance)
+    const strength = (-this.strength * 5) / (distance * distance)
     outputForce.normalize().mult(strength)
     otherPollinator.applyForce(outputForce)
   }

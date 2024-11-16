@@ -1,5 +1,7 @@
 import Entity from './Entity.mjs'
 import EntityTypes from './EntityTypes.mjs'
+import Quirks from './Quirks.mjs'
+import { isPointInRect } from '../../util.mjs'
 
 export default class Obstacle extends Entity {
   static entityTypes = [EntityTypes.OBSTACLE]
@@ -17,6 +19,7 @@ export default class Obstacle extends Entity {
     this.h = h
     this.addInteraction([EntityTypes.FLOW_PARTICLE], this.seduce)
     this.addInteraction([EntityTypes.POLLINATOR], this.xRay)
+    this.id = Math.random()
   }
 
   display() {
@@ -27,30 +30,20 @@ export default class Obstacle extends Entity {
   }
 
   contains(particle) {
-    return (
-      particle.position.x > this.position.x - this.w / 2 &&
-      particle.position.x < this.position.x + this.w / 2 &&
-      particle.position.y > this.position.y - this.h / 2 &&
-      particle.position.y < this.position.y + this.h / 2
-    )
+    return isPointInRect(particle.position, this)
   }
 
-  getOverlapCircular(entity) {
-    const radius = entity.radius || entity.diameter / 2
+  getOverlapCircular(particle) {
+    const radius = particle.radius || particle.diameter / 2
     const numPoints = 36
     let pointsInside = 0
 
     for (let i = 0; i < numPoints; i++) {
       const angle = (i / numPoints) * 2 * Math.PI
-      const x = entity.position.x + radius * Math.cos(angle)
-      const y = entity.position.y + radius * Math.sin(angle)
+      const x = particle.position.x + radius * Math.cos(angle)
+      const y = particle.position.y + radius * Math.sin(angle)
 
-      if (
-        x > this.position.x - this.w / 2 &&
-        x < this.position.x + this.w / 2 &&
-        y > this.position.y - this.h / 2 &&
-        y < this.position.y + this.h / 2
-      ) {
+      if (isPointInRect({ x, y }, this)) {
         pointsInside++
       }
     }
@@ -66,10 +59,15 @@ export default class Obstacle extends Entity {
   }
 
   xRay(entity) {
-    if (this.contains(entity) && this.getOverlapCircular(entity) >= 0.1) {
-      entity.addQuirk('xRay')
-    } else {
-      entity.removeQuirk('xRay')
-    }
+    const overlapPercentage = this.getOverlapCircular(entity)
+
+    entity.updateQuirkFromSource({
+      quirk: Quirks.X_RAY,
+      source: this,
+      shouldHaveQuirk: overlapPercentage >= 0.5,
+      context: {
+        overlapPercentage,
+      },
+    })
   }
 }

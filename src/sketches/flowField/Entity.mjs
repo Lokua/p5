@@ -8,7 +8,10 @@ export default class Entity {
      * @type {Map<EntityType, Function[]>}
      */
     this.interactionHandlers = new Map()
-    this.quirks = new Set()
+    /**
+     * @type {Map<string, Record<string, any>>}
+     */
+    this.quirks = new Map()
   }
 
   /**
@@ -48,14 +51,40 @@ export default class Entity {
     }
   }
 
-  addQuirk(quirk) {
-    this.quirks.add(quirk)
+  /**
+   * @param {Object} params
+   * @param {string} params.quirk
+   * @param {Entity} params.source
+   * @param {boolean} params.shouldHaveQuirk
+   * @param {Record<string, any>} [params.context={}]
+   */
+  updateQuirkFromSource({ quirk, source, shouldHaveQuirk, context = {} }) {
+    if (shouldHaveQuirk) {
+      this.addQuirk(quirk, { source, ...context })
+    } else if (this.quirks.get(quirk)?.source === source) {
+      this.removeQuirk(quirk)
+    }
   }
 
+  /**
+   * @param {string} quirk
+   * @param {Record<string, any>} [context={}]
+   */
+  addQuirk(quirk, context = {}) {
+    this.quirks.set(quirk, context)
+  }
+
+  /**
+   * @param {string} quirk
+   */
   removeQuirk(quirk) {
     this.quirks.delete(quirk)
   }
 
+  /**
+   * @param {string} quirk
+   * @returns {boolean}
+   */
   hasQuirk(quirk) {
     return this.quirks.has(quirk)
   }
