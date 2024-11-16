@@ -4,6 +4,7 @@ import { renderSwatches } from '../../lib/colors.mjs'
 import { callAtInterval, getAverageFrameRate } from '../../util.mjs'
 
 import createControlPanel from './createControlPanel.mjs'
+import VectorPool from './VectorPool.mjs'
 import FlowParticle from './FlowParticle.mjs'
 import Obstacle from './Obstacle.mjs'
 import BlackHole from './BlackHole.mjs'
@@ -29,25 +30,10 @@ export default function (p) {
   const cols = Math.floor(w / resolution)
   const rows = Math.floor(h / resolution)
   const flowField = []
-
-  const vectorPool = {
-    vectors: [],
-    get() {
-      const vector = this.vectors.pop() || p.createVector(0, 0)
-      vector._debugId = Math.random()
-      return vector
-    },
-    release(vector) {
-      if (!vector._debugId) {
-        console.warn('Releasing vector not created from this pool!')
-      }
-      vector.set(0, 0)
-      this.vectors.push(vector)
-    },
-  }
+  const vectorPool = new VectorPool(p)
 
   const colorScale = chroma.scale(['navy', 'turquoise', 'purple', 'yellow'])
-  const attractorColorScale = chroma.scale(['white'])
+  const attractorColorScale = chroma.scale(['white', 'azure', 'silver'])
   const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 130 })
   const controlPanel = createControlPanel(p, metadata)
 
@@ -56,7 +42,8 @@ export default function (p) {
     const canvas = p.createCanvas(w, h)
     p.colorMode(p.RGB, 255, 255, 255, 1)
 
-    const seed = 39
+    // const seed = 39
+    const seed = 908345
     p.randomSeed(seed)
     p.noiseSeed(seed)
 
@@ -69,6 +56,9 @@ export default function (p) {
     updateFlowField()
     initializeObstacles()
     updateAttractors()
+
+    // DELETEME
+    // p.noLoop()
 
     blackHole = new BlackHole({
       p,
@@ -121,35 +111,12 @@ export default function (p) {
       updateFlowField()
     }
 
-    let activeCount = 0
-    for (const particle of particles) {
-      if (activeCount >= count) {
-        particle.active = false
-        break
-      }
-
-      if (particle.active) {
-        updateActiveParticle({
-          particle,
-          edgeMode,
-          applyRandomForce,
-          showObstacles,
-          showBlackHole,
-          showAttractors,
-          history,
-        })
-
-        if (particle.active) {
-          activeCount++
-        }
-      } else if (activeCount < count) {
-        reanimateParticle(particle)
-        activeCount++
-      }
-    }
-
     renderFeatures({
       showParticles,
+      count,
+      edgeMode,
+      applyRandomForce,
+      history,
       showObstacles,
       showField,
       showBlackHole,
@@ -163,6 +130,10 @@ export default function (p) {
 
   function renderFeatures({
     showParticles,
+    edgeMode,
+    count,
+    history,
+    applyRandomForce,
     showObstacles,
     showField,
     showBlackHole,
@@ -171,6 +142,30 @@ export default function (p) {
     showSwatches,
   }) {
     if (showParticles) {
+      let activeCount = 0
+      for (const particle of particles) {
+        if (activeCount >= count) {
+          particle.active = false
+          break
+        }
+        if (particle.active) {
+          updateActiveParticle({
+            particle,
+            edgeMode,
+            applyRandomForce,
+            showObstacles,
+            showBlackHole,
+            showAttractors,
+            history,
+          })
+          if (particle.active) {
+            activeCount++
+          }
+        } else if (activeCount < count) {
+          reanimateParticle(particle)
+          activeCount++
+        }
+      }
       p.image(particleBuffer, 0, 0, w, h)
     }
     if (showObstacles) {
@@ -395,7 +390,7 @@ export default function (p) {
     obstacles.push(
       new Obstacle({
         p,
-        x: center.x / 2,
+        x: center.x * 1.5,
         y: center.y * 1.5,
         w: size,
         h: size,
@@ -404,7 +399,7 @@ export default function (p) {
     obstacles.push(
       new Obstacle({
         p,
-        x: center.x * 1.5,
+        x: center.x / 2,
         y: center.y * 1.5,
         w: size,
         h: size,
@@ -419,6 +414,18 @@ export default function (p) {
     createOrRemoveAttractors(count, strength)
 
     for (const attractor of attractors) {
+      for (const otherAttractor of attractors) {
+        if (otherAttractor !== attractor) {
+          const outputForce = vectorPool.get()
+          attractor.interactWith(otherAttractor, outputForce)
+          vectorPool.release(outputForce)
+        }
+      }
+
+      for (const obstacle of obstacles) {
+        obstacle.interactWith(attractor)
+      }
+
       attractor.updateState({ strength })
       attractor.update()
       attractor.edges()

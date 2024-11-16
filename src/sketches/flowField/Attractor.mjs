@@ -7,7 +7,7 @@ export default class Attractor extends Particle {
     inheritStaticProperties(this, Particle)
   }
 
-  static entityTypes = [EntityTypes.PARTICLE]
+  static entityTypes = [...Particle.entityTypes, EntityTypes.ATTRACTOR]
 
   static Mode = {
     ATTRACT: 'ATTRACT',
@@ -31,6 +31,10 @@ export default class Attractor extends Particle {
     this.mode = mode
     this.strength = strength
     this.radius = radius
+  }
+
+  get diameter() {
+    return this.radius * 2
   }
 
   contains(particle) {
@@ -62,6 +66,6 @@ export default class Attractor extends Particle {
   display() {
     this.buffer.noStroke()
     this.buffer.fill(255, 0, 0, 100)
-    this.buffer.circle(this.position.x, this.position.y, this.radius * 2)
+    this.buffer.circle(this.position.x, this.position.y, this.diameter)
   }
 }

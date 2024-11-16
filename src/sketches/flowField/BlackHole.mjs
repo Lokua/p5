@@ -9,15 +9,15 @@ export default class BlackHole extends Attractor {
 
   static entityTypes = [EntityTypes.ATTRACTOR]
 
-  constructor(...args) {
-    super(...args)
+  constructor({ radius = 50, ...rest }) {
+    super({ radius, ...rest })
     this.addInteraction([EntityTypes.PARTICLE], this.pullParticle)
   }
 
   display() {
     this.buffer.noStroke()
-    for (let i = this.radius; i > 0; i -= this.radius / 10) {
-      this.buffer.fill(0, this.p.map(i, 0, this.radius, 1, 0))
+    for (let i = this.diameter; i > 0; i -= this.diameter / 10) {
+      this.buffer.fill(0, this.p.map(i, 0, this.diameter, 1, 0))
       this.buffer.circle(this.position.x, this.position.y, i)
     }
   }

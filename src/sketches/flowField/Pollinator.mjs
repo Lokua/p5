@@ -7,7 +7,7 @@ export default class Pollinator extends Attractor {
     inheritStaticProperties(this, Attractor)
   }
 
-  static entityTypes = [EntityTypes.PARTICLE, EntityTypes.ATTRACTOR]
+  static entityTypes = [...Attractor.entityTypes, EntityTypes.POLLINATOR]
 
   constructor({ p, colorScale, ...rest }) {
     super({
@@ -15,6 +15,7 @@ export default class Pollinator extends Attractor {
       mode: Attractor.Mode.HYBRID,
       active: true,
       maxSpeed: 3,
+      radius: 12,
       ...rest,
     })
 
@@ -27,23 +28,31 @@ export default class Pollinator extends Attractor {
 
   update() {
     const time = this.p.frameCount * 0.01
-    const noiseX = this.p.noise(this.position.x * 0.01, time) * 2 - 1
-    const noiseY = this.p.noise(this.position.y * 0.01, time) * 2 - 1
-    const force = this.vectorPool
-      .get()
-      .set(noiseX, noiseY)
-      .mult(this.p.random(0.5, 1))
+    const noiseScale = 0.01
+    const noiseX = this.p.noise(this.position.x * noiseScale, time) * 2 - 1
+    const noiseY = this.p.noise(this.position.y * noiseScale, time) * 2 - 1
+    const force = this.vectorPool.get().set(noiseX, noiseY)
+    const magnitude = this.p.random(0.1, 0.3)
+    force.mult(magnitude)
     this.applyForce(force)
     this.vectorPool.release(force)
     super.update()
   }
 
   display() {
-    this.buffer.noStroke()
-    for (let i = this.radius; i > 0; i -= this.radius / 10) {
-      const alpha = this.p.map(i, 0, this.radius, 0.7, 0.1)
-      this.buffer.fill(this.color.alpha(alpha).rgba())
-      this.buffer.circle(this.position.x, this.position.y, i)
+    if (this.hasQuirk('xRay')) {
+      this.buffer.noFill()
+      this.buffer.strokeWeight(1)
+      this.buffer.stroke(this.color.alpha(0.62).rgba())
+      this.buffer.circle(this.position.x, this.position.y, this.diameter - 4)
+    } else {
+      for (let i = this.diameter; i > 0; i -= this.diameter / 10) {
+        const alpha = this.p.map(i, 0, this.diameter, 0.7, 0.1)
+        const color = this.color.alpha(alpha).rgba()
+        this.buffer.noStroke()
+        this.buffer.fill(color)
+        this.buffer.circle(this.position.x, this.position.y, i)
+      }
     }
     if (this.debug) {
       this.buffer.stroke('yellow')
@@ -70,7 +79,7 @@ export default class Pollinator extends Attractor {
   avoidNeighbor(otherPollinator, outputForce) {
     outputForce.set(this.position).sub(otherPollinator.position)
     const distance = Math.max(outputForce.mag(), 0.0001)
-    const strength = (-this.strength * 2) / (distance * distance)
+    const strength = (-this.strength * 10) / (distance * distance)
     outputForce.normalize().mult(strength)
     otherPollinator.applyForce(outputForce)
   }

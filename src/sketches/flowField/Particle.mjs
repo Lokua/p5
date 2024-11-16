@@ -1,15 +1,16 @@
 import { callAtInterval, onScreen } from '../../util.mjs'
+import VectorPool from './VectorPool.mjs'
 import Entity from './Entity.mjs'
 import EntityTypes from './EntityTypes.mjs'
 
 export default class Particle extends Entity {
+  static entityTypes = [EntityTypes.PARTICLE]
+
   static EdgeMode = {
     WRAP: 'WRAP',
     BOUND: 'BOUND',
     RESPAWN: 'RESPAWN',
   }
-
-  static entityTypes = [EntityTypes.PARTICLE]
 
   /**
    * @typedef {Object} VectorPool
@@ -43,9 +44,7 @@ export default class Particle extends Entity {
     this.buffer = buffer
     this.w = w
     this.h = h
-    this.vectorPool = vectorPool || {
-      get: () => p.createVector(0, 0),
-    }
+    this.vectorPool = vectorPool || VectorPool.stubPool(p)
     this.position = position
     this.velocity = vectorPool.get()
     this.acceleration = vectorPool.get()

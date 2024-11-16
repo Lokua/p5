@@ -1,4 +1,5 @@
 import chroma from 'chroma-js'
+import EntityTypes from './EntityTypes.mjs'
 import Particle from './Particle.mjs'
 import { inheritStaticProperties } from '../../util.mjs'
 
@@ -6,6 +7,8 @@ export default class FlowParticle extends Particle {
   static {
     inheritStaticProperties(this, Particle)
   }
+
+  static entityTypes = [...Particle.entityTypes, EntityTypes.FLOW_PARTICLE]
 
   constructor({
     p,

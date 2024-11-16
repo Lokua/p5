@@ -8,6 +8,7 @@ export default class Entity {
      * @type {Map<EntityType, Function[]>}
      */
     this.interactionHandlers = new Map()
+    this.quirks = new Set()
   }
 
   /**
@@ -45,5 +46,17 @@ export default class Entity {
         }
       }
     }
+  }
+
+  addQuirk(quirk) {
+    this.quirks.add(quirk)
+  }
+
+  removeQuirk(quirk) {
+    this.quirks.delete(quirk)
+  }
+
+  hasQuirk(quirk) {
+    return this.quirks.has(quirk)
   }
 }
