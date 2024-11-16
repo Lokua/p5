@@ -29,7 +29,6 @@ export default class FlowField {
     this.resolution = resolution
     this.vectorPool = vectorPool
 
-    // Configuration
     this.noiseScale = noiseScale
     this.forceMagnitude = forceMagnitude
     this.angleOffset = angleOffset
@@ -37,25 +36,22 @@ export default class FlowField {
     this.mode = mode
     this.visualize = visualize
 
-    // Calculate grid dimensions
     this.cols = Math.floor(w / resolution)
     this.rows = Math.floor(h / resolution)
 
-    // Initialize flow field grid
     this.grid = new Array(this.cols * this.rows)
     for (let i = 0; i < this.grid.length; i++) {
       this.grid[i] = p.createVector()
     }
 
-    // Cache grid offset for centering
     this.totalGridWidth = this.cols * resolution
     this.totalGridHeight = this.rows * resolution
     this.xOffset = (w - this.totalGridWidth) / 2
     this.yOffset = (h - this.totalGridHeight) / 2
   }
 
-  updateState(update) {
-    Object.assign(this, update)
+  updateState(state) {
+    Object.assign(this, state)
   }
 
   update() {
