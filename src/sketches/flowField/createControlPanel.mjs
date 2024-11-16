@@ -96,7 +96,7 @@ export default (p, metadata) =>
         type: 'Select',
         name: 'edgeMode',
         value: 'wrap',
-        options: Object.values(Particle.EdgeMode),
+        options: Object.values(Particle.EdgeModes),
       },
       {
         type: 'Select',

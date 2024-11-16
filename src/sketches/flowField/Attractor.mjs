@@ -9,15 +9,15 @@ export default class Attractor extends Particle {
 
   static entityTypes = [...Particle.entityTypes, EntityTypes.ATTRACTOR]
 
-  static Mode = {
+  static Modes = {
     ATTRACT: 'ATTRACT',
     REPEL: 'REPEL',
     HYBRID: 'HYBRID',
   }
 
   constructor({
-    edgeMode = Attractor.EdgeMode.BOUND,
-    mode = Attractor.Mode.ATTRACT,
+    edgeMode = Attractor.EdgeModes.BOUND,
+    mode = Attractor.Modes.ATTRACT,
     strength = 1.5,
     radius = 25,
     ...rest
@@ -52,11 +52,11 @@ export default class Attractor extends Particle {
     const distance = Math.max(outputVector.mag(), 0.0001)
     let strength = this.strength / distance ** 2
 
-    if (this.mode === Attractor.Mode.HYBRID) {
+    if (this.mode === Attractor.Modes.HYBRID) {
       if (distance < this.radius) {
         strength *= -1
       }
-    } else if (this.mode === Attractor.Mode.REPEL) {
+    } else if (this.mode === Attractor.Modes.REPEL) {
       strength *= -1
     }
 

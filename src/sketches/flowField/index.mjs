@@ -9,6 +9,7 @@ import FlowParticle from './FlowParticle.mjs'
 import Obstacle from './Obstacle.mjs'
 import BlackHole from './BlackHole.mjs'
 import Pollinator from './Pollinator.mjs'
+import FlowField from './FlowField.mjs'
 
 /**
  * @param {import('p5')} p
@@ -26,10 +27,7 @@ export default function (p) {
   let particleBuffer
   const attractors = []
   let blackHole
-  const resolution = 20
-  const cols = Math.floor(w / resolution)
-  const rows = Math.floor(h / resolution)
-  const flowField = []
+  let flowField
   const vectorPool = new VectorPool(p)
 
   const colorScale = chroma.scale(['navy', 'turquoise', 'purple', 'yellow'])
@@ -50,12 +48,29 @@ export default function (p) {
     particleBuffer = p.createGraphics(w, h)
     particleBuffer.colorMode(p.RGB, 255, 255, 255, 1)
 
-    const { blackHoleStrength, edgeMode, applyRandomForce, history } =
-      controlPanel.values()
+    const {
+      blackHoleStrength,
+      edgeMode,
+      applyRandomForce,
+      history,
+      noiseScale,
+      forceMagnitude,
+      angleOffset,
+      forceMode,
+    } = controlPanel.values()
 
-    updateFlowField()
     initializeObstacles()
     updateAttractors()
+
+    flowField = new FlowField({
+      p,
+      vectorPool,
+      noiseScale,
+      forceMagnitude,
+      angleOffset,
+      zOffset: 0,
+      forceMode,
+    })
 
     // DELETEME
     // p.noLoop()
@@ -96,7 +111,10 @@ export default function (p) {
       backgroundAlpha,
       edgeMode,
       forceMode,
+      noiseScale,
+      forceMagnitude,
       applyRandomForce,
+      zOffsetMultiplier,
       showParticles,
       showObstacles,
       showBlackHole,
@@ -107,9 +125,15 @@ export default function (p) {
     p.background(0)
     particleBuffer.background(chroma('black').alpha(backgroundAlpha).rgba())
 
-    if (forceMode !== 'algorithmic') {
-      updateFlowField()
-    }
+    flowField.updateState({
+      forceMode,
+      noiseScale,
+      forceMagnitude,
+      zOffset: ah.getTotalBeatsElapsed() * zOffsetMultiplier,
+      visualize: showField,
+    })
+
+    flowField.update()
 
     renderFeatures({
       showParticles,
@@ -181,7 +205,7 @@ export default function (p) {
       updateAttractors()
     }
     if (showField) {
-      visualizeFlowField()
+      flowField.display()
     }
     if (showSwatches) {
       renderSwatches({ p, w, scales: [colorScale, attractorColorScale] })
@@ -219,7 +243,7 @@ export default function (p) {
 
   function applyForces({ particle, showBlackHole, showAttractors }) {
     const force = vectorPool.get()
-    applyFlowForceTo(particle.position, force)
+    flowField.applyForceTo(particle.position, force)
 
     if (showBlackHole) {
       blackHole.interactWith(particle, force)
@@ -279,94 +303,6 @@ export default function (p) {
     return true
   }
 
-  function getZOffset() {
-    return ah.getTotalBeatsElapsed() * controlPanel.get('zOffsetMultiplier')
-  }
-
-  function angleForPosition(position, outputVector) {
-    const noiseScale = controlPanel.get('noiseScale')
-    const angleOffset = controlPanel.get('angleOffset')
-    const forceMagnitude = controlPanel.get('forceMagnitude')
-
-    const x = position.x * noiseScale
-    const y = position.y * noiseScale
-
-    const angle =
-      p.map(p.noise(x, y, getZOffset()), 0, 1, 0, p.TWO_PI) +
-      p.sin(p.radians(angleOffset))
-
-    outputVector.set(p.cos(angle), p.sin(angle))
-    outputVector.setMag(forceMagnitude)
-
-    return outputVector
-  }
-
-  function updateFlowField() {
-    const totalGridWidth = cols * resolution
-    const totalGridHeight = rows * resolution
-    const xOffset = (w - totalGridWidth) / 2
-    const yOffset = (h - totalGridHeight) / 2
-
-    for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < cols; x++) {
-        const index = x + y * cols
-        const gridPosX = x * resolution + xOffset + resolution / 2
-        const gridPosY = y * resolution + yOffset + resolution / 2
-
-        if (!flowField[index]) {
-          flowField[index] = p.createVector()
-        }
-
-        const position = vectorPool.get()
-        position.set(gridPosX - w / 2, gridPosY - h / 2)
-        angleForPosition(position, flowField[index])
-        vectorPool.release(position)
-      }
-    }
-  }
-
-  const forceModes = {
-    grid(position, outputVector) {
-      const totalGridWidth = cols * resolution
-      const totalGridHeight = rows * resolution
-      const xOffset = (w - totalGridWidth) / 2
-      const yOffset = (h - totalGridHeight) / 2
-      const adjustedX = position.x - xOffset
-      const adjustedY = position.y - yOffset
-      const x = Math.floor(adjustedX / resolution)
-      const y = Math.floor(adjustedY / resolution)
-      if (x < 0 || x >= cols || y < 0 || y >= rows) {
-        return outputVector.set(0, 0)
-      }
-      const index = x + y * cols
-      return outputVector.set(flowField[index].x, flowField[index].y)
-    },
-    algorithmic: angleForPosition,
-    combinedAdditive(position, outputVector) {
-      const force1 = vectorPool.get()
-      const force2 = vectorPool.get()
-      forceModes.grid(position, force1)
-      forceModes.algorithmic(position, force2)
-      outputVector.set(force1.x + force2.x, force1.y + force2.y)
-      vectorPool.release(force1)
-      vectorPool.release(force2)
-      return outputVector
-    },
-    combinedAveraged(position, outputVector) {
-      forceModes.combinedAdditive(position, outputVector)
-      outputVector.mult(0.5)
-      return outputVector
-    },
-  }
-
-  function applyFlowForceTo(
-    position,
-    outputVector,
-    mode = controlPanel.get('forceMode'),
-  ) {
-    return forceModes[mode](position, outputVector)
-  }
-
   function initializeObstacles() {
     const size = 100
     obstacles.push(
@@ -410,6 +346,7 @@ export default function (p) {
   function updateAttractors() {
     const strength = controlPanel.get('attractorStrength')
     const count = controlPanel.get('attractorCount')
+    const showObstacles = controlPanel.get('showObstacles')
 
     createOrRemoveAttractors(count, strength)
 
@@ -422,8 +359,10 @@ export default function (p) {
         }
       }
 
-      for (const obstacle of obstacles) {
-        obstacle.interactWith(attractor)
+      if (showObstacles) {
+        for (const obstacle of obstacles) {
+          obstacle.interactWith(attractor)
+        }
       }
 
       attractor.updateState({ strength })
@@ -458,59 +397,6 @@ export default function (p) {
   function removeAttractors(count) {
     while (attractors.length > count) {
       attractors.pop().destroy()
-    }
-  }
-
-  function visualizeFlowField() {
-    const useAngleBasedColor = false
-    const baseColor = chroma('magenta').rgba()
-
-    const totalGridWidth = cols * resolution
-    const totalGridHeight = rows * resolution
-    const xOffset = (w - totalGridWidth) / 2
-    const yOffset = (h - totalGridHeight) / 2
-
-    for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < cols; x++) {
-        const position = vectorPool.get()
-        position.set(
-          x * resolution + xOffset + resolution / 2,
-          y * resolution + yOffset + resolution / 2,
-        )
-
-        const force = applyFlowForceTo(position, vectorPool.get())
-        const scaledForce = force.copy().mult(resolution * 2)
-
-        const angle = force.heading()
-        const angleOffset = p.radians(30)
-        const arrowSize = 5
-
-        const color = useAngleBasedColor
-          ? chroma.hsv(p.degrees(angle) % 360, 100, 100).rgba()
-          : baseColor
-
-        const arrowTip = p5.Vector.add(position, scaledForce)
-        const arrowBase = p5.Vector.sub(
-          arrowTip,
-          p5.Vector.mult(force, arrowSize),
-        )
-
-        p.stroke(color)
-        p.strokeWeight(1)
-        p.line(position.x, position.y, arrowBase.x, arrowBase.y)
-
-        const x1 = arrowTip.x - arrowSize * p.cos(angle - angleOffset)
-        const y1 = arrowTip.y - arrowSize * p.sin(angle - angleOffset)
-        const x2 = arrowTip.x - arrowSize * p.cos(angle + angleOffset)
-        const y2 = arrowTip.y - arrowSize * p.sin(angle + angleOffset)
-
-        p.noStroke()
-        p.fill(color)
-        p.triangle(arrowTip.x, arrowTip.y, x1, y1, x2, y2)
-
-        vectorPool.release(position)
-        vectorPool.release(force)
-      }
     }
   }
 

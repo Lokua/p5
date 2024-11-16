@@ -13,7 +13,7 @@ export default class Pollinator extends Attractor {
   constructor({ p, colorScale, ...rest }) {
     super({
       p,
-      mode: Attractor.Mode.HYBRID,
+      mode: Attractor.Modes.HYBRID,
       active: true,
       maxSpeed: 3,
       radius: 12,

@@ -6,7 +6,10 @@ import EntityTypes from './EntityTypes.mjs'
 export default class Particle extends Entity {
   static entityTypes = [EntityTypes.PARTICLE]
 
-  static EdgeMode = {
+  /**
+   * @typedef {keyof typeof EdgeModes} EdgeMode
+   */
+  static EdgeModes = {
     WRAP: 'WRAP',
     BOUND: 'BOUND',
     RESPAWN: 'RESPAWN',
@@ -35,7 +38,7 @@ export default class Particle extends Entity {
     h = p.height,
     vectorPool,
     position,
-    edgeMode = Particle.EdgeMode.WRAP,
+    edgeMode = Particle.EdgeModes.WRAP,
     active = false,
     maxSpeed,
   }) {
@@ -81,12 +84,12 @@ export default class Particle extends Entity {
   }
 
   edges() {
-    if (this.edgeMode === Particle.EdgeMode.WRAP) {
+    if (this.edgeMode === Particle.EdgeModes.WRAP) {
       this.position.x > this.w && (this.position.x = 0)
       this.position.x < 0 && (this.position.x = this.w)
       this.position.y > this.h && (this.position.y = 0)
       this.position.y < 0 && (this.position.y = this.h)
-    } else if (this.edgeMode === Particle.EdgeMode.BOUND) {
+    } else if (this.edgeMode === Particle.EdgeModes.BOUND) {
       if (this.position.x <= 0 || this.position.x >= this.p.width) {
         this.velocity.x *= -1
       }
@@ -95,7 +98,7 @@ export default class Particle extends Entity {
       }
       this.position.x = this.p.constrain(this.position.x, 0, this.w)
       this.position.y = this.p.constrain(this.position.y, 0, this.h)
-    } else if (this.edgeMode === Particle.EdgeMode.RESPAWN) {
+    } else if (this.edgeMode === Particle.EdgeModes.RESPAWN) {
       if (!onScreen(this.position, this.w, this.h)) {
         this.#assignRandomPosition()
       }

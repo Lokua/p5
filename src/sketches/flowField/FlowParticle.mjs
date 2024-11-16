@@ -88,7 +88,7 @@ export default class FlowParticle extends Particle {
   }
 
   edges() {
-    if (this.edgeMode === FlowParticle.EdgeMode.WRAP) {
+    if (this.edgeMode === FlowParticle.EdgeModes.WRAP) {
       let wrapped = false
 
       if (this.position.x > this.w) {
