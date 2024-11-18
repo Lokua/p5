@@ -1,6 +1,7 @@
-import { inheritStaticProperties } from '../../util.mjs'
+import { inheritStaticProperties, callAtInterval } from '../../util.mjs'
 import EntityTypes from './EntityTypes.mjs'
 import Attractor from './Attractor.mjs'
+import Quirks from './Quirks.mjs'
 
 export default class BlackHole extends Attractor {
   static {
@@ -12,25 +13,45 @@ export default class BlackHole extends Attractor {
   constructor({ radius = 50, ...rest }) {
     super({ radius, ...rest })
     this.addInteraction(EntityTypes.FLOW_PARTICLE, this.pullParticle)
+    this.addInteraction(EntityTypes.POLLINATOR, this.pullPollinator)
   }
 
   display() {
-    this.buffer.noStroke()
-    for (let i = this.diameter; i > 0; i -= this.diameter / 10) {
-      this.buffer.fill(0, this.p.map(i, 0, this.diameter, 1, 0))
-      this.buffer.circle(this.position.x, this.position.y, i)
+    if (this.active) {
+      this.buffer.noStroke()
+      for (let i = this.diameter; i > 0; i -= this.diameter / 10) {
+        this.buffer.fill(0, this.p.map(i, 0, this.diameter, 1, 0))
+        this.buffer.circle(this.position.x, this.position.y, i)
+      }
     }
   }
 
   pullParticle(particle, outputForce) {
-    const blackHoleForce = this.vectorPool.get()
-    this.applyForceTo(particle, blackHoleForce)
-    outputForce.add(blackHoleForce)
-    this.vectorPool.release(blackHoleForce)
+    if (this.active) {
+      const blackHoleForce = this.vectorPool.get()
+      this.applyForceTo(particle, blackHoleForce)
+      outputForce.add(blackHoleForce)
+      this.vectorPool.release(blackHoleForce)
 
-    if (this.contains(particle)) {
-      particle.velocity.mult(-1)
-      particle.marked = true
+      if (this.contains(particle)) {
+        particle.velocity.mult(-1)
+        particle.marked = true
+      }
     }
+  }
+
+  pullPollinator(pollinator, outputForce) {
+    if (this.active) {
+      const blackHoleForce = this.vectorPool.get()
+      this.applyForceTo(pollinator, blackHoleForce)
+      outputForce.add(blackHoleForce)
+      this.vectorPool.release(blackHoleForce)
+    }
+
+    pollinator.updateQuirkFromSource({
+      quirk: Quirks.BLACK_HOLED,
+      shouldHaveQuirk: this.active && this.contains(pollinator),
+      source: this,
+    })
   }
 }

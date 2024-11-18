@@ -58,10 +58,10 @@ export default class Obstacle extends Entity {
     }
   }
 
-  xRay(entity) {
-    const overlapPercentage = this.getOverlapCircular(entity)
+  xRay(pollinator) {
+    const overlapPercentage = this.getOverlapCircular(pollinator)
 
-    entity.updateQuirkFromSource({
+    pollinator.updateQuirkFromSource({
       quirk: Quirks.X_RAY,
       source: this,
       shouldHaveQuirk: overlapPercentage >= 0.5,

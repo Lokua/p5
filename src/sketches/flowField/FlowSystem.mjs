@@ -57,6 +57,7 @@ export default class FlowSystem {
       vectorPool: this.#vectorPool,
       position: p.createVector(this.center.x, this.center.y),
       strength: this.state.blackHoleStrength,
+      active: this.state.showBlackHole,
     })
 
     this.particles = Array.from({ length: 10_001 }).map(
@@ -106,6 +107,9 @@ export default class FlowSystem {
     this.#updateFlowField()
     this.#updateParticles()
     this.#updateAttractors()
+    this.blackHole.updateState({
+      active: this.state.showBlackHole,
+    })
   }
 
   #updateFlowField() {
@@ -170,9 +174,7 @@ export default class FlowSystem {
     const force = this.#vectorPool.get()
     this.flowField.applyForceTo(particle.position, force)
 
-    if (this.state.showBlackHole && this.blackHole) {
-      this.blackHole.interactWith(particle, force)
-    }
+    this.blackHole.interactWith(particle, force)
 
     if (this.state.showAttractors) {
       for (const attractor of this.attractors) {
@@ -227,6 +229,7 @@ export default class FlowSystem {
       for (const attractor of this.attractors) {
         attractor.updateState({
           strength: this.state.attractorStrength,
+          active: this.state.showAttractors,
         })
 
         for (const otherAttractor of this.attractors) {
@@ -243,12 +246,14 @@ export default class FlowSystem {
           }
         }
 
-        if (this.state.showBlackHole) {
-          const force = this.#vectorPool.get()
-          this.blackHole.applyForceTo(attractor, force)
-          this.#vectorPool.release(force)
-        }
+        const force = this.#vectorPool.get()
 
+        const blackHoleForce = this.#vectorPool.get()
+        this.blackHole.interactWith(attractor, blackHoleForce)
+        force.add(blackHoleForce)
+
+        attractor.applyForce(force)
+        this.#vectorPool.release(force)
         attractor.update()
         attractor.edges()
       }
@@ -305,9 +310,7 @@ export default class FlowSystem {
       }
     }
 
-    if (this.state.showBlackHole && this.blackHole) {
-      this.blackHole.display()
-    }
+    this.blackHole.display()
 
     if (this.state.showAttractors) {
       for (const attractor of this.attractors) {

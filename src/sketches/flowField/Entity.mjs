@@ -52,12 +52,19 @@ export default class Entity {
    * @param {boolean} params.shouldHaveQuirk
    * @param {Record<string, any>} [params.context={}]
    */
-  updateQuirkFromSource({ quirk, source, shouldHaveQuirk, context = {} }) {
+  updateQuirkFromSource({
+    quirk,
+    source,
+    shouldHaveQuirk,
+    context = {},
+    callback = () => {},
+  }) {
     if (shouldHaveQuirk) {
       this.addQuirk(quirk, { source, ...context })
     } else if (this.quirks.get(quirk)?.source === source) {
       this.removeQuirk(quirk)
     }
+    callback(shouldHaveQuirk)
   }
 
   /**
