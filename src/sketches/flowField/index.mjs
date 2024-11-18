@@ -34,8 +34,6 @@ export default function (p) {
 
     system = new FlowSystem({
       p,
-      w,
-      h,
       initialState: {
         ...controlPanel.values(),
         colorScale,

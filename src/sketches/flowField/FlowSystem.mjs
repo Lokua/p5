@@ -11,7 +11,7 @@ export default class FlowSystem {
   #particleBuffer
   #vectorPool
 
-  constructor({ p, w, h, initialState = {} }) {
+  constructor({ p, w = p.width, h = p.height, initialState = {} }) {
     this.p = p
     this.w = w
     this.h = h
@@ -36,6 +36,7 @@ export default class FlowSystem {
       noiseScale: 0.01,
       forceMagnitude: 1,
       zOffset: 0,
+      angleOffset: 0,
       visualize: false,
       backgroundAlpha: 0.1,
       attractorCount: 0,
@@ -114,6 +115,7 @@ export default class FlowSystem {
       forceMagnitude: this.state.forceMagnitude,
       zOffset: this.state.zOffset,
       visualize: this.state.showField,
+      angleOffset: this.state.angleOffset,
     })
     this.flowField.update()
   }
@@ -223,6 +225,10 @@ export default class FlowSystem {
       this.#createOrRemoveAttractors()
 
       for (const attractor of this.attractors) {
+        attractor.updateState({
+          strength: this.state.attractorStrength,
+        })
+
         for (const otherAttractor of this.attractors) {
           if (otherAttractor !== attractor) {
             const outputForce = this.#vectorPool.get()
@@ -237,9 +243,12 @@ export default class FlowSystem {
           }
         }
 
-        attractor.updateState({
-          strength: this.state.attractorStrength,
-        })
+        if (this.state.showBlackHole) {
+          const force = this.#vectorPool.get()
+          this.blackHole.applyForceTo(attractor, force)
+          this.#vectorPool.release(force)
+        }
+
         attractor.update()
         attractor.edges()
       }
