@@ -8,7 +8,7 @@ export default class Pollinator extends Attractor {
     inheritStaticProperties(this, Attractor)
   }
 
-  static entityTypes = [...Attractor.entityTypes, EntityTypes.POLLINATOR]
+  static entityType = EntityTypes.POLLINATOR
 
   constructor({ p, colorScale, ...rest }) {
     super({
@@ -23,8 +23,8 @@ export default class Pollinator extends Attractor {
     this.color = colorScale(p.random())
     this.debug = false
 
-    this.addInteraction([EntityTypes.PARTICLE], this.infectParticle)
-    this.addInteraction([EntityTypes.ATTRACTOR], this.avoidNeighbor)
+    this.addInteraction([EntityTypes.FLOW_PARTICLE], this.infectParticle)
+    this.addInteraction([EntityTypes.POLLINATOR], this.avoidNeighbor)
   }
 
   update() {

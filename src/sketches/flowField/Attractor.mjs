@@ -7,7 +7,7 @@ export default class Attractor extends Particle {
     inheritStaticProperties(this, Particle)
   }
 
-  static entityTypes = [...Particle.entityTypes, EntityTypes.ATTRACTOR]
+  static entityType = EntityTypes.ATTRACTOR
 
   static Modes = {
     ATTRACT: 'ATTRACT',

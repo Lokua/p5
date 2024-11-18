@@ -8,6 +8,7 @@ const EntityTypes = {
   ATTRACTOR: 'ATTRACTOR',
   POLLINATOR: 'POLLINATOR',
   OBSTACLE: 'OBSTACLE',
+  BLACK_HOLE: 'BLACK_HOLE',
 }
 
 export default EntityTypes

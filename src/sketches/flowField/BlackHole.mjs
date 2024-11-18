@@ -7,11 +7,11 @@ export default class BlackHole extends Attractor {
     inheritStaticProperties(this, Attractor)
   }
 
-  static entityTypes = [EntityTypes.ATTRACTOR]
+  static entityType = EntityTypes.BLACK_HOLE
 
   constructor({ radius = 50, ...rest }) {
     super({ radius, ...rest })
-    this.addInteraction([EntityTypes.PARTICLE], this.pullParticle)
+    this.addInteraction([EntityTypes.FLOW_PARTICLE], this.pullParticle)
   }
 
   display() {

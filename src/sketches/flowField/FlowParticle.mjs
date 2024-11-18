@@ -8,7 +8,7 @@ export default class FlowParticle extends Particle {
     inheritStaticProperties(this, Particle)
   }
 
-  static entityTypes = [...Particle.entityTypes, EntityTypes.FLOW_PARTICLE]
+  static entityType = EntityTypes.FLOW_PARTICLE
 
   constructor({
     p,

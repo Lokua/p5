@@ -4,7 +4,7 @@ import Entity from './Entity.mjs'
 import EntityTypes from './EntityTypes.mjs'
 
 export default class Particle extends Entity {
-  static entityTypes = [EntityTypes.PARTICLE]
+  static entityType = EntityTypes.PARTICLE
 
   /**
    * @typedef {keyof typeof EdgeModes} EdgeMode

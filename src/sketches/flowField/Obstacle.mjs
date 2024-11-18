@@ -4,7 +4,7 @@ import Quirks from './Quirks.mjs'
 import { isPointInRect } from '../../util.mjs'
 
 export default class Obstacle extends Entity {
-  static entityTypes = [EntityTypes.OBSTACLE]
+  static entityType = EntityTypes.OBSTACLE
 
   /**
    * @param {Object} options
