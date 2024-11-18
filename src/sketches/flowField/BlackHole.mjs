@@ -11,7 +11,7 @@ export default class BlackHole extends Attractor {
 
   constructor({ radius = 50, ...rest }) {
     super({ radius, ...rest })
-    this.addInteraction([EntityTypes.FLOW_PARTICLE], this.pullParticle)
+    this.addInteraction(EntityTypes.FLOW_PARTICLE, this.pullParticle)
   }
 
   display() {

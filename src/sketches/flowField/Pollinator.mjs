@@ -23,8 +23,8 @@ export default class Pollinator extends Attractor {
     this.color = colorScale(p.random())
     this.debug = false
 
-    this.addInteraction([EntityTypes.FLOW_PARTICLE], this.infectParticle)
-    this.addInteraction([EntityTypes.POLLINATOR], this.avoidNeighbor)
+    this.addInteraction(EntityTypes.FLOW_PARTICLE, this.infectParticle)
+    this.addInteraction(EntityTypes.POLLINATOR, this.avoidNeighbor)
   }
 
   update() {

@@ -15,25 +15,21 @@ export default class Entity {
   }
 
   /**
-   * @param {EntityType[]} entityTypes
+   * @param {EntityType} entityType
    * @param {(entity: Entity, ...args: any[]) => void} handler
    */
-  addInteraction(entityTypes, handler) {
-    for (const type of entityTypes) {
-      if (!this.interactionHandlers.has(type)) {
-        this.interactionHandlers.set(type, [])
-      }
-      this.interactionHandlers.get(type).push(handler)
+  addInteraction(entityType, handler) {
+    if (!this.interactionHandlers.has(entityType)) {
+      this.interactionHandlers.set(entityType, [])
     }
+    this.interactionHandlers.get(entityType).push(handler)
   }
 
   /**
-   * @param {EntityType[]} entityTypes
+   * @param {EntityType} entityType
    */
-  removeInteraction(entityTypes) {
-    for (const type of entityTypes) {
-      this.interactionHandlers.delete(type)
-    }
+  removeInteraction(entityType) {
+    this.interactionHandlers.delete(entityType)
   }
 
   /**

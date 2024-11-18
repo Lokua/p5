@@ -17,8 +17,8 @@ export default class Obstacle extends Entity {
     this.position = p.createVector(x, y)
     this.w = w
     this.h = h
-    this.addInteraction([EntityTypes.FLOW_PARTICLE], this.seduce)
-    this.addInteraction([EntityTypes.POLLINATOR], this.xRay)
+    this.addInteraction(EntityTypes.FLOW_PARTICLE, this.seduce)
+    this.addInteraction(EntityTypes.POLLINATOR, this.xRay)
     this.id = Math.random()
   }
 
