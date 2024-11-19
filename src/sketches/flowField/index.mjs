@@ -19,7 +19,12 @@ export default function (p) {
   let system
 
   const colorScale = chroma.scale(['navy', 'turquoise', 'purple', 'yellow'])
-  const attractorColorScale = chroma.scale(['white', 'azure', 'silver'])
+  const attractorColorScale = chroma.scale([
+    'azure',
+    'mintcream',
+    chroma('palegreen').desaturate(3),
+    'mistyrose',
+  ])
   const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 130 })
   const controlPanel = createControlPanel(p, metadata)
 
@@ -54,7 +59,7 @@ export default function (p) {
     system.updateState({
       ...state,
       particleCount: state.count,
-      zOffset: ah.getTotalBeatsElapsed() * state.zOffsetMultiplier,
+      zOffset: ah.accumulateValue(state.zOffsetMultiplier, 0.125),
     })
     system.update()
     system.display()

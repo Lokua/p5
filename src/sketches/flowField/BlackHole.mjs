@@ -1,3 +1,4 @@
+import { interpolators } from '../../lib/scaling.mjs'
 import { inheritStaticProperties, callAtInterval } from '../../util.mjs'
 import EntityTypes from './EntityTypes.mjs'
 import Attractor from './Attractor.mjs'
@@ -14,6 +15,7 @@ export default class BlackHole extends Attractor {
     super({ radius, ...rest })
     this.addInteraction(EntityTypes.FLOW_PARTICLE, this.pullParticle)
     this.addInteraction(EntityTypes.POLLINATOR, this.pullPollinator)
+    this.addInteraction(EntityTypes.FLOW_FIELD, this.muteFlowFieldMagnitude)
   }
 
   display() {
@@ -62,6 +64,36 @@ export default class BlackHole extends Attractor {
       },
       exit(context) {
         pollinator.radius = context.originalRadius
+      },
+    })
+  }
+
+  muteFlowFieldMagnitude(flowField) {
+    flowField.updateQuirkFromSource({
+      quirk: Quirks.BLACK_HOLED,
+      mode: QuirkModes.ADD_UPDATE_NO_REMOVE,
+      shouldHaveQuirk: this.active,
+      source: this,
+      context: {
+        progress: 0,
+        forceMagnitude: 0.01,
+      },
+      update: (context) => {
+        if (!this.active && context.forceMagnitude < flowField.forceMagnitude) {
+          context.progress = Math.min(context.progress + 0.005, 1)
+          context.forceMagnitude = this.p.map(
+            interpolators.exponential(context.progress, 5),
+            0,
+            1,
+            context.forceMagnitude,
+            flowField.forceMagnitude,
+          )
+        } else if (
+          flowField.hasQuirk(Quirks.BLACK_HOLED) &&
+          context.forceMagnitude === flowField.forceMagnitude
+        ) {
+          flowField.removeQuirk(Quirks.BLACK_HOLED)
+        }
       },
     })
   }

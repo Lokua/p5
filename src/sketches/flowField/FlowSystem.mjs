@@ -127,6 +127,7 @@ export default class FlowSystem {
       visualize: this.state.showField,
       angleOffset: this.state.angleOffset,
     })
+    this.blackHole.interactWith(this.flowField)
     this.flowField.update()
   }
 

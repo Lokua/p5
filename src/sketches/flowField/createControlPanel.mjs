@@ -1,4 +1,5 @@
 import { createControlPanel } from '../../lib/ControlPanel/index.mjs'
+import FlowField from './FlowField.mjs'
 import Particle from './FlowParticle.mjs'
 
 export default (p, metadata) =>
@@ -101,13 +102,8 @@ export default (p, metadata) =>
       {
         type: 'Select',
         name: 'forceMode',
-        value: 'grid',
-        options: [
-          'grid',
-          'algorithmic',
-          'combinedAdditive',
-          'combinedAveraged',
-        ],
+        value: FlowField.Modes.ALGORITHMIC,
+        options: Object.keys(FlowField.Modes),
       },
       {
         type: 'Checkbox',

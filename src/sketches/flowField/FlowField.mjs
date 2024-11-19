@@ -1,6 +1,12 @@
 import chroma from 'chroma-js'
+import { callAtInterval } from '../../util.mjs'
+import Entity from './Entity.mjs'
+import EntityTypes from './EntityTypes.mjs'
+import Quirks from './Quirks.mjs'
 
-export default class FlowField {
+export default class FlowField extends Entity {
+  static entityType = EntityTypes.FLOW_FIELD
+
   static Modes = {
     ALGORITHMIC: 'ALGORITHMIC',
     GRID: 'GRID',
@@ -23,6 +29,7 @@ export default class FlowField {
     mode = FlowField.Modes.ALGORITHMIC,
     visualize = false,
   }) {
+    super()
     this.p = p
     this.w = w
     this.h = h
@@ -148,7 +155,12 @@ export default class FlowField {
       this.p.sin(this.p.radians(this.angleOffset))
 
     outputVector.set(this.p.cos(angle), this.p.sin(angle))
-    outputVector.setMag(this.forceMagnitude)
+
+    outputVector.setMag(
+      this.hasQuirk(Quirks.BLACK_HOLED)
+        ? this.quirks.get(Quirks.BLACK_HOLED).context.forceMagnitude
+        : this.forceMagnitude,
+    )
 
     return outputVector
   }

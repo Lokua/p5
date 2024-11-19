@@ -89,10 +89,10 @@ export default class Entity {
       this.hasQuirk(quirk) &&
       (shouldHaveQuirk || mode === QuirkModes.ADD_UPDATE_NO_REMOVE)
     ) {
-      this.quirks.get(quirk)?.update?.(this, {
-        source,
-        ...context,
-      })
+      const storedQuirk = this.quirks.get(quirk)
+      if (storedQuirk?.update) {
+        storedQuirk.update.call(this, storedQuirk.context)
+      }
     }
   }
 
