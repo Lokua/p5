@@ -1,7 +1,8 @@
 import chroma from 'chroma-js'
+import { inheritStaticProperties } from '../../util.mjs'
 import EntityTypes from './EntityTypes.mjs'
 import Particle from './Particle.mjs'
-import { inheritStaticProperties } from '../../util.mjs'
+import Quirks from './Quirks.mjs'
 
 export default class FlowParticle extends Particle {
   static {
@@ -31,7 +32,6 @@ export default class FlowParticle extends Particle {
     this.history = []
     this.maxHistory = maxHistory
     this.lifespan = 255
-    this.marked = false
   }
 
   update() {
@@ -61,7 +61,7 @@ export default class FlowParticle extends Particle {
       return
     }
 
-    const baseColor = this.marked
+    const baseColor = this.hasQuirk(Quirks.MARKED_FOR_DEATH)
       ? chroma.mix(this.color, 'magenta', 0.2)
       : this.color
 
@@ -108,8 +108,9 @@ export default class FlowParticle extends Particle {
         wrapped = true
       }
 
-      if (wrapped && this.marked) {
+      if (wrapped && this.hasQuirk(Quirks.MARKED_FOR_DEATH)) {
         this.active = false
+        this.removeQuirk(Quirks.MARKED_FOR_DEATH)
       }
     } else {
       super.edges()
@@ -119,7 +120,7 @@ export default class FlowParticle extends Particle {
   reset(position) {
     super.reset(position)
     this.color = this.colorScale(this.p.random())
-    this.marked = false
+    this.removeQuirk(Quirks.MARKED_FOR_DEATH)
     this.history.forEach((vector) => {
       this.vectorPool.release(vector)
     })

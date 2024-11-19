@@ -37,6 +37,10 @@ export default class Attractor extends Particle {
     return this.radius * 2
   }
 
+  set diameter(diameter) {
+    this.radius = diameter / 2
+  }
+
   contains(particle) {
     const distance = this.p.dist(
       particle.position.x,

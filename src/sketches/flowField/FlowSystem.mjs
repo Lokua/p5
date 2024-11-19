@@ -95,6 +95,7 @@ export default class FlowSystem {
           y,
           w: size,
           h: size,
+          active: this.state.showBlackHole,
         }),
     )
   }
@@ -110,6 +111,11 @@ export default class FlowSystem {
     this.blackHole.updateState({
       active: this.state.showBlackHole,
     })
+    for (const obstacle of this.obstacles) {
+      obstacle.updateState({
+        active: this.state.showObstacles,
+      })
+    }
   }
 
   #updateFlowField() {
@@ -163,10 +169,8 @@ export default class FlowSystem {
   }
 
   #applyObstacles(particle) {
-    if (this.state.showObstacles) {
-      for (const obstacle of this.obstacles) {
-        obstacle.interactWith(particle)
-      }
+    for (const obstacle of this.obstacles) {
+      obstacle.interactWith(particle)
     }
   }
 
@@ -211,15 +215,11 @@ export default class FlowSystem {
   }
 
   #isPositionValid(position) {
-    if (this.state.showBlackHole && this.blackHole?.contains({ position })) {
+    if (this.blackHole.contains({ position })) {
       return false
     }
 
-    if (this.state.showObstacles) {
-      return !this.obstacles.some((obstacle) => obstacle.contains({ position }))
-    }
-
-    return true
+    return !this.obstacles.some((obstacle) => obstacle.contains({ position }))
   }
 
   #updateAttractors() {
@@ -240,10 +240,8 @@ export default class FlowSystem {
           }
         }
 
-        if (this.state.showObstacles) {
-          for (const obstacle of this.obstacles) {
-            obstacle.interactWith(attractor)
-          }
+        for (const obstacle of this.obstacles) {
+          obstacle.interactWith(attractor)
         }
 
         const force = this.#vectorPool.get()
@@ -304,10 +302,8 @@ export default class FlowSystem {
       this.p.image(this.#particleBuffer, 0, 0, this.w, this.h)
     }
 
-    if (this.state.showObstacles) {
-      for (const obstacle of this.obstacles) {
-        obstacle.display()
-      }
+    for (const obstacle of this.obstacles) {
+      obstacle.display()
     }
 
     this.blackHole.display()

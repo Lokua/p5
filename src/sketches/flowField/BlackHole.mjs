@@ -33,10 +33,14 @@ export default class BlackHole extends Attractor {
       outputForce.add(blackHoleForce)
       this.vectorPool.release(blackHoleForce)
 
-      if (this.contains(particle)) {
-        particle.velocity.mult(-1)
-        particle.marked = true
-      }
+      particle.updateQuirkFromSource({
+        quirk: Quirks.MARKED_FOR_DEATH,
+        source: this,
+        shouldHaveQuirk: this.contains(particle),
+        update() {
+          particle.velocity.mult(-0.5)
+        },
+      })
     }
   }
 
@@ -52,6 +56,12 @@ export default class BlackHole extends Attractor {
       quirk: Quirks.BLACK_HOLED,
       shouldHaveQuirk: this.active && this.contains(pollinator),
       source: this,
+      context: {
+        orignalRadius: pollinator.radius,
+      },
+      exit(context) {
+        pollinator.radius = context.orignalRadius
+      },
     })
   }
 }

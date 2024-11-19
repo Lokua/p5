@@ -10,64 +10,82 @@ export default class Obstacle extends Entity {
    * @param {Object} options
    * @param {import('p5')} options.p
    */
-  constructor({ p, buffer = p, x, y, w, h }) {
+  constructor({ p, buffer = p, x, y, w, h, active }) {
     super()
     this.p = p
     this.buffer = buffer
     this.position = p.createVector(x, y)
     this.w = w
     this.h = h
+    this.active = active
     this.addInteraction(EntityTypes.FLOW_PARTICLE, this.seduce)
     this.addInteraction(EntityTypes.POLLINATOR, this.xRay)
-    this.id = Math.random()
+  }
+
+  updateState(update) {
+    Object.assign(this, update)
   }
 
   display() {
-    this.buffer.noStroke()
-    this.buffer.fill(50, 0.3)
-    this.buffer.rectMode(this.p.CENTER)
-    this.buffer.rect(this.position.x, this.position.y, this.w, this.h)
+    if (this.active) {
+      this.buffer.noStroke()
+      this.buffer.fill(50, 0.3)
+      this.buffer.rectMode(this.p.CENTER)
+      this.buffer.rect(this.position.x, this.position.y, this.w, this.h)
+    }
   }
 
   contains(particle) {
-    return isPointInRect(particle.position, this)
+    return this.active && isPointInRect(particle.position, this)
   }
 
   getOverlapCircular(particle) {
-    const radius = particle.radius || particle.diameter / 2
-    const numPoints = 36
-    let pointsInside = 0
+    if (this.active) {
+      const radius = particle.radius || particle.diameter / 2
+      const numPoints = 36
+      let pointsInside = 0
 
-    for (let i = 0; i < numPoints; i++) {
-      const angle = (i / numPoints) * 2 * Math.PI
-      const x = particle.position.x + radius * Math.cos(angle)
-      const y = particle.position.y + radius * Math.sin(angle)
+      for (let i = 0; i < numPoints; i++) {
+        const angle = (i / numPoints) * 2 * Math.PI
+        const x = particle.position.x + radius * Math.cos(angle)
+        const y = particle.position.y + radius * Math.sin(angle)
 
-      if (isPointInRect({ x, y }, this)) {
-        pointsInside++
+        if (isPointInRect({ x, y }, this)) {
+          pointsInside++
+        }
       }
+
+      return pointsInside / numPoints
     }
 
-    return pointsInside / numPoints
+    return 0
   }
 
-  seduce(entity) {
-    if (this.contains(entity)) {
-      entity.velocity.mult(-0.5)
-      entity.marked = true
+  seduce(particle) {
+    if (this.active) {
+      particle.updateQuirkFromSource({
+        quirk: Quirks.MARKED_FOR_DEATH,
+        source: this,
+        shouldHaveQuirk: this.contains(particle),
+        update() {
+          particle.velocity.mult(-0.5)
+        },
+      })
     }
   }
 
   xRay(pollinator) {
-    const overlapPercentage = this.getOverlapCircular(pollinator)
+    if (this.active) {
+      const overlapPercentage = this.getOverlapCircular(pollinator)
 
-    pollinator.updateQuirkFromSource({
-      quirk: Quirks.X_RAY,
-      source: this,
-      shouldHaveQuirk: overlapPercentage >= 0.5,
-      context: {
-        overlapPercentage,
-      },
-    })
+      pollinator.updateQuirkFromSource({
+        quirk: Quirks.X_RAY,
+        source: this,
+        shouldHaveQuirk: overlapPercentage >= 0.5,
+        context: {
+          overlapPercentage,
+        },
+      })
+    }
   }
 }

@@ -9,7 +9,7 @@ export default class Entity {
      */
     this.interactionHandlers = new Map()
     /**
-     * @type {Map<string, Record<string, any>>}
+     * @type {Map<string, { context: Record<string, any>, enter?: Function, exit?: Function }>}
      */
     this.quirks = new Map()
   }
@@ -51,34 +51,67 @@ export default class Entity {
    * @param {Entity} params.source
    * @param {boolean} params.shouldHaveQuirk
    * @param {Record<string, any>} [params.context={}]
+   * @param {Function} [params.enter]
+   * @param {Function} [params.update]
+   * @param {Function} [params.exit]
    */
   updateQuirkFromSource({
     quirk,
     source,
     shouldHaveQuirk,
     context = {},
-    callback = () => {},
+    enter,
+    update,
+    exit,
   }) {
     if (shouldHaveQuirk) {
-      this.addQuirk(quirk, { source, ...context })
-    } else if (this.quirks.get(quirk)?.source === source) {
+      this.addQuirk({
+        quirk,
+        context: { source, ...context },
+        enter,
+        update,
+        exit,
+      })
+    } else if (this.quirks.get(quirk)?.context?.source === source) {
       this.removeQuirk(quirk)
+    } else if (this.hasQuirk(quirk)) {
+      this.quirks.get(quirk)?.update?.(this, {
+        source,
+        ...context,
+      })
     }
-    callback(shouldHaveQuirk)
   }
 
   /**
-   * @param {string} quirk
-   * @param {Record<string, any>} [context={}]
+   * @param {Object} params
+   * @param {string} params.quirk
+   * @param {Record<string, any>} [params.context={}]
+   * @param {Function} [params.enter]
+   * @param {Function} [params.update]
+   * @param {Function} [params.exit]
    */
-  addQuirk(quirk, context = {}) {
-    this.quirks.set(quirk, context)
+  addQuirk({ quirk, context = {}, enter, update, exit }) {
+    if (!this.quirks.has(quirk)) {
+      if (enter) {
+        enter.call(this, context)
+      }
+      this.quirks.set(quirk, {
+        context,
+        enter,
+        update,
+        exit,
+      })
+    }
   }
 
   /**
    * @param {string} quirk
    */
   removeQuirk(quirk) {
+    const { exit, context } = this.quirks.get(quirk) || {}
+    if (exit) {
+      exit.call(this, context)
+    }
     this.quirks.delete(quirk)
   }
 
