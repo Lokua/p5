@@ -20,6 +20,7 @@ export default class Pollinator extends Attractor {
       ...rest,
     })
 
+    this.colorScale = colorScale
     this.color = colorScale(p.random())
     this.debug = false
 
@@ -45,15 +46,6 @@ export default class Pollinator extends Attractor {
       for (let i = this.diameter; i > 0; i -= this.diameter / 4) {
         const alpha = this.p.map(i, 0, this.diameter, 0.7, 0.1)
         const color = this.color.saturate(1).alpha(alpha).rgba()
-        this.buffer.noStroke()
-        this.buffer.fill(color)
-        this.buffer.circle(this.position.x, this.position.y, i)
-      }
-    } else if (this.hasQuirk(Quirks.BLACK_HOLED)) {
-      this.radius = Math.max(0, this.radius - 0.2)
-      for (let i = this.diameter; i > 0; i -= this.diameter / 10) {
-        const alpha = this.p.map(i, 0, this.diameter, 0.7, 0.1)
-        const color = this.color.saturate(3).alpha(alpha).rgba()
         this.buffer.noStroke()
         this.buffer.fill(color)
         this.buffer.circle(this.position.x, this.position.y, i)

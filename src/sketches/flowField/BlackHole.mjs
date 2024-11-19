@@ -61,9 +61,17 @@ export default class BlackHole extends Attractor {
       source: this,
       context: {
         originalRadius: pollinator.radius,
+        originalColor: pollinator.color,
+      },
+      enter() {
+        pollinator.color = pollinator.colorScale(this.p.random()).saturate(3)
+      },
+      update() {
+        pollinator.radius = Math.max(0, pollinator.radius - 0.2)
       },
       exit(context) {
         pollinator.radius = context.originalRadius
+        pollinator.color = context.originalColor
       },
     })
   }
