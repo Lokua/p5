@@ -1,6 +1,6 @@
 import { callAtInterval, inheritStaticProperties } from '../../util.mjs'
 import EntityTypes from './EntityTypes.mjs'
-import Quirks from './Quirks.mjs'
+import Quirks, { QuirkModes } from './Quirks.mjs'
 import Attractor from './Attractor.mjs'
 
 export default class Pollinator extends Attractor {
@@ -23,7 +23,7 @@ export default class Pollinator extends Attractor {
     this.color = colorScale(p.random())
     this.debug = false
 
-    this.addInteraction(EntityTypes.FLOW_PARTICLE, this.infectParticle)
+    this.addInteraction(EntityTypes.FLOW_PARTICLE, this.pollinate)
     this.addInteraction(EntityTypes.POLLINATOR, this.avoidNeighbor)
   }
 
@@ -78,15 +78,21 @@ export default class Pollinator extends Attractor {
     }
   }
 
-  infectParticle(particle, outputForce) {
+  pollinate(particle, outputForce) {
     const attractorForce = this.vectorPool.get()
     this.applyForceTo(particle, attractorForce)
     outputForce.add(attractorForce)
     this.vectorPool.release(attractorForce)
 
-    if (this.contains(particle)) {
-      particle.color = this.color
-    }
+    particle.updateQuirkFromSource({
+      quirk: Quirks.POLLINATED,
+      mode: QuirkModes.ADD_UPDATE_NO_REMOVE,
+      source: this,
+      shouldHaveQuirk: this.active && this.contains(particle),
+      context: {
+        color: this.color,
+      },
+    })
   }
 
   avoidNeighbor(otherPollinator, outputForce) {

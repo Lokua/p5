@@ -61,9 +61,12 @@ export default class FlowParticle extends Particle {
       return
     }
 
-    const baseColor = this.hasQuirk(Quirks.MARKED_FOR_DEATH)
-      ? chroma.mix(this.color, 'magenta', 0.2)
+    let color = this.hasQuirk(Quirks.POLLINATED)
+      ? this.quirks.get(Quirks.POLLINATED).context.color
       : this.color
+    color = this.hasQuirk(Quirks.MARKED_FOR_DEATH)
+      ? chroma.mix(color, 'magenta', 0.2)
+      : color
 
     let prev = this.position
 
@@ -74,14 +77,14 @@ export default class FlowParticle extends Particle {
       if (distance < threshold) {
         const value = this.maxHistory - index
         const opacity = this.p.map(value, 0, this.maxHistory, 0, this.opacity)
-        this.buffer.stroke(baseColor.alpha(opacity).rgba())
+        this.buffer.stroke(color.alpha(opacity).rgba())
         this.buffer.line(prev.x, prev.y, position.x, position.y)
       }
 
       prev = position
     }
 
-    const color = baseColor.alpha(this.opacity).rgba()
+    color = color.alpha(this.opacity).rgba()
     this.buffer.fill(color)
     this.buffer.stroke(color)
     this.buffer.circle(this.position.x, this.position.y, this.diameter)
@@ -110,7 +113,7 @@ export default class FlowParticle extends Particle {
 
       if (wrapped && this.hasQuirk(Quirks.MARKED_FOR_DEATH)) {
         this.active = false
-        this.removeQuirk(Quirks.MARKED_FOR_DEATH)
+        this.removeAllQuirks()
       }
     } else {
       super.edges()
@@ -120,7 +123,7 @@ export default class FlowParticle extends Particle {
   reset(position) {
     super.reset(position)
     this.color = this.colorScale(this.p.random())
-    this.removeQuirk(Quirks.MARKED_FOR_DEATH)
+    this.removeAllQuirks()
     this.history.forEach((vector) => {
       this.vectorPool.release(vector)
     })

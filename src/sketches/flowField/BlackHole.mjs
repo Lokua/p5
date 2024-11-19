@@ -1,7 +1,7 @@
 import { inheritStaticProperties, callAtInterval } from '../../util.mjs'
 import EntityTypes from './EntityTypes.mjs'
 import Attractor from './Attractor.mjs'
-import Quirks from './Quirks.mjs'
+import Quirks, { QuirkModes } from './Quirks.mjs'
 
 export default class BlackHole extends Attractor {
   static {
@@ -32,16 +32,17 @@ export default class BlackHole extends Attractor {
       this.applyForceTo(particle, blackHoleForce)
       outputForce.add(blackHoleForce)
       this.vectorPool.release(blackHoleForce)
-
-      particle.updateQuirkFromSource({
-        quirk: Quirks.MARKED_FOR_DEATH,
-        source: this,
-        shouldHaveQuirk: this.contains(particle),
-        update() {
-          particle.velocity.mult(-0.5)
-        },
-      })
     }
+
+    particle.updateQuirkFromSource({
+      quirk: Quirks.MARKED_FOR_DEATH,
+      mode: QuirkModes.ADD_NO_UPDATE_NO_REMOVE,
+      source: this,
+      shouldHaveQuirk: this.active && this.contains(particle),
+      update() {
+        particle.velocity.mult(-0.5)
+      },
+    })
   }
 
   pullPollinator(pollinator, outputForce) {
@@ -57,10 +58,10 @@ export default class BlackHole extends Attractor {
       shouldHaveQuirk: this.active && this.contains(pollinator),
       source: this,
       context: {
-        orignalRadius: pollinator.radius,
+        originalRadius: pollinator.radius,
       },
       exit(context) {
-        pollinator.radius = context.orignalRadius
+        pollinator.radius = context.originalRadius
       },
     })
   }

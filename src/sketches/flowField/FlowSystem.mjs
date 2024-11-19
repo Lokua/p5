@@ -215,11 +215,10 @@ export default class FlowSystem {
   }
 
   #isPositionValid(position) {
-    if (this.blackHole.contains({ position })) {
-      return false
-    }
-
-    return !this.obstacles.some((obstacle) => obstacle.contains({ position }))
+    return (
+      !this.blackHole.contains({ position }) &&
+      !this.obstacles.some((obstacle) => obstacle.contains({ position }))
+    )
   }
 
   #updateAttractors() {

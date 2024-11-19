@@ -1,6 +1,6 @@
 import Entity from './Entity.mjs'
 import EntityTypes from './EntityTypes.mjs'
-import Quirks from './Quirks.mjs'
+import Quirks, { QuirkModes } from './Quirks.mjs'
 import { isPointInRect } from '../../util.mjs'
 
 export default class Obstacle extends Entity {
@@ -62,30 +62,27 @@ export default class Obstacle extends Entity {
   }
 
   seduce(particle) {
-    if (this.active) {
-      particle.updateQuirkFromSource({
-        quirk: Quirks.MARKED_FOR_DEATH,
-        source: this,
-        shouldHaveQuirk: this.contains(particle),
-        update() {
-          particle.velocity.mult(-0.5)
-        },
-      })
-    }
+    particle.updateQuirkFromSource({
+      quirk: Quirks.MARKED_FOR_DEATH,
+      mode: QuirkModes.ADD_NO_UPDATE_NO_REMOVE,
+      source: this,
+      shouldHaveQuirk: this.active && this.contains(particle),
+      update() {
+        particle.velocity.mult(-0.5)
+      },
+    })
   }
 
   xRay(pollinator) {
-    if (this.active) {
-      const overlapPercentage = this.getOverlapCircular(pollinator)
+    const overlapPercentage = this.getOverlapCircular(pollinator)
 
-      pollinator.updateQuirkFromSource({
-        quirk: Quirks.X_RAY,
-        source: this,
-        shouldHaveQuirk: overlapPercentage >= 0.5,
-        context: {
-          overlapPercentage,
-        },
-      })
-    }
+    pollinator.updateQuirkFromSource({
+      quirk: Quirks.X_RAY,
+      source: this,
+      shouldHaveQuirk: this.active && overlapPercentage >= 0.5,
+      context: {
+        overlapPercentage,
+      },
+    })
   }
 }

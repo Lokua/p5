@@ -1,4 +1,5 @@
 import EntityTypes from './EntityTypes.mjs'
+import { QuirkModes } from './Quirks.mjs'
 
 export default class Entity {
   static entityType = EntityTypes.DEFAULT
@@ -54,6 +55,7 @@ export default class Entity {
    * @param {Function} [params.enter]
    * @param {Function} [params.update]
    * @param {Function} [params.exit]
+   * @param {QuirkMode} [mode=QuirkModes.ADD_UPDATE_REMOVE]
    */
   updateQuirkFromSource({
     quirk,
@@ -63,18 +65,30 @@ export default class Entity {
     enter,
     update,
     exit,
+    mode = QuirkModes.ADD_UPDATE_REMOVE,
   }) {
     if (shouldHaveQuirk) {
       this.addQuirk({
         quirk,
-        context: { source, ...context },
+        context: {
+          source,
+          ...context,
+        },
         enter,
         update,
         exit,
       })
-    } else if (this.quirks.get(quirk)?.context?.source === source) {
+    } else if (
+      mode === QuirkModes.ADD_UPDATE_REMOVE &&
+      this.quirks.get(quirk)?.context?.source === source
+    ) {
       this.removeQuirk(quirk)
-    } else if (this.hasQuirk(quirk)) {
+    }
+
+    if (
+      this.hasQuirk(quirk) &&
+      (shouldHaveQuirk || mode === QuirkModes.ADD_UPDATE_NO_REMOVE)
+    ) {
       this.quirks.get(quirk)?.update?.(this, {
         source,
         ...context,
@@ -113,6 +127,10 @@ export default class Entity {
       exit.call(this, context)
     }
     this.quirks.delete(quirk)
+  }
+
+  removeAllQuirks() {
+    this.quirks.clear()
   }
 
   /**
