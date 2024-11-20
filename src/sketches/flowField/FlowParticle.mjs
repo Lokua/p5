@@ -84,6 +84,10 @@ export default class FlowParticle extends Particle {
       prev = position
     }
 
+    // this.buffer.fill(color.saturate(2).alpha(0.2).rgba())
+    // this.buffer.stroke(color.saturate(2).alpha(0.2).rgba())
+    // this.buffer.circle(this.position.x, this.position.y, this.diameter * 2)
+
     color = color.alpha(this.opacity).rgba()
     this.buffer.fill(color)
     this.buffer.stroke(color)

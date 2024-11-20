@@ -56,7 +56,7 @@ export default (p, metadata) =>
         display: 'zOffs',
         value: 0.01,
         min: 0.001,
-        max: 1,
+        max: 1 / 3,
         step: 0.001,
       },
       {
@@ -98,12 +98,20 @@ export default (p, metadata) =>
         name: 'edgeMode',
         value: 'wrap',
         options: Object.values(Particle.EdgeModes),
+        disabled: true,
       },
       {
         type: 'Select',
         name: 'forceMode',
         value: FlowField.Modes.ALGORITHMIC,
         options: Object.keys(FlowField.Modes),
+      },
+      {
+        type: 'Select',
+        name: 'forceAlgorithm',
+        display: 'forceAlg',
+        value: FlowField.ALGORITHMS.DEFAULT,
+        options: Object.keys(FlowField.ALGORITHMS),
       },
       {
         type: 'Checkbox',

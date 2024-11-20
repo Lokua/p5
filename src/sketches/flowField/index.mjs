@@ -52,19 +52,19 @@ export default function (p) {
   }
 
   function draw() {
-    const { showSwatches, ...state } = controlPanel.values()
+    const state = controlPanel.values()
 
     p.background(0)
 
     system.updateState({
       ...state,
       particleCount: state.count,
-      zOffset: ah.accumulateValue(state.zOffsetMultiplier, 0.125),
+      zOffset: p.frameCount * state.zOffsetMultiplier,
     })
     system.update()
     system.display()
 
-    if (showSwatches) {
+    if (state.showSwatches) {
       renderSwatches({
         p,
         w,

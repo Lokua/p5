@@ -33,6 +33,7 @@ export default class FlowSystem {
       blackHoleStrength: 1.0,
       history: 5,
       forceMode: FlowField.Modes.ALGORITHMIC,
+      forceAlgorithm: FlowField.ALGORITHMS.DEFAULT,
       noiseScale: 0.01,
       forceMagnitude: 1,
       zOffset: 0,
@@ -50,6 +51,7 @@ export default class FlowSystem {
       noiseScale: this.state.noiseScale,
       forceMagnitude: this.state.forceMagnitude,
       forceMode: this.state.forceMode,
+      algorithm: this.state.forceAlgorithm,
     })
 
     this.blackHole = new BlackHole({
@@ -126,6 +128,7 @@ export default class FlowSystem {
       zOffset: this.state.zOffset,
       visualize: this.state.showField,
       angleOffset: this.state.angleOffset,
+      algorithm: this.state.forceAlgorithm,
     })
     this.blackHole.interactWith(this.flowField)
     this.flowField.update()
