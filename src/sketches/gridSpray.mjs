@@ -49,7 +49,6 @@ export default function (p) {
         name: 'splash',
         shortcut: 'q',
         handler() {
-          console.log('what the fuck!?!')
           logInfo('[gridSpray] processing...')
           splashed = true
           p.redraw()
