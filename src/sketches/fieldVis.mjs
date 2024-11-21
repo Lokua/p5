@@ -15,10 +15,20 @@ export default function (p) {
   }
 
   const [w, h] = [500, 500]
+  const center = p.createVector(w / 2, h / 2)
   const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 130 })
-  const colorScale = chroma
-    .scale(['blue', 'lightblue', 'cyan', 'magenta', 'yellow'])
-    .domain([0, 0.3, 0.5, 0.6, 0.7])
+  const colorScale = chroma.scale([
+    'black',
+    'black',
+    'blue',
+    'lightblue',
+    'turquoise',
+    'magenta',
+    'yellow',
+    'black',
+    'black',
+  ])
+  // .domain([0, 0.47, 0.55, 0.58, 0.7])
 
   const controlPanel = createControlPanel({
     p,
@@ -33,9 +43,9 @@ export default function (p) {
       },
       {
         type: 'Range',
-        name: 'sizeParam',
-        value: 4,
-        min: 1,
+        name: 'size',
+        value: 10,
+        min: 5,
         max: 30,
       },
       {
@@ -45,6 +55,22 @@ export default function (p) {
         min: 0.001,
         max: 0.2,
         step: 0.001,
+      },
+      {
+        type: 'Range',
+        name: 'lerpToCenter',
+        value: 0,
+        min: 0.001,
+        max: 1,
+        step: 0.001,
+      },
+      {
+        type: 'Range',
+        name: 'offsetRange',
+        value: 1,
+        min: 1,
+        max: 32,
+        step: 1,
       },
       {
         type: 'Range',
@@ -61,6 +87,11 @@ export default function (p) {
         min: 0.01,
         max: 1,
         step: 0.01,
+      },
+      {
+        type: 'Checkbox',
+        name: 'offsetX',
+        value: true,
       },
       {
         type: 'Checkbox',
@@ -85,39 +116,51 @@ export default function (p) {
     const {
       mode,
       resolution,
-      sizeParam,
+      size,
       noiseScale,
+      lerpToCenter,
+      offsetRange,
       backgroundAlpha,
       shapeAlpha,
+      offsetX,
       showSwatches,
     } = controlPanel.values()
 
-    p.background(
-      chroma.mix('black', 'navy', 0.1).alpha(backgroundAlpha).rgba(),
-      backgroundAlpha,
-    )
+    p.background(0, backgroundAlpha)
     p.noStroke()
 
     const t = ah.accumulateValue(0.05, 0.25)
     const res = mode === 'line' ? resolution : resolution / 2
     const cellSize = w / res
-    const angleRange = ah.anim8([0.5, 2, 4, 1, 2, 0.5], 12)
+    const angleRange = ah.anim8([0.5, 4, 0.5], 24)
 
     for (let x = cellSize / 2; x < w; x += cellSize) {
       for (let y = cellSize / 2; y < h; y += cellSize) {
-        const noiseVal = p.noise(x * noiseScale, y * noiseScale, t)
+        const adjustedX = p.lerp(
+          x * noiseScale,
+          (x - center.x) * noiseScale,
+          lerpToCenter,
+        )
+        const adjustedY = p.lerp(
+          y * noiseScale,
+          (y - center.y) * noiseScale,
+          lerpToCenter,
+        )
+
+        const noiseVal = p.noise(adjustedX, adjustedY, t)
         const angle = noiseVal * p.TWO_PI * angleRange
-        const offset = (p.sin(t * p.TWO_PI) + 1) * 0.5 * sizeParam
-        const xPos = x + p.cos(angle) * offset
-        const yPos = y + p.sin(angle) * offset
-        const diameter = p.cos(angle) * sizeParam
+        const normalizedOffset = (p.sin(t * p.TWO_PI) + 1) * 0.5
+        const offset = normalizedOffset * (size * offsetRange)
+        const px = offsetX ? x + p.cos(angle) * offset : x
+        const py = y + p.sin(angle) * offset
+        const diameter = p.map(p.cos(angle), -1, 1, size / 4, size)
         const color = colorScale(noiseVal)
 
         p.fill(color.alpha(shapeAlpha / 4).rgba())
-        p.circle(xPos, yPos, diameter * PHI)
+        p.circle(px, py, diameter * PHI)
 
         p.fill(color.alpha(shapeAlpha).rgba())
-        p.circle(xPos, yPos, diameter)
+        p.circle(px, py, diameter)
       }
     }
 
