@@ -10,6 +10,7 @@ const LOAD_DEFAULT_SKETCH_ON_FAIL = false
 const defaultSketch = 'ztudy__circleOfCircles'
 const themes = ['theme-white', 'theme-light', 'theme-dark', 'theme-black']
 let recording = false
+let recordingQueued = false
 let midiInputPort
 let midiOutputPort
 
@@ -64,6 +65,7 @@ function setupEventListeners() {
   $('#bg-button').addEventListener('click', changeBackground)
   $('#loop-button').addEventListener('click', toggleLoop)
   $('#record-button').addEventListener('click', onClickRecord)
+  $('#que-record-button').addEventListener('click', onClickQueRecord)
   $('#sketches-select').addEventListener('change', (e) => {
     loadSketch(e.target.value)
   })
@@ -158,6 +160,11 @@ function onClickRecord() {
   } else {
     stopRecording()
   }
+}
+
+function onClickQueRecord() {
+  recordingQueued = true
+  logInfo('Recording queued')
 }
 
 function startRecording() {
@@ -255,6 +262,9 @@ function sendExternalStart() {
     setTimeout(() => {
       midiOutputPort.send([statusMap.get('controlChange') + 15, 0, 127])
     }, 100)
+    if (recordingQueued) {
+      startRecording()
+    }
   } else {
     console.warn('[sendExternalStart] `midiOutputPort` is undefined')
   }

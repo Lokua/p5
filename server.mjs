@@ -7,12 +7,20 @@ import c from 'chalk'
 import os from 'os'
 import multer from 'multer'
 
-const upload = multer()
-
 const getDirname = (importMetaUrl) => dirname(fileURLToPath(importMetaUrl))
 
 const app = express()
 const port = 3000
+
+const upload = multer({
+  limits: {
+    // 50MB per field
+    fieldSize: 50 * 1024 * 1024,
+    // Can handle up to 10000 frames (about 5-6 minutes at 30fps)
+    fieldsLimit: 10000,
+    fieldNameSize: 100,
+  },
+})
 
 const log = (...args) => {
   console.info(

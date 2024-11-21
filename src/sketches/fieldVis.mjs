@@ -11,7 +11,7 @@ export default function (p) {
   const metadata = {
     name: 'fieldVis',
     frameRate: 30,
-    pixelDensity: 6,
+    // pixelDensity: 6,
   }
 
   const [w, h] = [500, 500]
@@ -165,6 +165,7 @@ export default function (p) {
         const angle = noiseVal * p.TWO_PI * angleRange
         const normalizedOffset = (p.sin(t * p.TWO_PI) + 1) * 0.5
         const offset = normalizedOffset * (size * offsetRange)
+        // No offsetX makes drawing symmetric when lerpToCenter is maxed
         const px = offsetX ? x + p.cos(angle) * offset : x
         const py = y + p.sin(angle) * offset
         const diameter = p.map(p.cos(angle), -1, 1, 0, size)
@@ -191,7 +192,7 @@ export default function (p) {
       })
     }
 
-    getAverageFrameRate(p, 300)
+    // getAverageFrameRate(p, 300)
   }
 
   return {
