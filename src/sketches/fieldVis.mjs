@@ -16,19 +16,21 @@ export default function (p) {
 
   const [w, h] = [500, 500]
   const center = p.createVector(w / 2, h / 2)
+  const maxOffsetRange = 8
   const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 130 })
-  const colorScale = chroma.scale([
-    'black',
-    'black',
-    'blue',
-    'lightblue',
-    'turquoise',
-    'magenta',
-    'yellow',
-    'black',
-    'black',
-  ])
-  // .domain([0, 0.47, 0.55, 0.58, 0.7])
+  const colorScale = chroma
+    .scale([
+      'black',
+      'navy',
+      'blue',
+      'lightblue',
+      'turquoise',
+      'magenta',
+      'yellow',
+      'navy',
+      'black',
+    ])
+    .mode('lab')
 
   const controlPanel = createControlPanel({
     p,
@@ -39,22 +41,22 @@ export default function (p) {
         name: 'resolution',
         value: 20,
         min: 10,
-        max: 100,
+        max: 200,
       },
       {
         type: 'Range',
         name: 'size',
-        value: 10,
-        min: 5,
-        max: 30,
+        value: 8,
+        min: 1,
+        max: 15,
       },
       {
         type: 'Range',
         name: 'noiseScale',
         value: 0.1,
         min: 0.001,
-        max: 0.2,
-        step: 0.001,
+        max: 0.05,
+        step: 0.0001,
       },
       {
         type: 'Range',
@@ -69,7 +71,7 @@ export default function (p) {
         name: 'offsetRange',
         value: 1,
         min: 1,
-        max: 32,
+        max: maxOffsetRange,
         step: 1,
       },
       {
@@ -129,13 +131,25 @@ export default function (p) {
     p.background(0, backgroundAlpha)
     p.noStroke()
 
-    const t = ah.accumulateValue(0.05, 0.25)
-    const res = mode === 'line' ? resolution : resolution / 2
-    const cellSize = w / res
-    const angleRange = ah.anim8([0.5, 4, 0.5], 24)
+    const t1 = ah.getPingPongLoopProgress(8)
+    const t2 = ah.getPingPongLoopProgress(24)
+    const t = p.lerp(t1, t2, ah.getPingPongLoopProgress(48))
 
-    for (let x = cellSize / 2; x < w; x += cellSize) {
-      for (let y = cellSize / 2; y < h; y += cellSize) {
+    const res = mode === 'line' ? resolution : resolution / 2
+    const angleRange = ah.anim8([0.5, 4, 0.5], 16)
+
+    const cellSize = w / res
+    const maxOffset = size * PHI * maxOffsetRange
+
+    // Draw more than we need so animations don't reveal empty
+    // canvas beyond the edges that are being brought inward
+    const startX = -maxOffset + cellSize / 2
+    const endX = w + maxOffset
+    const startY = -maxOffset + cellSize / 2
+    const endY = h + maxOffset
+
+    for (let x = startX; x < endX; x += cellSize) {
+      for (let y = startY; y < endY; y += cellSize) {
         const adjustedX = p.lerp(
           x * noiseScale,
           (x - center.x) * noiseScale,
@@ -153,14 +167,18 @@ export default function (p) {
         const offset = normalizedOffset * (size * offsetRange)
         const px = offsetX ? x + p.cos(angle) * offset : x
         const py = y + p.sin(angle) * offset
-        const diameter = p.map(p.cos(angle), -1, 1, size / 4, size)
-        const color = colorScale(noiseVal)
+        const diameter = p.map(p.cos(angle), -1, 1, 0, size)
 
-        p.fill(color.alpha(shapeAlpha / 4).rgba())
-        p.circle(px, py, diameter * PHI)
+        // Cull offscreen points for performance
+        if (px + size > 0 && px - size < w && py + size > 0 && py - size < h) {
+          const color = colorScale(noiseVal)
 
-        p.fill(color.alpha(shapeAlpha).rgba())
-        p.circle(px, py, diameter)
+          p.fill(color.alpha(shapeAlpha / 2).rgba())
+          p.circle(px, py, diameter * PHI)
+
+          p.fill(color.alpha(shapeAlpha).rgba())
+          p.circle(px, py, diameter)
+        }
       }
     }
 
