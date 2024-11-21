@@ -2,7 +2,7 @@ import chroma from 'chroma-js'
 import { renderSwatches } from '../lib/colors.mjs'
 import { createControlPanel } from '../lib/ControlPanel/index.mjs'
 import AnimationHelper from '../lib/AnimationHelper.mjs'
-import { getAverageFrameRate } from '../util.mjs'
+import { getAverageFrameRate, PHI } from '../util.mjs'
 
 /**
  * @param {import('p5')} p
@@ -18,7 +18,7 @@ export default function (p) {
   const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 130 })
   const colorScale = chroma
     .scale(['blue', 'lightblue', 'cyan', 'magenta', 'yellow'])
-    .domain([0, 0.3, 0.4, 0.6, 0.7])
+    .domain([0, 0.3, 0.5, 0.6, 0.7])
 
   const controlPanel = createControlPanel({
     p,
@@ -67,14 +67,6 @@ export default function (p) {
         name: 'showSwatches',
         value: false,
       },
-      {
-        type: 'Checklist',
-        name: 'show',
-        options: {
-          line: false,
-          circle: true,
-        },
-      },
     ],
   })
 
@@ -97,7 +89,6 @@ export default function (p) {
       noiseScale,
       backgroundAlpha,
       shapeAlpha,
-      show,
       showSwatches,
     } = controlPanel.values()
 
@@ -105,53 +96,28 @@ export default function (p) {
       chroma.mix('black', 'navy', 0.1).alpha(backgroundAlpha).rgba(),
       backgroundAlpha,
     )
+    p.noStroke()
 
     const t = ah.accumulateValue(0.05, 0.25)
     const res = mode === 'line' ? resolution : resolution / 2
     const cellSize = w / res
-    const angleRange = ah.anim8([2, 4, 1, 2], 12)
+    const angleRange = ah.anim8([0.5, 2, 4, 1, 2, 0.5], 12)
 
     for (let x = cellSize / 2; x < w; x += cellSize) {
       for (let y = cellSize / 2; y < h; y += cellSize) {
         const noiseVal = p.noise(x * noiseScale, y * noiseScale, t)
         const angle = noiseVal * p.TWO_PI * angleRange
+        const offset = (p.sin(t * p.TWO_PI) + 1) * 0.5 * sizeParam
+        const xPos = x + p.cos(angle) * offset
+        const yPos = y + p.sin(angle) * offset
+        const diameter = p.cos(angle) * sizeParam
+        const color = colorScale(noiseVal)
 
-        if (show.circle) {
-          const offset = (p.sin(t * p.TWO_PI) + 1) * 0.5 * sizeParam
-          p.noStroke()
+        p.fill(color.alpha(shapeAlpha / 4).rgba())
+        p.circle(xPos, yPos, diameter * PHI)
 
-          const xPos = x + p.cos(angle) * offset
-          const yPos = y + p.sin(angle) * offset
-
-          p.fill(colorScale(noiseVal).alpha(shapeAlpha).rgba())
-          p.circle(xPos, yPos, p.cos(angle) * sizeParam)
-
-          p.fill(
-            colorScale(noiseVal)
-              .alpha(shapeAlpha / 12)
-              .rgba(),
-          )
-          p.rectMode(p.CENTER)
-          p.rect(
-            xPos,
-            yPos,
-            p.cos(angle) * (sizeParam * 4),
-            p.sin(angle) * (sizeParam * 4),
-          )
-        }
-
-        if (show.line) {
-          p.noFill()
-          p.stroke(
-            colorScale(1 - noiseVal)
-              .alpha(shapeAlpha)
-              .rgba(),
-          )
-          p.strokeWeight(1)
-          const endX = x + p.cos(angle) * sizeParam
-          const endY = y + p.sin(angle) * sizeParam
-          p.line(x, y, endX, endY)
-        }
+        p.fill(color.alpha(shapeAlpha).rgba())
+        p.circle(xPos, yPos, diameter)
       }
     }
 
