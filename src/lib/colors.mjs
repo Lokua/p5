@@ -61,6 +61,23 @@ export const lokuaScales = {
     '#89c9f6',
     '#c4dfe4',
   ],
+  yesTheWaterIs: [
+    '#12140b',
+    '#21250f',
+    '#3e2a12',
+    '#414116',
+    '#67481e',
+    '#545b50',
+    '#606021',
+    '#846f4b',
+    '#926f2c',
+    '#bf6429',
+    '#7f9344',
+    '#a69168',
+    '#ca9d46',
+    '#ebcc67',
+    '#e7e9e7',
+  ],
 }
 
 export const d3ColorScales = {

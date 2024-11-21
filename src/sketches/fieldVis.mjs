@@ -16,15 +16,9 @@ export default function (p) {
 
   const [w, h] = [500, 500]
   const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 130 })
-  const colorScale = chroma.scale([
-    'navy',
-    'darkblue',
-    'blue',
-    'turquoise',
-    'azure',
-    'pink',
-    'mediumpurple',
-  ])
+  const colorScale = chroma
+    .scale(['blue', 'lightblue', 'cyan', 'magenta', 'yellow'])
+    .domain([0, 0.3, 0.4, 0.6, 0.7])
 
   const controlPanel = createControlPanel({
     p,
@@ -61,6 +55,14 @@ export default function (p) {
         step: 0.01,
       },
       {
+        type: 'Range',
+        name: 'shapeAlpha',
+        value: 1,
+        min: 0.01,
+        max: 1,
+        step: 0.01,
+      },
+      {
         type: 'Checkbox',
         name: 'showSwatches',
         value: false,
@@ -70,7 +72,6 @@ export default function (p) {
         name: 'show',
         options: {
           line: false,
-          rect: false,
           circle: true,
         },
       },
@@ -95,6 +96,7 @@ export default function (p) {
       sizeParam,
       noiseScale,
       backgroundAlpha,
+      shapeAlpha,
       show,
       showSwatches,
     } = controlPanel.values()
@@ -107,47 +109,48 @@ export default function (p) {
     const t = ah.accumulateValue(0.05, 0.25)
     const res = mode === 'line' ? resolution : resolution / 2
     const cellSize = w / res
+    const angleRange = ah.anim8([2, 4, 1, 2], 12)
 
     for (let x = cellSize / 2; x < w; x += cellSize) {
       for (let y = cellSize / 2; y < h; y += cellSize) {
         const noiseVal = p.noise(x * noiseScale, y * noiseScale, t)
-        const angle = noiseVal * p.TWO_PI * 2
+        const angle = noiseVal * p.TWO_PI * angleRange
+
+        if (show.circle) {
+          const offset = (p.sin(t * p.TWO_PI) + 1) * 0.5 * sizeParam
+          p.noStroke()
+
+          const xPos = x + p.cos(angle) * offset
+          const yPos = y + p.sin(angle) * offset
+
+          p.fill(colorScale(noiseVal).alpha(shapeAlpha).rgba())
+          p.circle(xPos, yPos, p.cos(angle) * sizeParam)
+
+          p.fill(
+            colorScale(noiseVal)
+              .alpha(shapeAlpha / 12)
+              .rgba(),
+          )
+          p.rectMode(p.CENTER)
+          p.rect(
+            xPos,
+            yPos,
+            p.cos(angle) * (sizeParam * 4),
+            p.sin(angle) * (sizeParam * 4),
+          )
+        }
 
         if (show.line) {
           p.noFill()
           p.stroke(
             colorScale(1 - noiseVal)
-              .alpha(0.6)
+              .alpha(shapeAlpha)
               .rgba(),
           )
           p.strokeWeight(1)
           const endX = x + p.cos(angle) * sizeParam
           const endY = y + p.sin(angle) * sizeParam
           p.line(x, y, endX, endY)
-        }
-
-        if (show.circle) {
-          const offset = (p.sin(t * p.TWO_PI) + 1) * 0.5 * sizeParam
-          p.noStroke()
-          p.fill(colorScale(noiseVal).alpha(0.6).rgba())
-          p.circle(
-            x + p.cos(angle) * offset,
-            y + p.sin(angle) * offset,
-            p.cos(angle) * sizeParam,
-          )
-        }
-
-        if (show.rect) {
-          const offset = (p.sin(t * p.TWO_PI) + 1) * 0.5 * sizeParam
-          p.noStroke()
-          p.fill(colorScale(noiseVal).alpha(0.6).rgba())
-          p.rectMode(p.CENTER)
-          p.rect(
-            x + p.cos(angle) * offset,
-            y + p.sin(angle) * offset,
-            p.cos(angle) * sizeParam,
-            p.sin(angle) * sizeParam,
-          )
         }
       }
     }
