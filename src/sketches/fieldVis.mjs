@@ -2,6 +2,7 @@ import chroma from 'chroma-js'
 import { renderSwatches } from '../lib/colors.mjs'
 import { createControlPanel } from '../lib/ControlPanel/index.mjs'
 import AnimationHelper from '../lib/AnimationHelper.mjs'
+import { interpolators } from '../lib/scaling.mjs'
 import { getAverageFrameRate, PHI } from '../util.mjs'
 
 /**
@@ -39,21 +40,21 @@ export default function (p) {
       {
         type: 'Range',
         name: 'resolution',
-        value: 20,
+        value: 100,
         min: 10,
         max: 200,
       },
       {
         type: 'Range',
         name: 'size',
-        value: 8,
+        value: 6,
         min: 1,
         max: 15,
       },
       {
         type: 'Range',
         name: 'noiseScale',
-        value: 0.1,
+        value: 0.016,
         min: 0.001,
         max: 0.05,
         step: 0.0001,
@@ -69,7 +70,7 @@ export default function (p) {
       {
         type: 'Range',
         name: 'offsetRange',
-        value: 1,
+        value: 3,
         min: 1,
         max: maxOffsetRange,
         step: 1,
@@ -77,7 +78,7 @@ export default function (p) {
       {
         type: 'Range',
         name: 'backgroundAlpha',
-        value: 1,
+        value: 0.79,
         min: 0.01,
         max: 1,
         step: 0.01,
@@ -85,7 +86,7 @@ export default function (p) {
       {
         type: 'Range',
         name: 'shapeAlpha',
-        value: 1,
+        value: 0.79,
         min: 0.01,
         max: 1,
         step: 0.01,
@@ -119,9 +120,15 @@ export default function (p) {
       mode,
       resolution,
       size,
-      noiseScale,
+
+      // Represents maximum
+      noiseScale: ns,
+
       lerpToCenter,
-      offsetRange,
+
+      // Represents minimum
+      offsetRange: ofs,
+
       backgroundAlpha,
       shapeAlpha,
       offsetX,
@@ -134,6 +141,27 @@ export default function (p) {
     const t1 = ah.getPingPongLoopProgress(8)
     const t2 = ah.getPingPongLoopProgress(24)
     const t = p.lerp(t1, t2, ah.getPingPongLoopProgress(48))
+
+    // nsBaseLine = 0.016
+    const noiseScale = ah.animate({
+      keyframes: [
+        { value: ns, duration: 12 },
+        { value: ns, duration: 12 },
+        { value: ns / 8, duration: 12 },
+        { value: ns / 2, duration: 12 },
+        { value: ns, duration: 12 },
+      ],
+      every: 60,
+    })
+
+    const offsetRange = ah.animate({
+      keyframes: [
+        { value: ofs, duration: 12 },
+        { value: maxOffsetRange, duration: 12, easing: interpolators.bounce },
+        { value: ofs, duration: 12 },
+      ],
+      every: 36,
+    })
 
     const res = mode === 'line' ? resolution : resolution / 2
     const angleRange = ah.anim8([0.5, 4, 0.5], 16)
