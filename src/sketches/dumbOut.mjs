@@ -1,8 +1,8 @@
 import chroma from 'chroma-js'
 import { createControlPanel } from '../lib/ControlPanel/index.mjs'
-import { lokuaScales, renderSwatches } from '../lib/colors.mjs'
+import { renderSwatches } from '../lib/colors.mjs'
 import AnimationHelper from '../lib/AnimationHelper.mjs'
-import { mapTimes } from '../util.mjs'
+import { mapTimes, isEven } from '../util.mjs'
 
 /**
  * @param {import('p5')} p
@@ -19,8 +19,28 @@ export default function (p) {
 
   const [w, h] = [500, 500]
   const center = p.createVector(w / 2, h / 2)
-  const colorScale = chroma.scale(lokuaScales.yesTheWaterIs)
   const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 134 })
+  const whiteScale = chroma.scale(['white', 'gray']).mode('lab')
+  const scales = [
+    // center: bd
+    chroma.scale(['gray', 'black']).mode('lab'),
+    // top: stabs
+    chroma.scale(['seagreen', 'black', 'paleturquoise']).mode('lab'),
+    // right: td
+    chroma.scale(['paleturquoise', 'black', 'seagreen']).mode('lab'),
+    // bottom: hh
+    chroma.scale(['mistyrose', 'black', 'paleturquoise']).mode('lab'),
+    // left: oh
+    chroma.scale(['paleturquoise', 'black', 'mistyrose']).mode('lab'),
+    // top-right
+    whiteScale,
+    // top-left
+    whiteScale,
+    // bottom-right
+    whiteScale,
+    // bottom-left
+    whiteScale,
+  ].map((scaleName) => chroma.scale(scaleName))
 
   const cp = createControlPanel({
     p,
@@ -29,21 +49,21 @@ export default function (p) {
       {
         type: 'Range',
         name: 'size',
-        value: 100,
+        value: 155,
         min: 1,
         max: w,
       },
       {
         type: 'Range',
         name: 'depth',
-        value: 100,
+        value: 10,
         min: 1,
-        max: 1000,
+        max: 100,
       },
       {
         type: 'Range',
         name: 'min',
-        value: 0.3,
+        value: 0.7,
         min: 0.01,
         max: 1,
         step: 0.01,
@@ -61,6 +81,24 @@ export default function (p) {
         name: 'showSwatches',
         value: false,
       },
+      {
+        type: 'Checkbox',
+        name: 'invertScaleDirection',
+        display: 'invert',
+        value: false,
+      },
+      {
+        type: 'Checklist',
+        name: 'show',
+        options: {
+          center: true,
+          top: true,
+          right: true,
+          bottom: true,
+          left: true,
+          corners: true,
+        },
+      },
     ],
   })
 
@@ -76,83 +114,198 @@ export default function (p) {
   }
 
   function draw() {
+    const { size, depth, min, max, show } = cp.values()
     p.noStroke()
-    p.background(colorScale(1).rgba())
+    p.background(250)
     p.rectMode(p.CENTER)
-    const size = cp.get('size')
 
-    const drawThatShit = (animationDelay = 0) => {
-      drawRecursiveSquare({
-        x: 0,
-        y: 0,
-        size,
-        depth: cp.get('depth'),
-        sizeMult: ah.anim8(
-          [cp.get('min'), cp.get('max'), cp.get('min')],
-          1,
-          1,
-          animationDelay,
-        ),
-      })
-    }
+    const margin = 2
 
     const offsets = [
-      // SIDES
-      // ---
-      // Center
-      { x: 0, y: 0 },
-      // Top
-      { x: 0, y: -size },
-      // Right
-      { x: size, y: 0 },
-      // Bottom
-      { x: 0, y: size },
-      // Left
-      { x: -size, y: 0 },
-
-      // CORNERS
-      // ---
-      // Top-Left
-      { x: -size, y: -size },
-      // Top-Right
-      { x: size, y: -size },
-      // Bottom-Right
-      { x: size, y: size },
-      // Bottom-Left
-      { x: -size, y: size },
+      {
+        id: 'center',
+        role: 'bassDrum',
+        x: 0,
+        y: 0,
+        animationParams: {
+          delay: 0,
+        },
+        hasRotation: false,
+        show: show.center,
+        min: 0,
+        max: 1,
+      },
+      {
+        id: 'top',
+        role: 'dumbOutChords',
+        x: 0,
+        y: -size - margin,
+        animationParams: {
+          keyframes: [min, max, min, min, min, max, min],
+          duration: 2,
+          every: 2,
+          delay: 0,
+        },
+        hasRotation: false,
+        show: show.top,
+      },
+      {
+        id: 'right',
+        role: '1aHiTom',
+        x: size + margin,
+        y: 0,
+        animationParams: {
+          keyframes: [min, min, max, min, min, min, min],
+          duration: 2,
+          every: 2,
+          delay: 0,
+        },
+        hasRotation: false,
+        show: show.right,
+      },
+      {
+        id: 'bottom',
+        role: 'hh',
+        x: 0,
+        y: size + margin,
+        animationParams: {
+          duration: 0.5,
+          every: 0.5,
+          delay: 0,
+        },
+        hasRotation: false,
+        show: show.bottom,
+        min: 0.87,
+        max: 0.9,
+      },
+      {
+        id: 'left',
+        role: 'oh',
+        x: -size - margin,
+        y: 0,
+        animationParams: {
+          delay: 0.5,
+        },
+        hasRotation: false,
+        show: show.left,
+        min: 0.87,
+        max: 0.9,
+        easing: 'cubicEaseOut',
+      },
+      {
+        id: 'topLeft',
+        x: -size - margin,
+        y: -size - margin,
+        disabled: true,
+        hasRotation: true,
+        show: show.corners,
+      },
+      {
+        id: 'topRight',
+        x: size + margin,
+        y: -size - margin,
+        disabled: true,
+        hasRotation: true,
+        show: show.corners,
+      },
+      {
+        id: 'bottomRight',
+        x: size + margin,
+        y: size + margin,
+        disabled: true,
+        hasRotation: true,
+        show: show.corners,
+      },
+      {
+        id: 'bottomLeft',
+        x: -size - margin,
+        y: size + margin,
+        disabled: true,
+        hasRotation: true,
+        show: show.corners,
+      },
     ]
 
     offsets.forEach((offset, index) => {
-      p.$.pushPop(() => {
-        p.translate(center.x + offset.x, center.y + offset.y)
-        drawThatShit((index + 1) * 0.25)
-      })
+      if (offset.show) {
+        p.$.pushPop(() => {
+          p.translate(center.x + offset.x, center.y + offset.y)
+          drawRecursiveSquare({
+            x: 0,
+            y: 0,
+            size,
+            depth,
+            sizeMult: ah.animate({
+              keyframes: [
+                offset.min || min,
+                offset.max || max,
+                offset.min || min,
+              ],
+              duration: offset.disabled ? 2 : 1,
+              every: offset.disabled ? 2 : 1,
+              delay: 0,
+              ...offset?.animationParams,
+            }),
+            colorScale: scales[index],
+            index,
+            // hasRotation: offset.hasRotation,
+            hasRotation: false,
+          })
+        })
+      }
     })
 
     if (cp.get('showSwatches')) {
       renderSwatches({
-        scales: [colorScale],
+        scales,
         p,
         w,
       })
     }
   }
 
-  function drawRecursiveSquare({ x, y, size, sizeMult, depth = 3 }) {
+  function drawRecursiveSquare({
+    x,
+    y,
+    size,
+    sizeMult,
+    colorScale,
+    index,
+    rotation = 0,
+    hasRotation,
+    depth = 3,
+  }) {
     if (depth >= 0) {
-      p.noFill()
-      p.stroke(colorScale(0.5).rgba())
+      const color = colorScale(
+        cp.get('invertScaleDirection')
+          ? 1 - depth / cp.get('depth')
+          : depth / cp.get('depth'),
+      )
+      p.stroke(color.rgba())
+      p.fill(color.alpha(0.3).rgba())
       p.strokeWeight(2)
 
-      p.rect(x, y, size)
-
       p.$.pushPop(() => {
+        p.translate(x, y)
+        p.rotate(hasRotation ? (isEven(index) ? 1 : -1) * rotation : 0)
+
+        if (depth !== cp.get('depth')) {
+          p.rect(x, y, size)
+        }
+
         drawRecursiveSquare({
           x,
           y,
           size: size * sizeMult,
           sizeMult,
           depth: depth - 1,
+          colorScale,
+          index,
+          hasRotation,
+          rotation:
+            rotation +
+            p.PI /
+              ah.anim8([9 ** 2, 9 ** 3, -(9 ** 2), -(9 ** 3), 9 ** 2], 8, 8),
         })
       })
     }

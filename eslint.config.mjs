@@ -15,7 +15,8 @@ export default [
       'no-unused-vars': [
         'error',
         {
-          varsIgnorePattern: 'callAtInterval|getAverageFrameRate|profile',
+          varsIgnorePattern:
+            'callAtInterval|getAverageFrameRate|profile|times|mapTimes',
         },
       ],
 
