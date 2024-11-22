@@ -14,6 +14,9 @@ export default function (p) {
     pixelDensity: 6,
   }
 
+  const [w, h] = [500, 500]
+  const center = p.createVector(w / 2, h / 2)
+
   const controlPanel = createControlPanel({
     p,
     id: metadata.name,
@@ -35,8 +38,6 @@ export default function (p) {
     ],
   })
 
-  const [w, h] = [500, 500]
-
   function setup() {
     controlPanel.init()
     const canvas = p.createCanvas(w, h)
@@ -47,8 +48,6 @@ export default function (p) {
       canvas,
     }
   }
-
-  const center = p.createVector(w / 2, h / 2)
 
   function draw() {
     const { count, radius } = controlPanel.values()

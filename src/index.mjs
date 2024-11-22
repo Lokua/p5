@@ -209,7 +209,7 @@ function saveCanvas() {
       if (p.pixelDensity() <= 2) {
         console.warn(
           formatLog(`
-            You are saving at pixelDensity of 1 
+            You are saving at pixelDensity <= 2 
             which you probably don't want.
             Export pixelDensity=6 in sketch metadata to 
             turn 500x canvas to 3000x image

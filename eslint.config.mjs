@@ -16,7 +16,7 @@ export default [
         'error',
         {
           varsIgnorePattern:
-            'callAtInterval|getAverageFrameRate|profile|times|mapTimes',
+            'callAtInterval|getAverageFrameRate|profile|times|mapTimes|PHI',
         },
       ],
 

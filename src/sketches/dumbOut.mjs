@@ -4,6 +4,8 @@ import { renderSwatches } from '../lib/colors.mjs'
 import AnimationHelper from '../lib/AnimationHelper.mjs'
 import { mapTimes, isEven } from '../util.mjs'
 
+// https://lokua.bandcamp.com/track/dumb-out
+
 /**
  * @param {import('p5')} p
  */

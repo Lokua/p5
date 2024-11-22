@@ -12,7 +12,7 @@ export default function (p) {
   const metadata = {
     name: 'fieldVis',
     frameRate: 30,
-    // pixelDensity: 6,
+    pixelDensity: 6,
   }
 
   const [w, h] = [500, 500]

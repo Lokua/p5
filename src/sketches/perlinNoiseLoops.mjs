@@ -18,17 +18,23 @@ export default function (p) {
     name: 'perlinNoiseLoops',
     frameRate: 30,
   }
+
   const [w, h] = [500, 500]
   const controlPanel = createControlPanel(p, metadata)
   const simplex = new Simplex('2d', 'seed')
-  const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 134 })
   let phase = 0
+
+  const ah = new AnimationHelper({
+    p,
+    frameRate: metadata.frameRate,
+    bpm: 134,
+  })
 
   function setup() {
     controlPanel.init()
     const canvas = p.createCanvas(w, h)
 
-    p.colorMode(p.HSB, 1)
+    p.colorMode(p.RGB, 255, 255, 255, 1)
     p.angleMode(p.DEGREES)
     p.noStroke()
 
@@ -50,37 +56,36 @@ export default function (p) {
     } = controlPanel.values()
     p.blendMode(p[blendMode])
     p.noiseDetail(2, noiseFalloff)
-    p.background(0, 0.2)
+    p.background(30, 0.2)
     p.fill('beige')
 
     for (let o = 1; o < nCircles + 1; o++) {
+      const chaosFactor = p.map(o, 1, nCircles, 0.001, 2)
+
       p.push()
       p.translate(w / 2, h / 2)
       for (let ii = 0; ii < 360; ii += space) {
-        const i = (ii - o * 30) % 360
+        const i = (ii - o * ah.accumulateValue(0.1, 0.25)) % 360
         const xOff = p.map(p.cos(i), -1, 1, 0, 3)
         const yOff = p.map(p.sin(i), -1, 1, 0, 3)
         const n = simplex.noise(
-          xOff + phase * (noiseFalloff / o),
-          yOff + phase * (noiseFalloff / o),
+          (xOff + phase * noiseFalloff) * chaosFactor,
+          (yOff + phase * noiseFalloff) * chaosFactor,
         )
         const hh = p.map(n, 0, 1, flip ? -(height * o) : 0, height * o)
         p.rotate(space)
         p.ellipse(
-          o * size,
-          0,
-          hh +
-            n *
-              ah.animate({
-                keyframes: [20, 40, 20],
-                duration: 4,
-                delay: o * 0.5,
-              }),
+          o % ah.repeat([11, 7, 5, 3], 3) === 0 ? 0 : o * size,
+          o % ah.repeat([3, 5, 7, 11], 4) === 0 ? o * size : 0,
+          ah.anim8([hh / 16, hh, hh / 16], 8),
           thinness,
         )
       }
       p.pop()
     }
+
+    p.fill(30, 1)
+    p.circle(w / 2, h / 2, ah.repeat([20, 40], 2))
 
     phase += 0.015
   }
@@ -103,38 +108,39 @@ function createControlPanel(p, metadata) {
       blendMode: createBlendMode(),
       height: new Range({
         name: 'height',
-        value: 25,
-        min: 1,
-        max: 100,
+        value: 0.921,
+        min: 0.001,
+        max: 5,
+        step: 0.001,
       }),
       size: new Range({
         name: 'size',
-        value: 57,
+        value: 13,
         min: 1,
         max: 1000,
       }),
       space: new Range({
         name: 'space',
-        value: 1,
+        value: 3,
         min: 1,
         max: 100,
       }),
       thinness: new Range({
         name: 'thinness',
-        value: 2,
+        value: 16.8,
         min: 0.1,
         max: 100,
         step: 0.1,
       }),
       nCircles: new Range({
         name: 'nCircles',
-        value: 3,
+        value: 24,
         min: 1,
         max: 100,
       }),
       noiseFalloff: new Range({
         name: 'noiseFalloff',
-        value: 0.5,
+        value: 0.53,
         min: 0,
         max: 10,
         step: 0.01,
