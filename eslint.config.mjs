@@ -9,14 +9,16 @@ export default [
       },
     },
     rules: {
-      curly: 'warn',
+      curly: 'off',
       'object-shorthand': 'error',
       'prefer-const': 'error',
       'no-unused-vars': [
         'error',
         {
           varsIgnorePattern:
-            'callAtInterval|getAverageFrameRate|profile|times|mapTimes|PHI',
+            'callAtInterval|getAverageFrameRate|profile|times|mapTimes|PHI|chroma',
+          args: 'after-used',
+          argsIgnorePattern: '^_',
         },
       ],
 

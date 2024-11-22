@@ -28,6 +28,33 @@ export default class ControlPanel {
     if (this.attemptReload && !this.id) {
       throw new Error('Cannot attemptReload without an id.')
     }
+
+    this.#defineControlProperties()
+  }
+
+  #defineControlProperties() {
+    for (const [key, control] of Object.entries(this.controls)) {
+      if (key in this) {
+        throw new Error(
+          formatLog(`
+            Control key "${key}" conflicts with an existing property 
+            or method on ControlPanel. Please use a unique name.
+          `),
+        )
+      }
+
+      // Define getter and setter for the control
+      Object.defineProperty(this, key, {
+        get() {
+          return control.value
+        },
+        set(newValue) {
+          control.setValue(newValue)
+        },
+        enumerable: true,
+        configurable: true,
+      })
+    }
   }
 
   init() {
@@ -91,6 +118,27 @@ export default class ControlPanel {
     })
   }
 
+  proxy() {
+    return new Proxy(this, {
+      get(target, prop) {
+        if (prop in target) {
+          return target[prop]
+        }
+        if (prop in target.controls) {
+          return target.controls[prop].value
+        }
+        return undefined
+      },
+      // set(target, prop, value) {
+      //   if (prop in target.controls) {
+      //     target.controls[prop].setValue(value)
+      //     return true
+      //   }
+      //   throw new Error(`Property ${prop} is not writable.`)
+      // },
+    })
+  }
+
   #validateControls() {
     Object.entries(this.controls).forEach(([key, { name }]) => {
       if (key !== name) {
@@ -123,7 +171,7 @@ export default class ControlPanel {
           console.warn('[ControlPanel] skipping nil value for', control.name)
         }
       })
-    } catch (error) {
+    } catch {
       console.warn('[ControlPanel] failed to restore from localStorage')
     }
   }

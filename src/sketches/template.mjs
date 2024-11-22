@@ -17,7 +17,7 @@ export default function (p) {
   const [w, h] = [500, 500]
   const center = p.createVector(w / 2, h / 2)
 
-  const controlPanel = createControlPanel({
+  const cp = createControlPanel({
     p,
     id: metadata.name,
     controls: [
@@ -39,7 +39,7 @@ export default function (p) {
   })
 
   function setup() {
-    controlPanel.init()
+    cp.init()
     const canvas = p.createCanvas(w, h)
 
     p.colorMode(p.RGB, 255, 255, 255, 1)
@@ -50,7 +50,7 @@ export default function (p) {
   }
 
   function draw() {
-    const { count, radius } = controlPanel.values()
+    const { count, radius } = cp.values()
     p.background(255)
     p.noFill()
     p.stroke(chroma('red').rgba())
@@ -70,7 +70,7 @@ export default function (p) {
     setup,
     draw,
     destroy() {
-      controlPanel.destroy()
+      cp.destroy()
     },
     metadata,
   }
