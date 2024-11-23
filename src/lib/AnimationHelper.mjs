@@ -290,6 +290,8 @@ export default class AnimationHelper {
    * @returns {function} - A function that when called, returns the result of 'fn' executed at the correct interval.
    */
   triggerEvery(fn, every) {
+    fn.every = every
+
     if (this.disabled) {
       return fn
     }
@@ -297,17 +299,21 @@ export default class AnimationHelper {
     let lastTriggerCount = -1
     let lastValue = undefined
 
-    return () => {
+    const throttledFn = (...args) => {
       const totalBeatsElapsed = this.getTotalBeatsElapsed()
-      const timesTriggered = Math.floor(totalBeatsElapsed / every)
+      const timesTriggered = Math.floor(totalBeatsElapsed / throttledFn.every)
 
       if (timesTriggered !== lastTriggerCount) {
         lastTriggerCount = timesTriggered
-        lastValue = fn()
+        lastValue = fn(...args)
       }
 
       return lastValue
     }
+
+    throttledFn.every = every
+
+    return throttledFn
   }
 
   // make call sites verbose since we only use keyframes and duration 99% of time

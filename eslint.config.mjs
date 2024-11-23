@@ -10,13 +10,24 @@ export default [
     },
     rules: {
       curly: 'off',
+
       'object-shorthand': 'error',
       'prefer-const': 'error',
       'no-unused-vars': [
         'error',
         {
-          varsIgnorePattern:
-            'callAtInterval|getAverageFrameRate|profile|times|mapTimes|PHI|chroma',
+          varsIgnorePattern: (() =>
+            [
+              'callAtInterval',
+              'getAverageFrameRate',
+              'profile',
+              'times',
+              'mapTimes',
+              'times',
+              'PHI',
+              'chroma',
+              'center',
+            ].join('|'))(),
           args: 'after-used',
           argsIgnorePattern: '^_',
         },
@@ -26,9 +37,6 @@ export default [
         'error',
         {
           functions: false,
-
-          // note to self: do not port to lokua config,
-          // this is just for this project
           classes: false,
         },
       ],

@@ -2,6 +2,26 @@ export default class P5Extensions {
   constructor(p) {
     this.p = p
     this.V = window.p5.Vector
+
+    // Create vTranslate, vRect, etc. that take a vector instead of
+    // x and y for convenience
+    const methods = ['translate', 'rect', 'circle', 'ellipse', 'triangle']
+    for (const method of methods) {
+      Object.defineProperty(
+        this,
+        `v${method.charAt(0).toUpperCase() + method.slice(1)}`,
+        {
+          value: (vector, ...args) => {
+            // Have to branch because p5.js is picky about undefined arguments
+            if (this.p._renderer.isP3D && vector.z !== undefined) {
+              this.p[method](vector.x, vector.y, vector.z, ...args)
+            } else {
+              this.p[method](vector.x, vector.y, ...args)
+            }
+          },
+        },
+      )
+    }
   }
 
   pushPop = (fn) => {
