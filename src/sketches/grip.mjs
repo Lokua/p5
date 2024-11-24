@@ -19,6 +19,7 @@ export default function (p) {
   const center = p.createVector(w / 2, h / 2)
   const grid = []
   grid.previousSize = -1
+  let displacerConfigs = []
 
   const ah = new AnimationHelper({
     p,
@@ -45,13 +46,13 @@ export default function (p) {
       },
       {
         type: 'Range',
-        name: 'centerRadius',
+        name: 'maxDisplacerRadius',
         value: 100,
         max: 1000,
       },
       {
         type: 'Range',
-        name: 'pushStrength',
+        name: 'strength',
         value: 20,
         min: 1,
       },
@@ -71,6 +72,32 @@ export default function (p) {
 
     updateGrid()
 
+    displacerConfigs = [
+      {
+        displacer: new Displacer(p, center, 0),
+        update() {
+          this.displacer.update({
+            radius: ah.animate([0, cp.maxDisplacerRadius, 0], 1),
+          })
+        },
+      },
+      {
+        displacer: new Displacer(p, center.copy().div(2), 0),
+        update() {
+          this.displacer.update({
+            radius: ah.animate([0, cp.maxDisplacerRadius / 2, 0], 0.75),
+          })
+        },
+      },
+    ].map((config) => {
+      for (const key in config) {
+        if (typeof config[key] === 'function') {
+          config[key] = config[key].bind(config)
+        }
+      }
+      return config
+    })
+
     return {
       canvas,
     }
@@ -83,24 +110,24 @@ export default function (p) {
 
     updateGrid()
 
-    const currentRadius = ah.animate([0, cp.centerRadius, 0], 1)
-    if (cp.debug) {
-      p.noFill()
-      p.stroke('cyan')
-      p.$.vCircle(center, currentRadius * 2)
+    for (const { displacer, update } of displacerConfigs) {
+      displacer.update(update())
+      if (cp.debug) {
+        p.noFill()
+        p.stroke('cyan')
+        p.$.vCircle(displacer.position, displacer.radius * 2)
+      }
     }
 
     for (const point of grid) {
-      const distanceToCenter = p.$.vDist(point, center)
-      const proximity = 1 - distanceToCenter / (currentRadius * 2)
-      const distanceFactor = Math.max(0, proximity)
-      const angle = p.atan2(point.y - center.y, point.x - center.x)
-      const force = cp.pushStrength * distanceFactor ** 2
-      const x = point.x + p.cos(angle) * force
-      const y = point.y + p.sin(angle) * force
+      const displacement = displacerConfigs.reduce(
+        (displacement, { displacer }) =>
+          displacement.add(displacer.influence(point, cp.strength)),
+        p.createVector(0, 0),
+      )
       p.noFill()
       p.stroke(chroma('beige').rgba())
-      p.circle(x, y, cp.radius)
+      p.$.vCircle(p.$.V.add(point, displacement), cp.radius)
     }
   }
 
@@ -139,17 +166,32 @@ export default function (p) {
 }
 
 class Displacer {
-  constructor(position, radius) {
+  constructor(p, position, radius, xtra) {
+    this.p = p
     this.position = position
     this.radius = radius
+    this.xtra = xtra
   }
+
+  update(state) {
+    Object.assign(this, state)
+  }
+
   influence(gridPoint, strength) {
+    const radius = Math.max(this.radius, Number.EPSILON)
     const distanceToCenter = this.p.$.vDist(gridPoint, this.position)
-    const proximity = 1 - distanceToCenter / (this.radius * 2)
+
+    // Safeguard: If the grid point is exactly at the center, no displacement
+    // (happens when grid size is an odd number)
+    if (distanceToCenter === 0) {
+      return this.p.createVector(0, 0)
+    }
+
+    const proximity = 1 - distanceToCenter / (radius * 2)
     const distanceFactor = Math.max(0, proximity)
     const angle = Math.atan2(
-      gridPoint.y - this.center.y,
-      gridPoint.x - this.center.x,
+      gridPoint.y - this.position.y,
+      gridPoint.x - this.position.x,
     )
     const force = strength * distanceFactor ** 2
     const dx = Math.cos(angle) * force
