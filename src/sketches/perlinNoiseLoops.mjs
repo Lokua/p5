@@ -77,7 +77,7 @@ export default function (p) {
         p.ellipse(
           o % ah.repeat([11, 7, 5, 3], 3) === 0 ? 0 : o * size,
           o % ah.repeat([3, 5, 7, 11], 4) === 0 ? o * size : 0,
-          ah.anim8([hh / 16, hh, hh / 16], 8),
+          ah.animate([hh / 16, hh, hh / 16], 8),
           thinness,
         )
       }

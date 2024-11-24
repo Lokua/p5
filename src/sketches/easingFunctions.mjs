@@ -4,17 +4,20 @@ import ControlPanel, {
   Select,
 } from '../lib/ControlPanel/index.mjs'
 import { interpolators, generateRange } from '../lib/scaling.mjs'
+import AnimationHelper from '../lib/AnimationHelper.mjs'
 
 /**
  * @param {import('p5')} p
  */
 export default function (p) {
-  const [w, h] = [500, 500]
-
   const metadata = {
-    name: 'ztudy__rangeBias',
+    name: 'easingFunctions',
     frameRate: 30,
   }
+
+  const [w, h] = [500, 500]
+
+  const ah = new AnimationHelper({ p, frameRate: metadata.frameRate, bpm: 120 })
 
   const categorical = Object.keys(interpolators)
   const visual = [
@@ -67,6 +70,10 @@ export default function (p) {
         max: 20,
         step: 0.1,
       }),
+      animate: new Checkbox({
+        name: 'animate',
+        value: false,
+      }),
     },
   })
 
@@ -75,7 +82,6 @@ export default function (p) {
     const canvas = p.createCanvas(w, h)
 
     p.colorMode(p.RGB, 255, 255, 255, 1)
-    p.noLoop()
     p.noStroke()
 
     return {
@@ -84,24 +90,22 @@ export default function (p) {
   }
 
   function draw() {
-    const { steps, labels, sort, steepness, exponent } = controlPanel.values()
+    const { steps, labels, sort, steepness, exponent, animate } =
+      controlPanel.values()
     const keys = sort === 'categorical' ? categorical : visual
     const totalRows = keys.length
 
     p.background(255)
 
     keys.forEach((funcName, i) => {
-      const values = generateRange(
-        255,
-        0,
-        steps,
-        funcName,
+      const optionalParam =
         funcName === 'sigmoid'
           ? steepness
           : funcName === 'exponential'
             ? exponent
-            : undefined,
-      )
+            : undefined
+
+      const values = generateRange(255, 0, steps, funcName, optionalParam)
 
       const y = Math.floor((i / totalRows) * h)
       const nextY = Math.floor(((i + 1) / totalRows) * h)
@@ -114,6 +118,16 @@ export default function (p) {
         const x = Math.floor((j / steps) * w)
         const rectWidth = Math.ceil(w / steps)
         p.rect(x, y, rectWidth, rowHeight)
+      }
+
+      if (animate) {
+        const x = ah.animate({
+          keyframes: [0, w],
+          duration: 4,
+          easing: (x) => interpolators[funcName](x, optionalParam),
+        })
+        p.fill('magenta')
+        p.circle(x, y + rowHeight / 2, 10)
       }
 
       if (labels) {

@@ -114,10 +114,7 @@ export default function (p) {
     const spacing = (p.width - padding * 2) / (grid + 1)
     const progress = ah.getLoopProgress(waveTime)
 
-    const transitionWaveTime = ah.repeatValues({
-      keyframes: [16, 1],
-      duration: 32,
-    })
+    const transitionWaveTime = ah.repeat([16, 1], 32)
     const transitionProgress = ah.getPingPongLoopProgress(transitionWaveTime)
 
     const nearColor = p.color(nearHue, 100, 50)

@@ -1,4 +1,9 @@
-import { beatsToFrames, lerp, InvalidArgumentsException } from '../util.mjs'
+import {
+  beatsToFrames,
+  lerp,
+  InvalidArgumentsException,
+  formatLog,
+} from '../util.mjs'
 import { interpolators } from './scaling.mjs'
 
 export default class AnimationHelper {
@@ -36,20 +41,6 @@ export default class AnimationHelper {
     this.disabled = disabled
   }
 
-  getFrameCount() {
-    // p5 frame system is effectively 1-indexed
-    const frameCount = this.frameSystemIsZeroIndexed
-      ? this.p.frameCount
-      : this.p.frameCount - 1
-
-    // Stall at 0 until latencyOffset is met
-    if (frameCount < Math.abs(this.latencyOffset)) {
-      return 0
-    }
-
-    return frameCount
-  }
-
   /**
    * Calculates normalized progress based on note duration.
    *
@@ -59,7 +50,7 @@ export default class AnimationHelper {
   getLoopProgress(noteDuration = 1) {
     const beatDuration = 60 / this.bpm
     const totalFramesForNote = beatDuration * noteDuration * this.frameRate
-    const currentFrame = this.getFrameCount() % totalFramesForNote
+    const currentFrame = this.#getFrameCount() % totalFramesForNote
     const progress = currentFrame / totalFramesForNote
     return progress
   }
@@ -76,152 +67,6 @@ export default class AnimationHelper {
   }
 
   /**
-   * Chains multiple animation stages based on internal progress.
-   *
-   * @param {Array} stages - An array of stages, each a two-member array [duration, optional easing].
-   * @returns {number} - The eased progress value for the current stage.
-   */
-  chainAnimations(stages) {
-    const totalDuration = stages.reduce((sum, stage) => sum + stage[0], 0)
-    const progress = this.getLoopProgress(totalDuration)
-
-    let accumulatedDuration = 0
-
-    for (const [duration, easingArgument] of stages) {
-      const easing = this.#safeGetEasing(easingArgument)
-
-      const stageStart = accumulatedDuration / totalDuration
-      const stageEnd = (accumulatedDuration + duration) / totalDuration
-
-      if (progress >= stageStart && progress < stageEnd) {
-        const stageProgress = (progress - stageStart) / (stageEnd - stageStart)
-        return easing(stageProgress)
-      }
-
-      accumulatedDuration += duration
-    }
-
-    const lastEasing = this.#safeGetEasing(stages[stages.length - 1][1])
-    return lastEasing(1)
-  }
-
-  /**
-   * Animates a property over time.
-   *
-   * @param {object} params - Parameters for the animation.
-   * @param {number} params.from - The starting value of the property.
-   * @param {number} params.to - The ending value of the property.
-   * @param {number} [params.duration=1] - The duration of the animation in beats.
-   * @param {function} [params.easing=EasingFunctions.linear] - The easing function to use.
-   * @param {function} [params.playMode='forward'] - The easing function to use.
-   * @returns {number} - Animated property value.
-   */
-  animateProperty({
-    from,
-    to,
-    duration = 1,
-    easing = interpolators.linear,
-    playMode = 'forward',
-  }) {
-    const getProgressBasedOnPlayMode = (mode) => {
-      switch (mode) {
-        case 'backward': {
-          return 1 - this.getLoopProgress(duration)
-        }
-        case 'pingpong': {
-          return this.getPingPongLoopProgress(duration)
-        }
-        case 'forward':
-        default: {
-          return this.getLoopProgress(duration)
-        }
-      }
-    }
-
-    const progress = getProgressBasedOnPlayMode(playMode)
-    const easedProgress = this.#safeGetEasing(easing)(progress)
-
-    return from + (to - from) * easedProgress
-  }
-
-  /**
-   * Triggers an animation based on the provided keyframes and timing parameters.
-   *
-   * @param {Object} params - The params for the animation.
-   * @param {number} params.value - The base value to be animated.
-   * @param {number[]} params.keyframes - An array of keyframe values for the animation.
-   * @param {number} params.duration - The duration of the animation in beats.
-   * @param {number} params.every - The interval in beats at which the animation should be triggered.
-   * @param {string} [params.easing=EasingFunctions.linear] - The easing function to be used for the animation.
-   * @param {number} [params.delay=0] - The delay before the animation starts, in beats.
-   * @param {string} [params.mode=AnimationHelper.TRIGGER_MODE_DEFAULT]
-   * @returns {number} - The interpolated value based on the current frame and keyframes.
-   */
-  triggeredAnimation({
-    value,
-    keyframes,
-    duration,
-    every,
-    easing = 'linear',
-    delay = 0,
-    mode = AnimationHelper.TRIGGER_MODE_DEFAULT,
-  }) {
-    console.warn(
-      '[AnimationHelper] #triggeredAnimation is deprecated. Use #animate instead.',
-    )
-    const beatDuration = 60 / this.bpm
-    const totalFramesForEvery = every * beatDuration * this.frameRate
-    const totalFramesForDuration = duration * beatDuration * this.frameRate
-    const totalFramesForDelay = delay * beatDuration * this.frameRate
-
-    const currentFrameInEvery =
-      (this.getFrameCount() - totalFramesForDelay + totalFramesForEvery) %
-      totalFramesForEvery
-
-    if (currentFrameInEvery < totalFramesForDuration) {
-      let progress = currentFrameInEvery / totalFramesForDuration
-      progress = this.#safeGetEasing(easing)(progress)
-      progress = Math.min(progress, 1)
-
-      const totalSegments = keyframes.length + 2
-      let segmentIndex, segmentFraction
-
-      if (mode === 'roundRobin') {
-        const totalFramesSinceStart = this.getFrameCount() - totalFramesForDelay
-        const triggerCount = Math.floor(
-          totalFramesSinceStart / totalFramesForEvery,
-        )
-        segmentIndex = triggerCount % (totalSegments - 1)
-        segmentFraction = progress
-      } else {
-        const segmentProgress = progress * (totalSegments - 1)
-        segmentIndex = Math.min(Math.floor(segmentProgress), totalSegments - 2)
-        segmentFraction = segmentProgress - segmentIndex
-      }
-
-      let startValue, endValue
-
-      if (segmentIndex === 0) {
-        startValue = 0
-        endValue = keyframes[0]
-      } else if (segmentIndex <= keyframes.length - 1) {
-        startValue = keyframes[segmentIndex - 1]
-        endValue = keyframes[segmentIndex]
-      } else {
-        startValue = keyframes[keyframes.length - 1]
-        endValue = 0
-      }
-
-      const output =
-        value + startValue + (endValue - startValue) * segmentFraction
-
-      return output
-    }
-
-    return value
-  }
-
-  /**
    * Performs a one-time animation based on the provided keyframes and timing parameters.
    *
    * @param {Object} params - The parameters for the animation.
@@ -235,7 +80,7 @@ export default class AnimationHelper {
     const totalFramesForDuration = duration * beatDuration * this.frameRate
 
     // Calculate progress from the start of the animation
-    const currentFrame = this.getFrameCount()
+    const currentFrame = this.#getFrameCount()
     const progress = Math.min(currentFrame / totalFramesForDuration, 1)
     const easedProgress = this.#safeGetEasing(easing)(progress)
 
@@ -255,13 +100,6 @@ export default class AnimationHelper {
     return progress < 1 ? output : keyframes[keyframes.length - 1]
   }
 
-  repeat(keyframes, duration) {
-    return this.repeatValues({
-      keyframes,
-      duration,
-    })
-  }
-
   /**
    * Repeats the values of keyframes based on the duration and the current frame count.
    *
@@ -270,11 +108,11 @@ export default class AnimationHelper {
    * @param {number} params.duration - The duration of each keyframe segment in beats.
    * @returns {*} The current keyframe based on the current frame in the cycle.
    */
-  repeatValues({ keyframes, duration }) {
+  repeat(keyframes, duration) {
     const beatDuration = 60 / this.bpm
     const totalFramesForSegment = duration * beatDuration * this.frameRate
     const totalFramesForCycle = totalFramesForSegment * keyframes.length
-    const currentFrameInCycle = this.getFrameCount() % totalFramesForCycle
+    const currentFrameInCycle = this.#getFrameCount() % totalFramesForCycle
     const currentSegmentIndex = Math.floor(
       currentFrameInCycle / totalFramesForSegment,
     )
@@ -331,8 +169,13 @@ export default class AnimationHelper {
     return throttledFn
   }
 
-  // make call sites verbose since we only use keyframes and duration 99% of time
   anim8(keyframes, duration, every, delay, easing) {
+    console.warn(
+      formatLog(`
+        [AnimationHelper] \`anim8\` is deprecated. 
+        \`animate\` now supports both signatures.
+      `),
+    )
     return this.animate({
       keyframes,
       duration,
@@ -361,14 +204,19 @@ export default class AnimationHelper {
     delay = 0,
     easing = 'linear',
     debugLabel = '',
-  }) {
+  } = {}) {
+    if (Array.isArray(arguments[0])) {
+      const [keyframes, duration, every, delay, easing] = arguments
+      return this.animate({ keyframes, duration, every, delay, easing })
+    }
+
     if (this.disabled) {
       return keyframes[0].value ?? keyframes[0]
     }
 
     if (debugLabel) {
       console.group(debugLabel)
-      console.log('[debug] FRAME COUNT', this.getFrameCount())
+      console.log('[debug] FRAME COUNT', this.#getFrameCount())
       console.log(`[debug] 1 beat = ${this.beatsToFrames(1)} frames`)
     }
 
@@ -405,9 +253,9 @@ export default class AnimationHelper {
     const totalFramesForDelay = this.beatsToFrames(delay)
 
     const currentFrameInEvery =
-      (this.getFrameCount() - totalFramesForDelay) % totalFramesForEvery
+      (this.#getFrameCount() - totalFramesForDelay) % totalFramesForEvery
 
-    if (this.getFrameCount() < totalFramesForDelay) {
+    if (this.#getFrameCount() < totalFramesForDelay) {
       return playbackSequence[0].value
     }
     if (currentFrameInEvery >= totalFrames) {
@@ -480,7 +328,7 @@ export default class AnimationHelper {
    */
   getTotalBeatsElapsed() {
     const beatDuration = 60 / this.bpm
-    const totalTimeInSeconds = this.getFrameCount() / this.frameRate
+    const totalTimeInSeconds = this.#getFrameCount() / this.frameRate
     return totalTimeInSeconds / beatDuration
   }
 
@@ -490,6 +338,20 @@ export default class AnimationHelper {
 
   framesToBeats(frames) {
     return frames / ((this.frameRate / this.bpm) * 60)
+  }
+
+  #getFrameCount() {
+    // p5 frame system is effectively 1-indexed
+    const frameCount = this.frameSystemIsZeroIndexed
+      ? this.p.frameCount
+      : this.p.frameCount - 1
+
+    // Stall at 0 until latencyOffset is met
+    if (frameCount < Math.abs(this.latencyOffset)) {
+      return 0
+    }
+
+    return frameCount
   }
 
   #safeGetEasing(easing) {
