@@ -2,6 +2,7 @@ import 'p5'
 import { findPortByName, getPorts, isStart, statusMap } from '@lokua/midi-util'
 import { $, formatLog, get, logInfo, uuid } from './util.mjs'
 import SketchManager from './SketchManager.mjs'
+import bus from './lib/bus.mjs'
 
 // experimental; requires redraw, not ideal
 const INCREASE_DENSITY_ON_SAVE = false
@@ -145,6 +146,7 @@ function resetSketch() {
   const p = sketchManager.getCurrentP5()
   if (p) {
     p.frameCount = 0
+    bus.emit('resetSketch')
   }
 }
 

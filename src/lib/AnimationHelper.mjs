@@ -283,14 +283,22 @@ export default class AnimationHelper {
 
   /**
    * Returns a function that executes 'fn' every 'every' beats and returns its result.
-   * The result is cached and returned on subsequent calls until the next trigger.
+   * The delay parameter offsets when within each interval the function triggers.
    *
    * @param {function} fn - The function to execute every 'every' beats.
    * @param {number} every - The interval in beats at which to execute the function.
-   * @returns {function} - A function that when called, returns the result of 'fn' executed at the correct interval.
+   * @param {number} [delay=0] - The delay within each interval before triggering.
+   *                             Must be less than 'every'.
+   * @returns {function} - A function that when called, returns the result of 'fn'
+   *                       executed at the correct interval with delay.
    */
-  triggerEvery(fn, every) {
+  triggerEvery(fn, every, delay = 0) {
+    if (delay >= every) {
+      throw new Error('Delay must be less than interval length')
+    }
+
     fn.every = every
+    fn.delay = delay
 
     if (this.disabled) {
       return fn
@@ -301,10 +309,16 @@ export default class AnimationHelper {
 
     const throttledFn = (...args) => {
       const totalBeatsElapsed = this.getTotalBeatsElapsed()
-      const timesTriggered = Math.floor(totalBeatsElapsed / throttledFn.every)
+      const currentInterval = Math.floor(totalBeatsElapsed / throttledFn.every)
+      const positionInInterval = totalBeatsElapsed % throttledFn.every
 
-      if (timesTriggered !== lastTriggerCount) {
-        lastTriggerCount = timesTriggered
+      // Check if we've moved to a new interval AND we're past the delay point
+      const shouldTrigger =
+        currentInterval !== lastTriggerCount &&
+        positionInInterval >= throttledFn.delay
+
+      if (shouldTrigger) {
+        lastTriggerCount = currentInterval
         lastValue = fn(...args)
       }
 
@@ -312,6 +326,7 @@ export default class AnimationHelper {
     }
 
     throttledFn.every = every
+    throttledFn.delay = delay
 
     return throttledFn
   }

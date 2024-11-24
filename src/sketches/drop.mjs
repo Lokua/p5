@@ -19,7 +19,6 @@ export default function (p) {
   }
 
   const [w, h] = [500, 500]
-  // eslint-disable-next-line no-unused-vars
   const center = p.createVector(w / 2, h / 2)
   const drops = []
   const maxDrops = 100

@@ -3,9 +3,16 @@ export default class P5Extensions {
     this.p = p
     this.V = window.p5.Vector
 
-    // Create vTranslate, vRect, etc. that take a vector instead of
-    // x and y for convenience
-    const methods = ['translate', 'rect', 'circle', 'ellipse', 'triangle']
+    // Experimental: create vTranslate, vRect, etc.
+    // that take a vector instead of x and y for convenience
+    const methods = [
+      'translate',
+      'rect',
+      'circle',
+      'ellipse',
+      'triangle',
+      'point',
+    ]
     for (const method of methods) {
       Object.defineProperty(
         this,
