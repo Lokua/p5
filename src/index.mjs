@@ -264,8 +264,11 @@ function sendExternalStart() {
     setTimeout(() => {
       midiOutputPort.send([statusMap.get('controlChange') + 15, 0, 127])
     }, 100)
+
     if (recordingQueued) {
       startRecording()
+    } else {
+      resetSketch()
     }
   } else {
     console.warn('[sendExternalStart] `midiOutputPort` is undefined')

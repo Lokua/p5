@@ -1,6 +1,7 @@
 import chroma from 'chroma-js'
 import AnimationHelper from '../lib/AnimationHelper.mjs'
 import { createControlPanel } from '../lib/ControlPanel/index.mjs'
+import { getAverageFrameRate, PHI } from '../util.mjs'
 
 /**
  * @param {import('p5')} p
@@ -20,6 +21,7 @@ export default function (p) {
   const grid = []
   grid.previousSize = -1
   let displacerConfigs = []
+  const scaleRoot = chroma('beige')
 
   const ah = new AnimationHelper({
     p,
@@ -41,20 +43,40 @@ export default function (p) {
       {
         type: 'Range',
         name: 'radius',
-        value: 6,
+        value: 12,
         min: 0,
       },
       {
         type: 'Range',
-        name: 'maxDisplacerRadius',
-        value: 100,
+        name: 'displacerRadius',
+        value: 234,
         max: 1000,
       },
       {
         type: 'Range',
         name: 'strength',
-        value: 20,
+        value: 34,
         min: 1,
+      },
+      {
+        type: 'Range',
+        name: 'cornerOffset',
+        value: 27,
+      },
+      {
+        type: 'Range',
+        name: 'cornerMaxRadius',
+        value: 35,
+        min: 0,
+        max: 100,
+      },
+      {
+        type: 'Range',
+        name: 'backgroundAlpha',
+        value: 1,
+        min: 0,
+        max: 1,
+        step: 0.001,
       },
       {
         type: 'Checkbox',
@@ -72,29 +94,90 @@ export default function (p) {
 
     updateGrid()
 
+    const getCornerRadiusAnimation = () =>
+      ah.animate([0, cp.cornerMaxRadius, 0], 1, 1, 0.5)
+
+    const cornerColorScale = chroma.scale([scaleRoot, 'green']).mode('lab')
+
     displacerConfigs = [
       {
-        displacer: new Displacer(p, center, 0),
+        displacer: new Displacer(p, center.copy(), 0),
         update() {
           this.displacer.update({
-            radius: ah.animate([0, cp.maxDisplacerRadius, 0], 1),
+            radius: ah.animate([0, cp.displacerRadius, 0], 1),
           })
         },
+        colorScale: chroma
+          .scale([scaleRoot, chroma('blue').saturate(2)])
+          .mode('lab'),
+        getStrength: () =>
+          ah.animate([cp.strength, cp.strength * 3, cp.strength], 24),
       },
       {
-        displacer: new Displacer(p, center.copy().div(2), 0),
+        displacer: new Displacer(p, center.copy(), 0),
         update() {
+          const displacerRadius = ah.animate(
+            [0, cp.displacerRadius * 2, cp.displacerRadius / 2, 0],
+            1.5,
+          )
+          const movementRadius = 175
+          const angle = ah.animate([0, p.TWO_PI], 8)
+          const x = Math.cos(angle) * movementRadius
+          const y = Math.sin(angle) * movementRadius
           this.displacer.update({
-            radius: ah.animate([0, cp.maxDisplacerRadius / 2, 0], 0.75),
+            radius: displacerRadius,
+            position: center.copy().add(p.createVector(x, y)),
           })
         },
+        colorScale: chroma
+          .scale([scaleRoot, chroma('purple').saturate(2)])
+          .mode('lab'),
+        getStrength: () =>
+          ah.animate([cp.strength, cp.strength * 3, cp.strength], 16),
+      },
+      {
+        displacer: new Displacer(p),
+        update() {
+          this.displacer.update({
+            radius: getCornerRadiusAnimation(),
+            position: p.createVector(cp.cornerOffset, cp.cornerOffset),
+          })
+        },
+        colorScale: cornerColorScale,
+      },
+      {
+        displacer: new Displacer(p),
+        update() {
+          this.displacer.update({
+            radius: getCornerRadiusAnimation(),
+            position: p.createVector(w - cp.cornerOffset, cp.cornerOffset),
+          })
+        },
+        colorScale: cornerColorScale,
+      },
+      {
+        displacer: new Displacer(p),
+        update() {
+          this.displacer.update({
+            radius: getCornerRadiusAnimation(),
+            position: p.createVector(w - cp.cornerOffset, h - cp.cornerOffset),
+          })
+        },
+        colorScale: cornerColorScale,
+      },
+      {
+        displacer: new Displacer(p),
+        update() {
+          this.displacer.update({
+            radius: getCornerRadiusAnimation(),
+            position: p.createVector(cp.cornerOffset, h - cp.cornerOffset),
+          })
+        },
+        colorScale: cornerColorScale,
       },
     ].map((config) => {
-      for (const key in config) {
-        if (typeof config[key] === 'function') {
-          config[key] = config[key].bind(config)
-        }
-      }
+      config.update = config.update.bind(config)
+      config.getStrength = config.getStrength || (() => cp.strength)
       return config
     })
 
@@ -104,9 +187,9 @@ export default function (p) {
   }
 
   function draw() {
-    p.background(0)
+    p.background(0, cp.backgroundAlpha)
     p.noFill()
-    p.stroke(chroma('beige').rgba())
+    p.stroke(chroma(scaleRoot).rgba())
 
     updateGrid()
 
@@ -119,16 +202,71 @@ export default function (p) {
       }
     }
 
+    const maxMag = displacerConfigs.length * cp.strength
+
     for (const point of grid) {
-      const displacement = displacerConfigs.reduce(
-        (displacement, { displacer }) =>
-          displacement.add(displacer.influence(point, cp.strength)),
+      // Get displacement info from each displacer
+      const displacementInfos = displacerConfigs.map((config) => {
+        const displacement = config.displacer.influence(
+          point,
+          config.getStrength(),
+        )
+        return {
+          displacement,
+          magnitude: displacement.mag(),
+          config,
+        }
+      })
+
+      // Calculate total displacement
+      const totalDisplacement = displacementInfos.reduce(
+        (total, info) => total.add(info.displacement),
         p.createVector(0, 0),
       )
+
+      // Get blended color based on displacer influences
+      const color = getBlendedColor(point, displacementInfos.slice(0, 2))
+
+      // Calculate radius based on total displacement magnitude
+      const totalMag = totalDisplacement.mag()
+      const radius = p.map(totalMag, 0, maxMag, cp.radius / 3, cp.radius)
+
       p.noFill()
-      p.stroke(chroma('beige').rgba())
-      p.$.vCircle(p.$.V.add(point, displacement), cp.radius)
+      p.stroke(color.rgba())
+      p.$.vCircle(point.copy().add(totalDisplacement), radius)
     }
+
+    getAverageFrameRate(p, 300)
+  }
+
+  function getBlendedColor(point, displacementInfos) {
+    // Calculate total influence for normalization
+    const totalInfluence = displacementInfos.reduce(
+      (sum, info) => sum + info.magnitude,
+      0,
+    )
+
+    if (totalInfluence === 0) {
+      return chroma(scaleRoot)
+    }
+
+    // Get colors from each displacer based on their relative influence
+    const colors = displacementInfos.map((info) => {
+      const weight = info.magnitude / totalInfluence
+      const colorPosition = Math.min(
+        info.magnitude / (info.config.getStrength() * 2),
+        1,
+      )
+      return {
+        color: info.config.colorScale(colorPosition),
+        weight,
+      }
+    })
+
+    // Blend colors using weights
+    return colors.reduce((acc, { color, weight }) => {
+      return !acc ? color : chroma.blend(acc, color, 'multiply', weight)
+    }, null)
   }
 
   function updateGrid() {
@@ -166,11 +304,10 @@ export default function (p) {
 }
 
 class Displacer {
-  constructor(p, position, radius, xtra) {
+  constructor(p, position = p.createVector(0, 0), radius = 0) {
     this.p = p
     this.position = position
     this.radius = radius
-    this.xtra = xtra
   }
 
   update(state) {
