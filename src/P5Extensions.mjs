@@ -1,4 +1,7 @@
 export default class P5Extensions {
+  /**
+   * @param {import('p5')} p
+   */
   constructor(p) {
     this.p = p
     this.V = window.p5.Vector
@@ -29,6 +32,10 @@ export default class P5Extensions {
         },
       )
     }
+  }
+
+  vDist(a, b) {
+    return this.p.dist(a.x, a.y, b.x, b.y)
   }
 
   pushPop = (fn) => {

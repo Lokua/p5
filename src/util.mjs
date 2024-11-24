@@ -120,37 +120,6 @@ export function fromXY(x, y, nColumns) {
   return nColumns * x + y
 }
 
-export class P5Helpers {
-  constructor(p) {
-    console.warn(
-      'P5Helpers is deprecated. Use P5Extensions (available directly on p5 instance)',
-    )
-    this.p = p
-    this.Vector = this.p.constructor.Vector
-  }
-
-  pushPop = (fn) => {
-    this.p.push()
-    fn()
-    this.p.pop()
-  }
-
-  xToLongitude(resolution, x) {
-    return this.p.map(x, 0, resolution, 0, this.p.PI)
-  }
-
-  yToLatitude(resolution, y) {
-    return this.p.map(y, 0, resolution, 0, this.p.TWO_PI)
-  }
-
-  geographicToCartesian(longitude, latitude, radius) {
-    const x = radius * this.p.sin(longitude) * this.p.cos(latitude)
-    const y = radius * this.p.sin(longitude) * this.p.sin(latitude)
-    const z = radius * this.p.cos(longitude)
-    return [x, y, z]
-  }
-}
-
 export function chunk(array, chunkSize) {
   if (!chunkSize) {
     throw new Error('chunkSize must be greater than 0')

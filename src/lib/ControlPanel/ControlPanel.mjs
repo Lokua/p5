@@ -43,7 +43,6 @@ export default class ControlPanel {
         )
       }
 
-      // Define getter and setter for the control
       Object.defineProperty(this, key, {
         get() {
           return control.value
@@ -115,27 +114,6 @@ export default class ControlPanel {
     this.#getElement().innerHTML = ''
     this.#mapControls((control) => {
       control?.destroy?.()
-    })
-  }
-
-  proxy() {
-    return new Proxy(this, {
-      get(target, prop) {
-        if (prop in target) {
-          return target[prop]
-        }
-        if (prop in target.controls) {
-          return target.controls[prop].value
-        }
-        return undefined
-      },
-      // set(target, prop, value) {
-      //   if (prop in target.controls) {
-      //     target.controls[prop].setValue(value)
-      //     return true
-      //   }
-      //   throw new Error(`Property ${prop} is not writable.`)
-      // },
     })
   }
 
