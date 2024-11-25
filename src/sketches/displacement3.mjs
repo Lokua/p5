@@ -16,7 +16,7 @@ import {
  */
 export default function (p) {
   const metadata = {
-    name: 'displacement',
+    name: 'displacement3',
     frameRate: 30,
 
     // WARNING! This is probably too big
@@ -30,9 +30,7 @@ export default function (p) {
   grid.previousSize = -1
   let displacerConfigs = []
 
-  const colorScale = chroma
-    .scale(['beige', 'white', 'azure', 'mistyrose'])
-    .mode('lch')
+  const colorScale = chroma.scale(['beige', 'white', 'azure']).mode('lch')
 
   const ah = new AnimationHelper({
     p,
@@ -47,26 +45,26 @@ export default function (p) {
       {
         type: 'Range',
         name: 'size',
-        value: 70,
+        value: 36,
         min: 1,
         max: 100,
       },
       {
         type: 'Range',
         name: 'circleRadius',
-        value: 8,
+        value: 12,
         min: 0,
       },
       {
         type: 'Range',
         name: 'displacerRadius',
-        value: 118,
+        value: 234,
         max: 1000,
       },
       {
         type: 'Range',
         name: 'strength',
-        value: 15,
+        value: 34,
         min: 1,
       },
       {
@@ -171,12 +169,27 @@ export default function (p) {
 
     for (const point of grid) {
       const displacementInfos = displacerConfigs.map((config) => {
-        const displacement = config.displacer.influence(
+        const displacementA = config.displacer.influence(
           point,
           config.getStrength(),
-          ah.animate([0.1, 0.2, 0.1], 32),
-          ah.animate([0.005, 0.01, 0.005], 4),
+          'cellular',
+          ah.animate([100, 200, 100], 16),
         )
+        const displacementB = config.displacer.influence(
+          point,
+          config.getStrength(),
+          'woodGrain',
+          ah.animate([20, 40, 20], 24),
+        )
+
+        const t = ah.animate([0, 1, 0], 32)
+
+        // Arbitrarily swapping the A&B X&Y points leads to cool results!
+        const x = p.lerp(displacementA.x, displacementB.x, t)
+        const y = p.lerp(displacementA.y, displacementB.y, t)
+
+        const displacement = p.createVector(x, y)
+
         return {
           displacement,
           magnitude: displacement.mag(),
@@ -184,15 +197,19 @@ export default function (p) {
         }
       })
 
+      // Calculate total displacement
       const totalDisplacement = displacementInfos.reduce(
         (total, info) => total.add(info.displacement),
         p.createVector(0, 0),
       )
 
+      // Get blended color based on displacer influences
       const color = getBlendedColor(point, displacementInfos)
 
+      // Calculate radius based on total displacement magnitude
+      const totalMag = totalDisplacement.mag()
       const radius = p.map(
-        totalDisplacement.mag(),
+        totalMag,
         0,
         maxMag,
         cp.circleRadius / 3,
@@ -201,7 +218,9 @@ export default function (p) {
 
       p.noFill()
       p.stroke(color.rgba())
-      p.$.vCircle(point.copy().add(totalDisplacement), radius)
+      p.strokeWeight(radius)
+      const pt = point.copy().add(totalDisplacement)
+      p.point(pt.x, pt.y)
     }
 
     getAverageFrameRate(p, 300)
@@ -249,15 +268,14 @@ class Displacer {
     Object.assign(this, state)
   }
 
-  influence(gridPoint, strength, rippleFrequency, rippleDecay) {
+  influence(gridPoint, strength, alg, ...algParams) {
     const radius = Math.max(this.radius, Number.EPSILON)
-    const distanceToCenter = distanceAlgs.ripple(
+    const distanceToCenter = distanceAlgs[alg](
       gridPoint.x,
       gridPoint.y,
       this.position.x,
       this.position.y,
-      rippleFrequency,
-      rippleDecay,
+      ...algParams,
     )
 
     // Safeguard: If the grid point is exactly at the center, no displacement

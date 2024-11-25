@@ -16,7 +16,7 @@ import {
  */
 export default function (p) {
   const metadata = {
-    name: 'displacement',
+    name: 'displacement2',
     frameRate: 30,
 
     // WARNING! This is probably too big
