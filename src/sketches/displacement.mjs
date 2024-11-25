@@ -1,6 +1,6 @@
 import chroma from 'chroma-js'
-import AnimationHelper from '../lib/AnimationHelper.mjs'
 import { createControlPanel } from '../lib/ControlPanel/index.mjs'
+import * as distanceAlgs from '../lib/distance.mjs'
 import { createGrid, getAverageFrameRate, PHI } from '../util.mjs'
 
 // https://lokua.bandcamp.com/track/grip
@@ -10,7 +10,7 @@ import { createGrid, getAverageFrameRate, PHI } from '../util.mjs'
  */
 export default function (p) {
   const metadata = {
-    name: 'grip',
+    name: 'displacement',
     frameRate: 30,
 
     // WARNING! This is probably too big
@@ -25,12 +25,6 @@ export default function (p) {
   let displacerConfigs = []
   const scaleRoot = chroma('beige')
 
-  const ah = new AnimationHelper({
-    p,
-    frameRate: metadata.frameRate,
-    bpm: 134,
-  })
-
   const cp = createControlPanel({
     p,
     id: metadata.name,
@@ -44,7 +38,7 @@ export default function (p) {
       },
       {
         type: 'Range',
-        name: 'radius',
+        name: 'circleRadius',
         value: 12,
         min: 0,
       },
@@ -62,23 +56,17 @@ export default function (p) {
       },
       {
         type: 'Range',
-        name: 'cornerOffset',
-        value: 27,
-      },
-      {
-        type: 'Range',
-        name: 'cornerMaxRadius',
-        value: 35,
-        min: 0,
-        max: 100,
-      },
-      {
-        type: 'Range',
         name: 'backgroundAlpha',
         value: 1,
         min: 0,
         max: 1,
         step: 0.001,
+      },
+      {
+        type: 'Select',
+        name: 'distanceAlg',
+        value: 'euclidean',
+        options: Object.keys(distanceAlgs),
       },
       {
         type: 'Checkbox',
@@ -96,90 +84,31 @@ export default function (p) {
 
     updateGrid()
 
-    const getCornerRadiusAnimation = () =>
-      ah.animate([0, cp.cornerMaxRadius, 0], 1, 1, 0.5)
-
-    const cornerColorScale = chroma.scale([scaleRoot, 'green']).mode('lab')
+    const makeDisplacer = (position) => ({
+      displacer: new Displacer({
+        p,
+        position,
+        radius: 0,
+        distanceAlg: distanceAlgs[cp.distanceAlg],
+      }),
+      colorScale: chroma.scale([scaleRoot, 'cyan', 'magenta']).mode('lab'),
+      getStrength: () => cp.strength,
+      update() {
+        this.displacer.update({
+          radius: cp.displacerRadius,
+          distanceAlg: distanceAlgs[cp.distanceAlg],
+        })
+      },
+    })
 
     displacerConfigs = [
-      {
-        displacer: new Displacer(p, center.copy(), 0),
-        update() {
-          this.displacer.update({
-            radius: ah.animate([0, cp.displacerRadius, 0], 1),
-          })
-        },
-        colorScale: chroma
-          .scale([scaleRoot, chroma('blue').saturate(2)])
-          .mode('lab'),
-        getStrength: () =>
-          ah.animate([cp.strength, cp.strength * 3, cp.strength], 24),
-      },
-      {
-        displacer: new Displacer(p, center.copy(), 0),
-        update() {
-          const displacerRadius = ah.animate(
-            [0, cp.displacerRadius * 2, cp.displacerRadius / 2, 0],
-            1.5,
-          )
-          const movementRadius = 175
-          const angle = ah.animate([0, p.TWO_PI], 8)
-          const x = Math.cos(angle) * movementRadius
-          const y = Math.sin(angle) * movementRadius
-          this.displacer.update({
-            radius: displacerRadius,
-            position: center.copy().add(p.createVector(x, y)),
-          })
-        },
-        colorScale: chroma
-          .scale([scaleRoot, chroma('purple').saturate(2)])
-          .mode('lab'),
-        getStrength: () =>
-          ah.animate([cp.strength, cp.strength * 3, cp.strength], 16),
-      },
-      {
-        displacer: new Displacer(p),
-        update() {
-          this.displacer.update({
-            radius: getCornerRadiusAnimation(),
-            position: p.createVector(cp.cornerOffset, cp.cornerOffset),
-          })
-        },
-        colorScale: cornerColorScale,
-      },
-      {
-        displacer: new Displacer(p),
-        update() {
-          this.displacer.update({
-            radius: getCornerRadiusAnimation(),
-            position: p.createVector(w - cp.cornerOffset, cp.cornerOffset),
-          })
-        },
-        colorScale: cornerColorScale,
-      },
-      {
-        displacer: new Displacer(p),
-        update() {
-          this.displacer.update({
-            radius: getCornerRadiusAnimation(),
-            position: p.createVector(w - cp.cornerOffset, h - cp.cornerOffset),
-          })
-        },
-        colorScale: cornerColorScale,
-      },
-      {
-        displacer: new Displacer(p),
-        update() {
-          this.displacer.update({
-            radius: getCornerRadiusAnimation(),
-            position: p.createVector(cp.cornerOffset, h - cp.cornerOffset),
-          })
-        },
-        colorScale: cornerColorScale,
-      },
+      makeDisplacer(center.copy()),
+      makeDisplacer(center.copy().mult(0.5)),
+      makeDisplacer(center.copy().mult(1.5, 0.5)),
+      makeDisplacer(center.copy().mult(1.5, 1.5)),
+      makeDisplacer(center.copy().mult(0.5, 1.5)),
     ].map((config) => {
       config.update = config.update.bind(config)
-      config.getStrength = config.getStrength || (() => cp.strength)
       return config
     })
 
@@ -191,7 +120,6 @@ export default function (p) {
   function draw() {
     p.background(0, cp.backgroundAlpha)
     p.noFill()
-    p.stroke(chroma(scaleRoot).rgba())
 
     updateGrid()
 
@@ -227,11 +155,17 @@ export default function (p) {
       )
 
       // Get blended color based on displacer influences
-      const color = getBlendedColor(point, displacementInfos.slice(0, 2))
+      const color = getBlendedColor(point, displacementInfos)
 
       // Calculate radius based on total displacement magnitude
       const totalMag = totalDisplacement.mag()
-      const radius = p.map(totalMag, 0, maxMag, cp.radius / 3, cp.radius)
+      const radius = p.map(
+        totalMag,
+        0,
+        maxMag,
+        cp.circleRadius / 3,
+        cp.circleRadius,
+      )
 
       p.noFill()
       p.stroke(color.rgba())
@@ -289,10 +223,11 @@ export default function (p) {
 }
 
 class Displacer {
-  constructor(p, position = p.createVector(0, 0), radius = 0) {
+  constructor({ p, position = p.createVector(0, 0), radius = 0, distanceAlg }) {
     this.p = p
     this.position = position
     this.radius = radius
+    this.distanceAlg = distanceAlg
   }
 
   update(state) {
@@ -301,7 +236,7 @@ class Displacer {
 
   influence(gridPoint, strength) {
     const radius = Math.max(this.radius, Number.EPSILON)
-    const distanceToCenter = this.p.$.vDist(gridPoint, this.position)
+    const distanceToCenter = this.distanceAlg(gridPoint, this.position)
 
     // Safeguard: If the grid point is exactly at the center, no displacement
     // (happens when grid size is an odd number)

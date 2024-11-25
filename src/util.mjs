@@ -347,3 +347,24 @@ export function inheritStaticProperties(childClass, parentClass) {
       childClass[key] = parentClass[key]
     })
 }
+
+export function createGrid(w, h, size, transformXY = (x, y) => [x, y]) {
+  const grid = []
+  const cellSize = Math.min(w, h) / size
+  const cols = Math.floor(w / cellSize)
+  const rows = Math.floor(h / cellSize)
+
+  // Calculate offsets to center the grid in both directions
+  const xOffset = (w - cols * cellSize) / 2
+  const yOffset = (h - rows * cellSize) / 2
+
+  for (let col = 0; col < cols; col++) {
+    for (let row = 0; row < rows; row++) {
+      const x = col * cellSize + cellSize / 2 + xOffset
+      const y = row * cellSize + cellSize / 2 + yOffset
+      grid.push(transformXY(x, y))
+    }
+  }
+
+  return grid
+}
