@@ -30,9 +30,7 @@ export default function (p) {
   grid.previousSize = -1
   let displacerConfigs = []
 
-  const colorScale = chroma
-    .scale(['beige', 'white', 'azure', 'mistyrose'])
-    .mode('lch')
+  const colorScale = chroma.scale(['beige', 'white', 'azure']).mode('lch')
 
   const ah = new AnimationHelper({
     p,
@@ -174,8 +172,7 @@ export default function (p) {
         const displacement = config.displacer.influence(
           point,
           config.getStrength(),
-          ah.animate([0.1, 0.2, 0.1], 32),
-          ah.animate([0.005, 0.01, 0.005], 4),
+          ah.animate([0.001, 0.1, 0.001], 32),
         )
         return {
           displacement,
@@ -253,15 +250,14 @@ class Displacer {
     Object.assign(this, state)
   }
 
-  influence(gridPoint, strength, rippleFrequency, rippleDecay) {
+  influence(gridPoint, strength, weaveFrequency) {
     const radius = Math.max(this.radius, Number.EPSILON)
-    const distanceToCenter = distanceAlgs.ripple(
+    const distanceToCenter = distanceAlgs.weave(
       gridPoint.x,
       gridPoint.y,
       this.position.x,
       this.position.y,
-      rippleFrequency,
-      rippleDecay,
+      weaveFrequency,
     )
 
     // Safeguard: If the grid point is exactly at the center, no displacement
