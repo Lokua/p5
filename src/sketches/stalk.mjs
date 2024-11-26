@@ -49,7 +49,7 @@ export default function (p) {
         type: 'Range',
         name: 'amplitudeZ',
         value: 100,
-        max: w / 2,
+        max: w * 2,
       },
       {
         type: 'Range',
