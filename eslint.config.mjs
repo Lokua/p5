@@ -27,6 +27,8 @@ export default [
               'PHI',
               'chroma',
               'center',
+              'ah',
+              'AnimationHelper',
             ].join('|'))(),
           args: 'after-used',
           argsIgnorePattern: '^_',
