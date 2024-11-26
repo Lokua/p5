@@ -2,6 +2,8 @@ import chroma from 'chroma-js'
 import AnimationHelper from '../lib/AnimationHelper.mjs'
 import { createControlPanel } from '../lib/ControlPanel/index.mjs'
 
+import Tetrahedron from './stalk/Tetrahedron.mjs'
+
 /**
  * @param {import('p5')} p
  */
@@ -9,9 +11,6 @@ export default function (p) {
   const metadata = {
     name: 'tetrahedra',
     frameRate: 30,
-
-    // WARNING! This is probably too big
-    // if recording video but perfect for images
     pixelDensity: 6,
   }
 
@@ -111,12 +110,9 @@ export default function (p) {
           if (rotationAxis.mag() > 0) {
             p.rotate(angle, rotationAxis)
           }
-          if (cp.touching === 'tip') {
-            p.rotateX(p.PI)
-            p.translate(0, 0, -cp.tetraHeight)
-          }
           tetrahedron.update({
             sizes: [cp.tetraHeight, 10, 10, 10],
+            orientation: cp.touching,
           })
           tetrahedron.draw()
         })
@@ -137,6 +133,7 @@ export default function (p) {
             p,
             sizes: [cp.tetraHeight, 10, 10, 10],
             colors: chroma.scale(['mistyrose', 'pink', 'lavender']).colors(4),
+            orientation: cp.touching,
           }),
         )
       }
@@ -161,59 +158,5 @@ export default function (p) {
       cp.destroy()
     },
     metadata,
-  }
-}
-
-class Tetrahedron {
-  constructor({ p, sizes = [1, 1, 1, 1], colors }) {
-    this.p = p
-    this.sizes = sizes
-    this.vertices = this.#computeVertices()
-    this.colors = colors
-  }
-
-  update({ sizes, ...state }) {
-    Object.assign(this, state)
-    if (sizes) {
-      this.sizes = sizes
-      this.vertices = this.#computeVertices()
-    }
-  }
-
-  draw(x = 0, y = 0, z = 0) {
-    this.p.push()
-    this.p.translate(x, y, z)
-    this.p.beginShape(this.p.TRIANGLES)
-    const [v0, v1, v2, v3] = this.vertices
-    const faces = [
-      [v0, v1, v2, this.colors?.[0]],
-      [v0, v1, v3, this.colors?.[1]],
-      [v0, v2, v3, this.colors?.[2]],
-      [v1, v2, v3, this.colors?.[3]],
-    ]
-    for (const args of faces) {
-      this.#drawFace(...args)
-    }
-    this.p.endShape()
-    this.p.pop()
-  }
-
-  #computeVertices() {
-    const [top, left, right, front] = this.sizes
-    return [
-      [0, 0, top],
-      [-left, -left, 0],
-      [right, -right, 0],
-      [0, front, 0],
-    ]
-  }
-
-  #drawFace(v1, v2, v3, color) {
-    if (color) {
-      this.p.fill(color)
-    }
-    this.p.vertex(...v1)
-    this.p.vertex(...v2)
-    this.p.vertex(...v3)
   }
 }
