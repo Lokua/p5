@@ -14,7 +14,7 @@ export default [
       'object-shorthand': 'error',
       'prefer-const': 'error',
       'no-unused-vars': [
-        'error',
+        'warn',
         {
           varsIgnorePattern: (() =>
             [

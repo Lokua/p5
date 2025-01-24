@@ -368,3 +368,31 @@ export function createGrid(w, h, size, transformXY = (x, y) => [x, y]) {
 
   return grid
 }
+
+export function createGridWebGL(
+  w,
+  h,
+  divisions,
+  transformXY = (x, y) => [x, y],
+) {
+  const grid = []
+  const cellSize = Math.min(w, h) / divisions
+  const cols = Math.floor(w / cellSize)
+  const rows = Math.floor(h / cellSize)
+
+  const gridWidth = cols * cellSize
+  const gridHeight = rows * cellSize
+
+  const startX = -gridWidth / 2
+  const startY = gridHeight / 2
+
+  for (let col = 0; col < cols; col++) {
+    for (let row = 0; row < rows; row++) {
+      const x = startX + col * cellSize + cellSize / 2
+      const y = startY - row * cellSize - cellSize / 2
+      grid.push(transformXY(x, y))
+    }
+  }
+
+  return grid
+}

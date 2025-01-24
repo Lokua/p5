@@ -24,6 +24,7 @@ export default function (p) {
   grid.previousSize = -1
   let displacerConfigs = []
   const scaleRoot = chroma('beige')
+  let averageFrameRate = 0
 
   const ah = new AnimationHelper({
     p,
@@ -238,7 +239,13 @@ export default function (p) {
       p.$.vCircle(point.copy().add(totalDisplacement), radius)
     }
 
-    getAverageFrameRate(p, 300)
+    getAverageFrameRate(p, metadata.frameRate, false, (frameRate) => {
+      averageFrameRate = frameRate
+    })
+    p.noStroke()
+    p.fill('limegreen')
+    p.textSize(24)
+    p.text(averageFrameRate, 10, 30)
   }
 
   function getBlendedColor(point, displacementInfos) {
